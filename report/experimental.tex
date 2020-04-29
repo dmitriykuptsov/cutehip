@@ -1,0 +1,51 @@
+\section{Experimental evaluation}
+\label{section:experiments}
+
+
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{graphics/puzzle_solution_perf.pdf}
+	\caption{Average duration of puzzle solving}
+	\label{fig:puzzle}
+\end{figure}
+
+To demonstrate the performance of ECHD and DH algorithms we have 
+executed the key exchange algorithms $100$ times for various 
+groups. Thus, in Figure~\ref{fig:dh} we show the performance of
+DH and in Figure~\ref{fig:ecdh} we show the performance 
+of ECDH for various curve parameters. To understand how two
+are related in Table~\ref{tab:strength} we show the sizes
+of various keys and how they are related to symmetric keys.
+Obviously, ECDH shows far better performance than regular
+DH algorithm. This performance improvement is largely due
+to reduced key sizes.
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{graphics/dh_computation_hist.pdf}
+	\caption{Diffie-Hellman key exchange duration (total)}
+	\label{fig:dh}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{graphics/ecdh_computation_hist.pdf}
+	\caption{Elliptic Curve Diffie-Hellman key exchange duration (total)}
+	\label{fig:ecdh}
+\end{figure}
+
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\bf{Symmetric key sizes, bits} & \bf{DH keys, bits} & \bf{ECDH keys, bits} \\\hline
+		80			&    1024                        & 160                                  \\
+		112			&    2048                        & 224                                  \\
+		128			&    3072                        & 256                                  \\
+		192			&    7680                        & 384                                  \\
+		256			&    15360                       & 521                                  \\
+\hline
+\end{tabular}
+\caption{Security strength of keys}
+\label{tab:strength}
+\end{table}
+
+~\cite{dummy}

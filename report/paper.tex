@@ -1,0 +1,64 @@
+\documentclass[conference,10pt,letter]{IEEEtran}
+
+\usepackage{url}
+\usepackage{amssymb,amsthm}
+\usepackage{graphicx,color}
+
+%\usepackage{balance}
+
+\usepackage{cite}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{color, colortbl}
+\usepackage{times}
+\usepackage{caption}
+\usepackage{rotating}
+\usepackage{subcaption}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{example}{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+
+\newcommand{\XXXnote}[1]{{\bf\color{red} XXX: #1}}
+\newcommand{\YYYnote}[1]{{\bf\color{red} YYY: #1}}
+\newcommand*{\etal}{{\it et al.}}
+
+\newcommand{\eat}[1]{}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\im}{\item}
+\newcommand{\eg}{{\it e.g.}\xspace}
+\newcommand{\ie}{{\it i.e.}\xspace}
+\newcommand{\etc}{{\it etc.}\xspace}
+
+\def\P{\mathop{\mathsf{P}}}
+\def\E{\mathop{\mathsf{E}}}
+
+\begin{document}
+\sloppy
+\title{Implementing Host Identity Protocol using Python}
+\maketitle
+\begin{abstract}
+Host Identity Protocol, or HIP, is layer 3.5 solution,
+which was initially designed to split the dual role of
+the IP address - locator and identifier. Using HIP protocol
+one can solve not only mobility problems, but also 
+establish authenticated secure channel. In this short 
+report we will introduce description of the implementation
+of HIP protocol using Python. We will also present the 
+microbanchmarking results for various cryptographic 
+primitives.
+\end{abstract}
+\input intro.tex
+\input background.tex
+\input hardware.tex
+\input experimental.tex
+\input conclusions.tex
+%\balance
+\bibliographystyle{abbrv}
+\bibliography{mybib}
+
+\end{document}
+

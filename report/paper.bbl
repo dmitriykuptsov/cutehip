@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{ssh}
+Secure shell.
+\newblock {\url{https://en.wikipedia.org/wiki/Secure_Shell}}.
+
+\bibitem{RFC5903}
+{D. Fu and J. Solinas}.
+\newblock {Elliptic Curve Groups modulo a Prime (ECP Groups) for IKE and
+  IKEv2}, 2010.
+
+\bibitem{stinson}
+D.~Stinson.
+\newblock {\em Cryptography: Theory and Practice, Second Edition}.
+\newblock CRC/C\&H, 2nd edition, 2002.
+
+\bibitem{dummy}
+M.~who.
+\newblock {Some article}.
+\newblock pages x--y, 2019.
+
+\end{thebibliography}
