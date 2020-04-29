@@ -368,6 +368,7 @@ class HostIdParameter(HIPParameter):
 		self.set_di_type(di.get_type());
 		length = self.get_length() + di_length;
 		self.set_length(length);
+		self.buffer += [0] * (8 - len(self.buffer) % 8);
 	def set_host_id(self, hi):
 		hi_length = self.get_hi_length();
 		if hi_length > 0:
@@ -388,9 +389,6 @@ class HostIdParameter(HIPParameter):
 		if hi_length == 0:
 			raise Exception("HI was not set yet");
 		return self.buffer[HIP_HI_OFFSET:HIP_HI_OFFSET + hi_length];
-	def adjust_padding(self):
-		if len(self.buffer) % 8:
-			self.buffer += [0] * (8 - len(self.buffer) % 8);
 
 HIP_HIT_SUITS_TYPE               = 0x2CB;
 HIP_HIT_SUITS_OFFSET             = 0x4;
@@ -479,7 +477,7 @@ class MACParameter(HIPParameter):
 		self.set_length(len(hmac));
 		length = len(hmac);
 		self.buffer[HIP_MAC_OFFSET:HIP_MAC_OFFSET + length] = hmac;
-		padding = (len(self.buffer)) % 8;
+		padding = (8 - (len(self.buffer)) % 8);
 		self.buffer += [0] * padding;
 
 HIP_MAC_2_TYPE    = 0xF081;
@@ -502,7 +500,7 @@ class MAC2Parameter(HIPParameter):
 		self.set_length(len(hmac));
 		length = len(hmac);
 		self.buffer[HIP_MAC_2_OFFSET:HIP_MAC_2_OFFSET + length] = hmac;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 
 HIP_SIG_TYPE             = 0xF101;
@@ -529,7 +527,7 @@ class SignatureParameter(HIPParameter):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 
 HIP_SIG_2_TYPE           = 0xF0C1;
@@ -556,7 +554,7 @@ class Signature2Parameter(HIPParameter):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 
 HIP_SEQ_TYPE             = 0x181;
@@ -609,7 +607,7 @@ class AckParameter(HIPParameter):
 			self.buffer[offset + 2] = (id << 8) & 0xFF;
 			self.buffer[offset + 3] = (id & 0xFF);
 			offset += 4;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_ids(self):
 		length = self.get_length();

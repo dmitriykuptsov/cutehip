@@ -70,26 +70,29 @@ from utils import misc
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("hip.log"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+	level=logging.DEBUG,
+	format="%(asctime)s [%(levelname)s] %(message)s",
+	handlers=[
+		logging.FileHandler("hip.log"),
+		logging.StreamHandler(sys.stdout)
+	]
+);
 
 MTU = config.config["network"]["mtu"];
 
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3
-logging.debug("Using hosts file to resolve HITS %s" % (config.config["resolver"]["hosts_file"]));
+logging.info("Using hosts file to resolve HITS %s" % (config.config["resolver"]["hosts_file"]));
 hit_resolver = resolver.HostsFileResolver(filename = config.config["resolver"]["hosts_file"]);
 hip_state_machine = HIPState.StateMachine();
 ip_sec_sa = SA.SecurityAssociationDatabase();
 
+logging.info("Initializing HIP socket");
 hip_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, HIP.HIP_PROTOCOL);
 hip_socket.bind(("0.0.0.0", HIP.HIP_PROTOCOL));
+# We will need to perform manual fragmentation
 hip_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 
+logging.info("Initializing IPSec socket");
 ip_sec_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, IPSec.IPSEC_PROTOCOL);
 ip_sec_socket.bind(("0.0.0.0", IPSec.IPSEC_PROTOCOL));
 ip_sec_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
@@ -97,11 +100,14 @@ ip_sec_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 di = DIFactory.get(config.config["resolver"]["domain_identifier"]["type"], 
 	bytearray(config.config["resolver"]["domain_identifier"]["value"], encoding="ascii"));
 
+logging.info("Loading public key and constructing HIT")
 pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 rsa_hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
 ipv6_address = HIT.get_hex_formated(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
 own_hit = HIT.get(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
+logging.info("Configuring TUN device");
 hip_tun = tun.Tun(address=ipv6_address, mtu=MTU);
+logging.info("Configuring IPv6 routes");
 routing.Routing.add_hip_default_route();
 
 def hip_loop():
@@ -205,8 +211,8 @@ def hip_loop():
 			# HIP host ID parameter
 			hi_param = HIP.HostIdParameter();
 			hi_param.set_host_id(rsa_hi);
+			# It is important to set domain ID after host ID was set
 			hi_param.set_domain_id(di);
-			hi_param.adjust_padding();
 
 			# HIP HIT suit list parameter
 			hit_suit_param = HIP.HITSuitListParameter();
@@ -273,6 +279,7 @@ def hip_loop():
 					logging.debug("R1 counter");
 				if isinstance(parameter, HIP.PuzzleParameter):
 					logging.debug("Puzzle parameter");
+					#PuzzleSolver.
 				if isinstance(parameter, HIP.DHParameter):
 					logging.debug("DH parameter");
 				if isinstance(parameter, HIP.HostIdParameter):
@@ -385,7 +392,7 @@ def tun_if_loop():
 			# Send HIP I1 packet to destination
 			hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
 
-			# Transition to a I1-Sent state
+			# Transition to an I1-Sent state
 			hip_state.i1_sent();
 
 		elif hip_state.is_established():

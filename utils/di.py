@@ -18,10 +18,10 @@
 
 class DIFactory():
 	@staticmethod
-	def get(t, value):
-		if t == DomainID.DI_FQDN:
+	def get(type, value):
+		if type == DomainID.DI_FQDN:
 			return FQDNDomainID(value);
-		elif t == DomainID.DI_NAI:
+		elif type == DomainID.DI_NAI:
 			return NAIDomainID(value);
 		return DomainID(); 
 

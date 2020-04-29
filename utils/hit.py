@@ -26,9 +26,10 @@ from binascii import unhexlify
 from binascii import hexlify
 from crypto import digest
 
-HIP_HIT_PREFIX = bytearray(unhexlify("20012000"));
-HIP_HIT_CONTEX_ID = bytearray(unhexlify('F0EFF02FBFF43D0FE7930C3C6E6174EA'))
-TRUNCATED_HASH_LENGTH = 12;
+HIP_HIT_PREFIX        = bytearray(unhexlify("20012000"));
+HIP_HIT_CONTEX_ID     = bytearray(unhexlify('F0EFF02FBFF43D0FE7930C3C6E6174EA'))
+TRUNCATED_HASH_LENGTH = 0x0C;
+OGA_OFFSET            = 0x03;
 
 class HIT():
 	
@@ -101,7 +102,26 @@ class HIT():
 			hit_formated += hit_hex[i] + hit_hex[i + 1] + hit_hex[i + 2] + hit_hex[i + 3] + ":";
 		return hit_formated.rstrip(":");
 
-#from os import urandom
-#host_id = HostID(urandom(12));
-#oga_id = 0x1;
-#print(HIT.get_hex_formated(host_id, oga_id))
+	@staticmethod
+	def get_oga_id(hit):
+		"""
+		Derives OGA ID from the HIT
+		"""
+		return hit[OGA_OFFSET] & 0xF;
+
+	@staticmethod
+	def get_rhash(hit):
+		"""
+		Returns RHash instance
+		"""
+		oga_id = HIT.get_oga_id();
+		rhash = None
+		if oga_id == 0x1:
+			rhash = digest.SHA256Digest();
+		elif oga_id == 0x2:
+			rhash = digest.SHA384Digest();
+		elif oga_id == 0x3:
+			rhash = digest.SHA1Digest();
+		else:
+			raise Exception("Unknwon hash algorithm");
+		return rhash;

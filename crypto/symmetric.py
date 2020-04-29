@@ -34,7 +34,7 @@ class SymmetricCrypto():
 
 class AESCipher(SymmetricCrypto):
 
-	KEY_SIZE_128_BITS = int(128/8);
+	KEY_SIZE_128_BITS = 0x16;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
 
@@ -60,7 +60,7 @@ class AESCipher(SymmetricCrypto):
 
 class AES128CBCCipher(SymmetricCrypto):
 
-	KEY_SIZE_128_BITS = int(128/8);
+	KEY_SIZE_128_BITS = 0x16;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
 

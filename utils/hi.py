@@ -43,9 +43,12 @@ class HostID():
 		pass
 	def to_byte_array(self):
 		return None;
-	def get_length():
+	def get_length(self):
 		return 0;
+	def get_algorithm(self):
+		return 0x0;
 
+# https://tools.ietf.org/html/rfc3110#section-2
 class RSAHostID(HostID):
 	def __init__(self, exponent, modulus):
 		exponent_bytes = Math.int_to_bytes(exponent);
