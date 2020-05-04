@@ -57,6 +57,33 @@ class ECDH(DH):
 	def compute_shared_secret(self):
 		pass
 
+
+"""
+   In an ECP key exchange, the Diffie-Hellman public value passed in a
+   KE payload consists of two components, x and y, corresponding to the
+   coordinates of an elliptic curve point.  Each component MUST have bit
+   length as given in the following table.
+
+      Diffie-Hellman group                component bit length
+      ------------------------            --------------------
+
+      256-bit Random ECP Group                   256
+      384-bit Random ECP Group                   384
+      521-bit Random ECP Group                   528
+
+   This length is enforced, if necessary, by prepending the value with
+   zeros.
+
+   The Diffie-Hellman public value is obtained by concatenating the x
+   and y values.
+
+   The Diffie-Hellman shared secret value consists of the x value of the
+   Diffie-Hellman common value.
+
+   These formats should be regarded as specific to ECP curves and may
+   not be applicable to EC2N (elliptic curve group over GF[2^N]) curves.
+
+"""
 class ECDHSECP160R1(ECDH):
 	def __init__(self):
 		self.private_key_size = int(160/8);

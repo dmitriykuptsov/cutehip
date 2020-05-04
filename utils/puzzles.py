@@ -57,5 +57,5 @@ class PuzzleSolver():
 		return bytearray(PuzzleSolver.ltrunc(rhash.digest(irandom + senders_hit + responers_hit + jrandom), difficulty)) == expected_solution
 
 	@staticmethod
-	def generate_irandom():
-		return urandom(HIP.HIP_PUZZLE_RANDOM_I_LENGTH);
+	def generate_irandom(rhash):
+		return urandom(rhash.LENGTH);

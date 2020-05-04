@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from math import log, ceil, floor, inf
+from math import log, ceil, floor
 from binascii import hexlify
 import logging
 
@@ -90,7 +90,7 @@ class Math():
 
 	@staticmethod
 	def num_bits(n):
-		return ceil(log(n, 2))
+		return floor(log(n, 2)) + 1;
 
 	@staticmethod
 	def to_bit_array(n, reverse = True):

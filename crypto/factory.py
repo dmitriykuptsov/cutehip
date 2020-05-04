@@ -24,6 +24,7 @@ import crypto
 from crypto.ecdh import ECDHSECP160R1, ECDHNIST521, ECDHNIST384, ECDHNIST256
 from crypto.dh import DH5, DH15
 from crypto.symmetric import AES128CBCCipher
+from packets import IPSec
 
 class DHFactory():
 	@staticmethod
@@ -64,3 +65,7 @@ class HITSuitFactory():
 	def get_supported_hash_algorithms():
 		return [0x10, 0x20];
 	
+class TransportFactory():
+	@staticmethod
+	def get_supported_transports():
+		return [IPSec.IPSEC_TRANSPORT_FORMAT];

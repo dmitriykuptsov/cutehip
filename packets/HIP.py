@@ -100,7 +100,7 @@ class R1CounterParameter(HIPParameter):
 		self.buffer[HIP_R1_COUNTER_OFFSET + 7] = (counter) & 0xFF;
 
 HIP_PUZZLE_TYPE                  = 257;
-HIP_PUZZLE_LENGTH                = 4 + int(R_HASH_VALUE_LENGTH / 8);
+#HIP_PUZZLE_LENGTH                = 4 + int(R_HASH_VALUE_LENGTH / 8);
 
 HIP_PUZZLE_K_OFFSET              = 0x4;
 HIP_PUZZLE_LIFETIME_OFFSET       = 0x5;
@@ -110,10 +110,14 @@ HIP_PUZZLE_RANDOM_I_OFFSET       = 0x8;
 HIP_PUZZLE_K_LENGTH              = 0x1;
 HIP_PUZZLE_LIFETIME_LENGTH       = 0x1;
 HIP_PUZZLE_OPAQUE_LENGTH         = 0x2;
-HIP_PUZZLE_RANDOM_I_LENGTH       = int(R_HASH_VALUE_LENGTH / 8);
+#HIP_PUZZLE_RANDOM_I_LENGTH       = int(R_HASH_VALUE_LENGTH / 8);
 
 class PuzzleParameter(HIPParameter):
-	def __init__(self, buffer = None):
+	def __init__(self, buffer = None, rhash_length = 0x20):
+
+		self.HIP_PUZZLE_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_PUZZLE_LENGTH = 4 + rhash_length;
+
 		self.buffer = buffer;
 		if not self.buffer:
 			self.buffer = [0] * (
@@ -122,10 +126,10 @@ class PuzzleParameter(HIPParameter):
 				HIP_PUZZLE_K_LENGTH +
 				HIP_PUZZLE_LIFETIME_LENGTH +
 				HIP_PUZZLE_OPAQUE_LENGTH + 
-				HIP_PUZZLE_RANDOM_I_LENGTH
+				self.HIP_PUZZLE_RANDOM_I_LENGTH
 				);
 			self.set_type(HIP_PUZZLE_TYPE);
-			self.set_length(HIP_PUZZLE_LENGTH);
+			self.set_length(self.HIP_PUZZLE_LENGTH);
 	def get_k_value(self):
 		return self.buffer[HIP_PUZZLE_K_OFFSET] & 0xFF;
 	def set_k_value(self, k):
@@ -141,23 +145,23 @@ class PuzzleParameter(HIPParameter):
 		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET + 1] = (opaque) & 0xFF;
 	def get_random(self):
 		return (self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:
-				HIP_PUZZLE_RANDOM_I_OFFSET + HIP_PUZZLE_RANDOM_I_LENGTH]);
+				HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH]);
 	def set_random(self, random):
-		self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:HIP_PUZZLE_RANDOM_I_OFFSET + HIP_PUZZLE_RANDOM_I_LENGTH] = random;
+		self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH] = random;
 
 HIP_SOLUTION_TYPE                              = 321;
 
 
 HIP_SOLUTION_RANDOM_I_OFFSET                   = 0x4;
-HIP_SOLUTION_RANDOM_I_LENGTH                   = int(R_HASH_VALUE_LENGTH / 8);
+#HIP_SOLUTION_RANDOM_I_LENGTH                   = int(R_HASH_VALUE_LENGTH / 8);
 
 HIP_SOLUTION_K_LENGTH                          = 0x1;
 HIP_SOLUTION_K_OFFSET                          = 0x4;
 
-HIP_SOLUTION_J_OFFSET                          = 0x8 + int(R_HASH_VALUE_LENGTH / 8);
-HIP_SOLUTION_J_LENGTH                          = int(R_HASH_VALUE_LENGTH / 8);
+#HIP_SOLUTION_J_OFFSET                          = 0x8 + int(R_HASH_VALUE_LENGTH / 8);
+#HIP_SOLUTION_J_LENGTH                          = int(R_HASH_VALUE_LENGTH / 8);
 
-HIP_SOLUTION_LENGTH                            = 0x4 + int(R_HASH_VALUE_LENGTH / 4);
+#HIP_SOLUTION_LENGTH                            = 0x4 + int(R_HASH_VALUE_LENGTH / 4);
 HIP_SOLUTION_RESERVED_LENGTH                   = 0x1;
 HIP_SOLUTION_RESERVED_OFFSET                   = 0x5;
 
@@ -165,8 +169,13 @@ HIP_SOLUTION_OPAQUE_LENGTH                     = 0x2;
 HIP_SOLITION_OPAQUE_OFFSET                     = 0x6;
 
 class SolutionParameter(HIPParameter):
-	def __init__(self, buffer = None):
+	def __init__(self, buffer = None, rhash_length = 0x20):
 		self.buffer = buffer;
+		self.HIP_SOLUTION_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_SOLUTION_J_OFFSET = HIP_SOLUTION_RANDOM_I_OFFSET + rhash_length;
+		self.HIP_SOLUTION_J_LENGTH = rhash_length;
+		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
+
 		if not self.buffer:
 			self.buffer = [0] * (
 				HIP_TLV_LENGTH_LENGTH + 
@@ -174,11 +183,11 @@ class SolutionParameter(HIPParameter):
 				HIP_SOLUTION_K_LENGTH +
 				HIP_SOLUTION_RESERVED_LENGTH +
 				HIP_SOLUTION_OPAQUE_LENGTH + 
-				HIP_SOLUTION_RANDOM_I_LENGTH + 
-				HIP_SOLUTION_J_LENGTH
+				self.HIP_SOLUTION_RANDOM_I_LENGTH + 
+				self.HIP_SOLUTION_J_LENGTH
 				);
 			self.set_type(HIP_SOLUTION_TYPE);
-			self.set_length(HIP_SOLUTION_LENGTH);
+			self.set_length(self.HIP_SOLUTION_LENGTH);
 	def get_k_value(self):
 		return self.buffer[HIP_SOLUTION_K_OFFSET] & 0xFF;
 	def set_k_value(self, k):
@@ -189,13 +198,13 @@ class SolutionParameter(HIPParameter):
 		 self.buffer[HIP_SOLITION_OPAQUE_OFFSET] = (opaque << 8) & 0xFF;
 		 self.buffer[HIP_SOLITION_OPAQUE_OFFSET + 1] = (opaque) & 0xFF;
 	def get_random(self):
-		return (self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + HIP_SOLUTION_RANDOM_I_LENGTH]);
+		return (self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH]);
 	def set_random(self, random):
-		 self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + HIP_SOLUTION_RANDOM_I_LENGTH] = random;
+		 self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH] = random;
 	def get_solution(self):
-		return (self.buffer[HIP_SOLUTION_J_OFFSET:HIP_SOLUTION_J_OFFSET + HIP_SOLUTION_J_LENGTH]);
+		return (self.buffer[self.HIP_SOLUTION_J_OFFSET:HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH]);
 	def set_solution(self, solution):
-		 self.buffer[HIP_SOLUTION_J_OFFSET:HIP_SOLUTION_J_OFFSET + HIP_SOLUTION_J_LENGTH] = solution;
+		 self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH] = solution;
 
 HIP_DH_GROUP_LIST_TYPE              = 0x1FF;
 HIP_DH_GROUP_LIST_OFFSET            = 0x4;

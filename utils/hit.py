@@ -41,6 +41,18 @@ class HIT():
 		pass
 
 	@staticmethod
+	def get_responders_hash_algorithm(rhit):
+		oga_id = rhit[OGA_OFFSET];
+		if oga_id == 0x1:
+			rhash = digest.SHA256Digest();
+		elif oga_id == 0x2:
+			rhash = digest.SHA384Digest();
+		elif oga_id == 0x3:
+			rhash = digest.SHA1Digest();
+		else:
+			raise Exception("Unknwon hash algorithm"); 
+
+	@staticmethod
 	def bytearray_to_int(b):
 		int_value = 0;
 		for byte in b:

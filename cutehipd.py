@@ -124,6 +124,10 @@ def hip_loop():
 		src = ipv4_packet.get_source_address();
 		dst = ipv4_packet.get_destination_address();
 
+		if ipv4_packet.get_protocol() != HIP.HIP_PROTOCOL:
+			logging.debug("Invalid protocol type");
+			continue;
+
 		if len(ipv4_packet.get_payload()) % 8:
 			logging.debug("Invalid length of the payload. Must be multiple of 8 bytes");
 			continue;
@@ -137,9 +141,14 @@ def hip_loop():
 		logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 		logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
+		if hip_packet.get_version() != HIP.HIP_VERSION:
+			logging.critical("Only HIP version 2 is supported");
+			continue;
+
 		# Check wether the destination address is our own HIT
 		if not Utils.hits_equal(rhit, own_hit):
 			logging.critical("Not our HIT");
+			continue;
 
 		# https://tools.ietf.org/html/rfc7401#section-5
 		original_checksum = hip_packet.get_checksum();
@@ -154,12 +163,15 @@ def hip_loop():
 		if original_checksum != checksum:
 			logging.critical("Invalid checksum");
 			continue;
-		if hip_packet.get_version() != HIP.HIP_VERSION:
-			logging.critical("Only HIP version 2 is supported");
 
 		if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
 			logging.info("I1 packet");
 			
+			# Check the state of the HIP protocol
+			# R1 packet should be constructed only 
+			# if the state is not associated
+			# Need to check with the RFC
+
 			# Construct R1 packet
 			hip_r1_packet = HIP.R1Packet();
 			hip_r1_packet.set_senders_hit(rhit);
@@ -167,9 +179,11 @@ def hip_loop():
 			hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 			hip_r1_packet.set_version(HIP.HIP_VERSION);
 
+			r_hash = HIT.get_responders_hash_algorithm(rhit);
+
 			# Prepare puzzle
-			irandom = PuzzleSolver.generate_irandom();
-			puzzle_param = HIP.PuzzleParameter();
+			irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
+			puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = rhash.LENGTH);
 			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
 			
@@ -221,7 +235,6 @@ def hip_loop():
 			# Transport format list
 			transport_param = HIP.TransportListParameter();
 			transport_param.add_transport_formats([IPSec.IPSEC_TRANSPORT_FORMAT]);
-			print(transport_param.get_byte_buffer());
 
 			# HIP signature parameter
 			signature_param = HIP.Signature2Parameter();
@@ -254,6 +267,7 @@ def hip_loop():
 			ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
 			ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
 			ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
 			# Calculate the checksum
 			checksum = misc.Utils.hip_ipv4_checksum(
 				src, 
@@ -400,9 +414,9 @@ def tun_if_loop():
 			pass
 
 
-hip_th_loop = threading.Thread(target = hip_loop, args = (), daemon=True);
-ip_sec_th_loop = threading.Thread(target = ip_sec_loop, args = (), daemon=True);
-tun_if_th_loop = threading.Thread(target = tun_if_loop, args = (), daemon=True);
+hip_th_loop = threading.Thread(target = hip_loop, args = (), daemon = True);
+ip_sec_th_loop = threading.Thread(target = ip_sec_loop, args = (), daemon = True);
+tun_if_th_loop = threading.Thread(target = tun_if_loop, args = (), daemon = True);
 
 logging.info("Starting the CuteHIP");
 

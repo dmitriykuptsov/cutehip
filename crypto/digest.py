@@ -56,41 +56,56 @@ class SHA1HMAC(HMACDigest):
 		return self.hmac.digest();
 
 class Digest():
+	LENGTH = 0x0;
 	def __init__(self):
 		pass
 	def digest(self, data):
 		raise Exception("Not implemented");
+	def get_length(self):
+		raise Exception("Not implemented");
 
 class SHA256Digest(Digest):
+	LENGTH = 0x20;
 	def __init__(self):
 		pass
 	def digest(self, data):
 		self.sha256 = SHA256.new();
 		self.sha256.update(data);
 		return self.sha256.digest();
+	def get_length(self):
+		return self.LENGTH;
 
 class SHA224Digest(Digest):
+	LENGTH = 0x1C;
 	def __init__(self):
 		pass
 	def digest(self, data):
 		self.sha224 = SHA224.new();
 		self.sha224.update(data);
 		return self.sha256.digest();
+	def get_length(self):
+		return self.LENGTH;
 
 class SHA384Digest(Digest):
+	LENGTH = 0x30;
 	def __init__(self):
 		pass
 	def digest(self, data):
 		self.sha384 = SHA384.new();
 		self.sha384.update(data);
 		return self.sha384.digest();
+	def get_length(self):
+		return self.LENGTH;
 
 class SHA1Digest(Digest):
+	LENGTH = 0x14;
 	def __init__(self):
 		pass
 	def digest(self, data):
 		self.sha1 = SHA1.new();
 		self.sha1.update(data);
 		return self.sha1.digest();
+	def get_length(self):
+		return self.LENGTH;
 
 
