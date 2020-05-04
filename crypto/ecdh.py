@@ -57,8 +57,12 @@ class ECDH(DH):
 	def compute_shared_secret(self):
 		pass
 
+	def encode_public_key(self):
+		pass
+
 
 """
+   https://tools.ietf.org/html/rfc3526#section-2
    In an ECP key exchange, the Diffie-Hellman public value passed in a
    KE payload consists of two components, x and y, corresponding to the
    coordinates of an elliptic curve point.  Each component MUST have bit
@@ -95,6 +99,7 @@ class ECDHSECP160R1(ECDH):
 		self.h = 0x1;
 		self.a = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFC;
 		self.G = ECPoint(self.gx, self.gy);
+		self.component_bit_length = 0x14;
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -103,10 +108,21 @@ class ECDHSECP160R1(ECDH):
 		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		return Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
 		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+
+	def encode_public_key(self):
+		x = Math.int_to_bytes(self.public_key.get_x());
+		if len(x) != self.component_bit_length:
+			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
+		y = Math.int_to_bytes(self.public_key.get_y());
+		if len(y) != self.component_bit_length:
+			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
+		return x + y;
+
 
 # https://tools.ietf.org/html/rfc5903#section-3
 
@@ -122,6 +138,7 @@ class ECDHNIST256(ECDH):
 		self.h = 0x1;
 		self.a = -3;
 		self.G = ECPoint(self.gx, self.gy);
+		self.component_bit_length = 0x20;
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -130,10 +147,20 @@ class ECDHNIST256(ECDH):
 		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		return Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
 		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+
+	def encode_public_key(self):
+		x = Math.int_to_bytes(self.public_key.get_x());
+		if len(x) != self.component_bit_length:
+			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
+		y = Math.int_to_bytes(self.public_key.get_y());
+		if len(y) != self.component_bit_length:
+			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
+		return x + y;
 
 class ECDHNIST384(ECDH):
 	def __init__(self):
@@ -147,6 +174,7 @@ class ECDHNIST384(ECDH):
 		self.h = 0x1;
 		self.a = -3;
 		self.G = ECPoint(self.gx, self.gy);
+		self.component_bit_length = 0x30;
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -155,10 +183,20 @@ class ECDHNIST384(ECDH):
 		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		return Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
 		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+
+	def encode_public_key(self):
+		x = Math.int_to_bytes(self.public_key.get_x());
+		if len(x) != self.component_bit_length:
+			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
+		y = Math.int_to_bytes(self.public_key.get_y());
+		if len(y) != self.component_bit_length:
+			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
+		return x + y;
 
 class ECDHNIST521(ECDH):
 	def __init__(self):
@@ -172,6 +210,7 @@ class ECDHNIST521(ECDH):
 		self.h = 0x1;
 		self.a = -3;
 		self.G = ECPoint(self.gx, self.gy);
+		self.component_bit_length = 0x42;
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -180,10 +219,20 @@ class ECDHNIST521(ECDH):
 		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		return Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
 		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+
+	def encode_public_key(self):
+		x = Math.int_to_bytes(self.public_key.get_x());
+		if len(x) != self.component_bit_length:
+			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
+		y = Math.int_to_bytes(self.public_key.get_y());
+		if len(y) != self.component_bit_length:
+			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
+		return x + y;
 
 class ECDHBrainpool256(ECDH):
 	def __init__(self):
@@ -196,6 +245,7 @@ class ECDHBrainpool256(ECDH):
 		self.a = 0x7D5A0975FC2C3057EEF67530417AFFE7FB8055C126DC5C6CE94A4B44F330B5D9;
 		self.h = 0x1;
 		self.G = ECPoint(self.gx, self.gy);
+		self.component_bit_length = 0x20;
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -204,7 +254,17 @@ class ECDHBrainpool256(ECDH):
 		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		return Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
 		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+
+	def encode_public_key(self):
+		x = Math.int_to_bytes(self.public_key.get_x());
+		if len(x) != self.component_bit_length:
+			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
+		y = Math.int_to_bytes(self.public_key.get_y());
+		if len(y) != self.component_bit_length:
+			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
+		return x + y;

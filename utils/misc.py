@@ -78,14 +78,14 @@ class Math():
 		byte_array = [];
 		for i in range(length - 1, -1, -1):
 			byte_array.append((number >> (i*8)) & 0xFF);
-		byte_array.reverse();
+		#byte_array.reverse();
 		return bytearray(byte_array);
 
 	@staticmethod
 	def bytes_to_int(bytes):
 		result = 0;
 		for i in range(len(bytes) - 1, -1, -1):
-			result += bytes[i] << (8*i);
+			result += bytes[(len(bytes) - 1) - i] << (8*i);
 		return result;
 
 	@staticmethod
@@ -243,10 +243,10 @@ class Utils():
 		try:
 			parts = address.split(".");
 			address_as_int = 0;
-			address_as_int |= (int(parts[3]) << 24);
-			address_as_int |= (int(parts[2]) << 16);
-			address_as_int |= (int(parts[1]) << 8);
-			address_as_int |= (int(parts[0]));
+			address_as_int |= (int(parts[0]) << 24);
+			address_as_int |= (int(parts[1]) << 16);
+			address_as_int |= (int(parts[2]) << 8);
+			address_as_int |= (int(parts[3]));
 			return address_as_int
 		except:
 			return 0;

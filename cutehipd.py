@@ -183,7 +183,7 @@ def hip_loop():
 
 			# Prepare puzzle
 			irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-			puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = rhash.LENGTH);
+			puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = r_hash.LENGTH);
 			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
 			
@@ -200,7 +200,7 @@ def hip_loop():
 				logging.debug("No DH groups parameter found");
 				continue;
 			offered_dh_groups = dh_groups_param_initiator.get_groups();
-			supported_dh_groups = factory.DHFactory.get_supported_groups();
+			supported_dh_groups = config.config["security"]["supported_DH_groups"];
 			selected_dh_group = None;
 			for group in supported_dh_groups:
 				if group in offered_dh_groups:
@@ -216,11 +216,13 @@ def hip_loop():
 			public_key = dh.generate_public_key();
 			dh_param = HIP.DHParameter();
 			dh_param.set_group_id(selected_dh_group);
-			#dh_param.add_public_value(public_key);
+			#logging.debug("DH public key: %s " + Math.int_to_bytes(dh.encode_public_key()));
+			dh_param.add_public_value(dh.encode_public_key());
+
 
 			# HIP cipher param
 			cipher_param = HIP.CipherParameter();
-			cipher_param.add_ciphers(factory.SymmetricCiphersFactory.get_supported_ciphers());
+			cipher_param.add_ciphers(config.config["security"]["supported_ciphers"]);
 
 			# HIP host ID parameter
 			hi_param = HIP.HostIdParameter();
@@ -230,11 +232,11 @@ def hip_loop():
 
 			# HIP HIT suit list parameter
 			hit_suit_param = HIP.HITSuitListParameter();
-			hit_suit_param.add_suits(factory.HITSuitFactory.get_supported_hash_algorithms());
+			hit_suit_param.add_suits(config.config["security"]["supported_hit_suits"]);
 
 			# Transport format list
 			transport_param = HIP.TransportListParameter();
-			transport_param.add_transport_formats([IPSec.IPSEC_TRANSPORT_FORMAT]);
+			transport_param.add_transport_formats(config.config["security"]["supported_transports"]);
 
 			# HIP signature parameter
 			signature_param = HIP.Signature2Parameter();
@@ -246,7 +248,7 @@ def hip_loop():
 			# List of mandatory parameters in R1 packet...
 			puzzle_param.set_random(irandom);
 			hip_r1_packet.add_parameter(puzzle_param);
-			#hip_r1_packet.add_parameter(dh_param);
+			hip_r1_packet.add_parameter(dh_param);
 			hip_r1_packet.add_parameter(cipher_param);
 			hip_r1_packet.add_parameter(hi_param);
 			hip_r1_packet.add_parameter(hit_suit_param);

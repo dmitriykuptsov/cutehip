@@ -204,6 +204,8 @@ class DH():
 		pass
 	def compute_shared_secret(self, other_public_key):
 		pass
+	def encode_public_key(self, key):
+		pass
 
 class DHFactory():
 	@staticmethod
@@ -233,6 +235,9 @@ class DH5():
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
+	def encode_public_key(self, key):
+		return Math.int_to_bytes(key);
+
 class DH14():
 
 	def __init__(self):
@@ -251,6 +256,9 @@ class DH14():
 	def compute_shared_secret(self, other_public_key):
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
+
+	def encode_public_key(self):
+		return Math.int_to_bytes(key);
 
 class DH15():
 
@@ -271,6 +279,8 @@ class DH15():
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
+	def encode_public_key(self, key):
+		return Math.int_to_bytes(key);
 
 class DH16():
 
@@ -291,6 +301,9 @@ class DH16():
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
+	def encode_public_key(self, key):
+		return Math.int_to_bytes(key);
+
 class DH17():
 
 	def __init__(self):
@@ -310,6 +323,9 @@ class DH17():
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
+	def encode_public_key(self, key):
+		return Math.int_to_bytes(key);
+
 class DH18():
 
 	def __init__(self):
@@ -328,3 +344,6 @@ class DH18():
 	def compute_shared_secret(self, other_public_key):
 		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
+
+	def encode_public_key(self, key):
+		return Math.int_to_bytes(key);

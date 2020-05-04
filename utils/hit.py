@@ -50,7 +50,8 @@ class HIT():
 		elif oga_id == 0x3:
 			rhash = digest.SHA1Digest();
 		else:
-			raise Exception("Unknwon hash algorithm"); 
+			raise Exception("Unknwon hash algorithm");
+		return rhash; 
 
 	@staticmethod
 	def bytearray_to_int(b):
