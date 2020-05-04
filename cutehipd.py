@@ -376,7 +376,7 @@ def tun_if_loop():
 
 			# Construct the DH groups parameter
 			dh_groups_param = HIP.DHGroupListParameter();
-			dh_groups_param.add_groups(factory.DHFactory.get_supported_groups());
+			dh_groups_param.add_groups(config.config["security"]["supported_DH_groups"]);
 
 			# Create I1 packet
 			hip_i1_packet = HIP.I1Packet();

@@ -12,7 +12,8 @@ config = {
 		"puzzle_lifetime_exponent": 37,                        # 32 seconds
 		"diffie_hellamn_group": 0x8,                           # ECDH NIST 384 group
 		"hip_cipher": 0x4,                                     # AES-256 CBC
-		"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
+		#"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
+		"supported_DH_groups": [0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
 		"supported_ciphers": [0x2, 0x4],                       # AES128CBC, AES256CBC
 		"supported_hit_suits": [0x10, 0x20, 0x30],             # SHA256, SHA384, SHA1
 		"supported_transports": [0x0FFF]                       # IPSec

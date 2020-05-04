@@ -47,6 +47,9 @@ class ECDHFactory():
 class ECDH(DH):
 	def __init__(self):
 		pass
+	
+	def get_component_length(self):
+		return self.component_bit_length
 
 	def generate_private_key(self):
 		pass
@@ -62,7 +65,7 @@ class ECDH(DH):
 
 
 """
-   https://tools.ietf.org/html/rfc3526#section-2
+   https://tools.ietf.org/html/rfc5903#section-7
    In an ECP key exchange, the Diffie-Hellman public value passed in a
    KE payload consists of two components, x and y, corresponding to the
    coordinates of an elliptic curve point.  Each component MUST have bit
@@ -100,6 +103,9 @@ class ECDHSECP160R1(ECDH):
 		self.a = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFC;
 		self.G = ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x14;
+
+	def get_component_length(self):
+		return self.component_bit_length
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -140,6 +146,9 @@ class ECDHNIST256(ECDH):
 		self.G = ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x20;
 
+	def get_component_length(self):
+		return self.component_bit_length
+
 	def set_private_key(self, key):
 		self.private_key = key;
 
@@ -175,6 +184,9 @@ class ECDHNIST384(ECDH):
 		self.a = -3;
 		self.G = ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x30;
+
+	def get_component_length(self):
+		return self.component_bit_length
 
 	def set_private_key(self, key):
 		self.private_key = key;
@@ -212,6 +224,9 @@ class ECDHNIST521(ECDH):
 		self.G = ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x42;
 
+	def get_component_length(self):
+		return self.component_bit_length
+
 	def set_private_key(self, key):
 		self.private_key = key;
 
@@ -246,6 +261,9 @@ class ECDHBrainpool256(ECDH):
 		self.h = 0x1;
 		self.G = ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x20;
+
+	def get_component_length(self):
+		return self.component_bit_length;
 
 	def set_private_key(self, key):
 		self.private_key = key;
