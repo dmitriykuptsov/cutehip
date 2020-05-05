@@ -60,3 +60,5 @@ class NAIDomainID(DomainID):
 		return len(self.buffer);
 	def get_type(self):
 		return self.DI_NAI;
+	def __str__(self):
+		return "Type: " + str(self.get_type()) + ", Value: " + self.to_byte_array().decode("ascii"); 

@@ -100,6 +100,8 @@ ip_sec_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
 di = DIFactory.get(config.config["resolver"]["domain_identifier"]["type"], 
 	bytearray(config.config["resolver"]["domain_identifier"]["value"], encoding="ascii"));
 
+logging.debug(di);
+
 logging.info("Loading public key and constructing HIT")
 pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 rsa_hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
@@ -160,6 +162,7 @@ def hip_loop():
 			HIP.HIP_PROTOCOL, 
 			hip_packet.get_length() * 8 + 8, 
 			hip_packet.get_buffer());
+		
 		if original_checksum != checksum:
 			logging.critical("Invalid checksum");
 			continue;
@@ -228,6 +231,7 @@ def hip_loop():
 			hi_param = HIP.HostIdParameter();
 			hi_param.set_host_id(rsa_hi);
 			# It is important to set domain ID after host ID was set
+			logging.debug(di);
 			hi_param.set_domain_id(di);
 
 			# HIP HIT suit list parameter
@@ -299,6 +303,8 @@ def hip_loop():
 				if isinstance(parameter, HIP.DHParameter):
 					logging.debug("DH parameter");
 				if isinstance(parameter, HIP.HostIdParameter):
+					logging.debug("DI type: %d " % parameter.get_di_type());
+					logging.debug("DI value: %s " % parameter.get_domain_id());
 					logging.debug("Host ID");
 				if isinstance(parameter, HIP.HITSuitListParameter):
 					logging.debug("HIT suit list");

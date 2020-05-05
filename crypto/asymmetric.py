@@ -23,6 +23,7 @@ from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 from Crypto.Signature import pkcs1_15
 from Crypto.PublicKey import RSA
+from Crypto.Signature import pss
 
 
 """
@@ -60,11 +61,12 @@ class RSASHA256Signature(Signature):
 		self.key = key;
 	def sign(self, data):
 		h = SHA256.new(data);
-		signature = pkcs1_15.new(self.key).sign(h);
+		signature = pss.new(self.key).sign(h)
+		return signature;
 	def verify(self, sig, data):
 		h = SHA256.new(data)
 		try:
-			pkcs1_15.new(self.key).verify(h, sig)
+			pss.new(self.key).verify(h, sig)
 			return True
 		except ValueError:
 			return False

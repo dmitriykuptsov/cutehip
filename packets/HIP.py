@@ -17,6 +17,8 @@
 
 # https://tools.ietf.org/html/rfc7401
 
+import logging
+
 HIP_TLV_TYPE_OFFSET              = 0x0;
 HIP_TLV_CRITICAL_BIT_OFFSET      = 0x0;
 HIP_TLV_LENGTH_OFFSET            = 0x2;
@@ -327,7 +329,7 @@ HIP_ALGORITHM_LENGTH        = 0x2;
 HIP_HI_LENGTH_OFFSET        = 0x4;
 HIP_DI_LENGTH_OFFSET        = 0x6;
 HIP_ALGORITHM_OFFSET        = 0x8;
-HIP_HI_OFFSET               = 0x10;
+HIP_HI_OFFSET               = 0xa;
 
 class HostIdParameter(HIPParameter):
 	def __init__(self, buffer = None):
@@ -355,7 +357,7 @@ class HostIdParameter(HIPParameter):
 		self.buffer[HIP_DI_LENGTH_OFFSET] = (length >> 8) & 0xF;
 		self.buffer[HIP_DI_LENGTH_OFFSET + 1] = length & 0xFF;
 	def get_di_length(self):
-		return ((self.buffer[HIP_DI_LENGTH_OFFSET] << 8) |
+		return (((self.buffer[HIP_DI_LENGTH_OFFSET] << 8) & 0xF) |
 				self.buffer[HIP_DI_LENGTH_OFFSET + 1]);
 	def get_di_type(self):
 		return (self.buffer[HIP_DI_LENGTH_OFFSET] >> 4) & 0xF;
@@ -382,7 +384,6 @@ class HostIdParameter(HIPParameter):
 		hi_length = self.get_hi_length();
 		if hi_length > 0:
 			raise Exception("HI was already set");
-
 		self.buffer[HIP_HI_OFFSET:HIP_HI_OFFSET + hi.get_length()] = hi.to_byte_array();
 		self.set_hi_length(hi.get_length());
 		self.set_algorithm(hi.get_algorithm());
@@ -390,11 +391,11 @@ class HostIdParameter(HIPParameter):
 		self.set_length(length);
 	def get_domain_id(self):
 		di_length = self.get_di_length();
-		hi_length = hi.get_length();
+		hi_length = self.get_hi_length();
 		offset = HIP_HI_OFFSET + self.get_hi_length();
 		return self.buffer[offset:offset + di_length];
 	def get_host_id(self):
-		hi_length = hi.get_length();
+		hi_length = self.get_hi_length();
 		if hi_length == 0:
 			raise Exception("HI was not set yet");
 		return self.buffer[HIP_HI_OFFSET:HIP_HI_OFFSET + hi_length];

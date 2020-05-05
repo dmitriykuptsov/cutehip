@@ -21,8 +21,8 @@ config = {
 	"resolver": {
 		"hosts_file": "./config/hosts",
 		"domain_identifier": {                                 # Domain identifier type and value
-			"type": 0x1,                                       # FQDN
-			"value": "strangebit.com"                          # FQDN value
+			"type": 0x2,                                       # NAI
+			"value": "dmitriy.kuptsov@strangebit.com"          # NAI value
 		}
 	},
 }
