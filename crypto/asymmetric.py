@@ -46,14 +46,15 @@ class ECDSASHA256Signature(Signature):
 	def sign(self, data):
 		h = SHA256.new(data)
 		signer = DSS.new(self.key, 'fips-186-3')
-		signature = signer.sign(h)
+		signature = signer.sign(h);
+		return signature
 	def verify(self, sig, data):
 		h = SHA256.new(data)
 		verifier = DSS.new(self.key, 'fips-186-3')
 		try:
 			verifier.verify(h, sig)
 			return True
-		except ValueError:
+		except:
 			return False
 
 class RSASHA256Signature(Signature):
@@ -68,7 +69,7 @@ class RSASHA256Signature(Signature):
 		try:
 			pss.new(self.key).verify(h, sig)
 			return True
-		except ValueError:
+		except:
 			return False
 
 # https://tools.ietf.org/html/rfc3447#appendix-A
@@ -176,3 +177,78 @@ class RSAPrivateKey():
 		Gets the private exponent
 		"""
 		return self.key.d;
+
+class ECDSAPublicKey():
+	@staticmethod
+	def load_pem(filename):
+		"""
+		Loads the ECDSA private key from PEM file and then parses the key
+		"""
+		buffer = [];
+		b64_contents = "";
+		try:
+			handle = open(filename, "r");
+			raw_contents = handle.readlines();
+			for line in raw_contents:
+				if line.startswith("----"):
+					continue
+				b64_contents += line.strip();
+		except Exception as e:
+			raise Exception("Failed to read PEM file: " + str(e));
+		buffer = b64decode(b64_contents);
+		return ECC.import_key(buffer);
+
+	@staticmethod
+	def load_buffer(buffer):
+		return ECDSAPublicKey(buffer);
+
+	def get_key_info():
+		return self.key
+
+	def get_x(self):
+		return int(self.key.pointQ.x);
+
+	def get_y(self):
+		return int(self.key.pointQ.y);
+
+	
+
+class ECDSAPrivateKey():
+	@staticmethod
+	def load_pem(filename):
+		"""
+		Loads the ECDSA private key from PEM file and then parses the key
+		"""
+		buffer = [];
+		b64_contents = "";
+		try:
+			handle = open(filename, "r");
+			raw_contents = handle.readlines();
+			for line in raw_contents:
+				if line.startswith("----"):
+					continue
+				b64_contents += line.strip();
+		except Exception as e:
+			raise Exception("Failed to read PEM file: " + str(e));
+		buffer = b64decode(b64_contents);
+		return ECDSAPrivateKey(buffer);
+
+	@staticmethod
+	def load_buffer(buffer):
+		return ECDSAPrivateKey(buffer);
+
+	def __init__(self, buffer):
+		self.key = ECC.import_key(buffer)
+
+	def get_key_info():
+		return self.key
+
+	def get_d(self):
+		return int(self.key.d);
+
+	def get_x(self):
+		return int(self.key.pointQ.x);
+
+	def get_y(self):
+		return int(self.key.pointQ.y);
+
