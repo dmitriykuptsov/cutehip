@@ -18,7 +18,7 @@
 """
 Cryptographic modules
 """
-from Crypto.Hash import SHA256
+from Crypto.Hash import SHA256, SHA384, SHA1
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 from Crypto.Signature import pkcs1_15
@@ -50,6 +50,38 @@ class ECDSASHA256Signature(Signature):
 		return signature
 	def verify(self, sig, data):
 		h = SHA256.new(data)
+		verifier = DSS.new(self.key, 'fips-186-3')
+		try:
+			verifier.verify(h, sig)
+			return True
+		except:
+			return False
+
+class ECDSASHA384Signature(Signature):
+	def __init__(self, key):
+		self.key = key;
+	def sign(self, data):
+		h = SHA384.new(data)
+		signer = DSS.new(self.key, 'fips-186-3')
+		return signer.sign(h);
+	def verify(self, sig, data):
+		h = SHA384.new(data)
+		verifier = DSS.new(self.key, 'fips-186-3')
+		try:
+			verifier.verify(h, sig)
+			return True
+		except:
+			return False
+
+class ECDSASHA1Signature(Signature):
+	def __init__(self, key):
+		self.key = key;
+	def sign(self, data):
+		h = SHA1.new(data)
+		signer = DSS.new(self.key, 'fips-186-3')
+		return signer.sign(h);
+	def verify(self, sig, data):
+		h = SHA1.new(data)
 		verifier = DSS.new(self.key, 'fips-186-3')
 		try:
 			verifier.verify(h, sig)

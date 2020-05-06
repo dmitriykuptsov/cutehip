@@ -103,7 +103,11 @@ di = DIFactory.get(config.config["resolver"]["domain_identifier"]["type"],
 logging.debug(di);
 
 logging.info("Loading public key and constructing HIT")
+
+
 pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
+privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+
 rsa_hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
 ipv6_address = HIT.get_hex_formated(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
 own_hit = HIT.get(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
@@ -148,7 +152,7 @@ def hip_loop():
 			continue;
 
 		# Check wether the destination address is our own HIT
-		if not Utils.hits_equal(rhit, own_hit):
+		if not Utils.hits_equal(rhit, own_hit) and not Utils.hits_equal(rhit, [0] * 16):
 			logging.critical("Not our HIT");
 			continue;
 
@@ -189,6 +193,8 @@ def hip_loop():
 			puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = r_hash.LENGTH);
 			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
+			puzzle_param.set_random([0] * r_hash.LENGTH);
+			puzzle_param.set_opaque(0);
 			
 			# HIP DH groups parameter
 			dh_groups_param = HIP.DHGroupListParameter();
