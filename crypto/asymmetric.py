@@ -26,6 +26,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 
 
+
 """
 Base 64 encoding decoding routines
 """
@@ -211,6 +212,10 @@ class RSAPrivateKey():
 		return self.key.d;
 
 class ECDSAPublicKey():
+	
+	NIST_P_256 = 0x1;
+	NIST_P_384 = 0x2;
+
 	@staticmethod
 	def load_pem(filename):
 		"""
@@ -228,11 +233,23 @@ class ECDSAPublicKey():
 		except Exception as e:
 			raise Exception("Failed to read PEM file: " + str(e));
 		buffer = b64decode(b64_contents);
-		return ECC.import_key(buffer);
+		return ECDSAPublicKey(buffer);
+
+	def __init__(self, buffer = None):
+		self.key = ECC.import_key(buffer);
+		if self.key.curve == 'NIST P-256':
+			self.curve_id = self.NIST_P_256;
+		elif self.key.curve == 'NIST P-384':
+			self.curve_id = self.NIST_P_384;
+		else:
+			raise Exception("Unsupported curve");
 
 	@staticmethod
 	def load_buffer(buffer):
 		return ECDSAPublicKey(buffer);
+
+	def get_curve_id(self):
+		return self.curve_id;
 
 	def get_key_info():
 		return self.key
@@ -246,6 +263,93 @@ class ECDSAPublicKey():
 	
 
 class ECDSAPrivateKey():
+	@staticmethod
+	def load_pem(filename):
+		"""
+		Loads the ECDSA private key from PEM file and then parses the key
+		"""
+		buffer = [];
+		b64_contents = "";
+		try:
+			handle = open(filename, "r");
+			raw_contents = handle.readlines();
+			for line in raw_contents:
+				if line.startswith("----"):
+					continue
+				b64_contents += line.strip();
+		except Exception as e:
+			raise Exception("Failed to read PEM file: " + str(e));
+		buffer = b64decode(b64_contents);
+		return ECDSAPrivateKey(buffer);
+
+	@staticmethod
+	def load_buffer(buffer):
+		return ECDSAPrivateKey(buffer);
+
+	def __init__(self, buffer):
+		self.key = ECC.import_key(buffer)
+
+	def get_key_info():
+		return self.key
+
+	def get_d(self):
+		return int(self.key.d);
+
+	def get_x(self):
+		return int(self.key.pointQ.x);
+
+	def get_y(self):
+		return int(self.key.pointQ.y);
+
+class ECDSALowPublicKey():
+	
+	SECP160R1 = 0x1;
+
+	@staticmethod
+	def load_pem(filename):
+		"""
+		Loads the ECDSA private key from PEM file and then parses the key
+		"""
+		buffer = [];
+		b64_contents = "";
+		try:
+			handle = open(filename, "r");
+			raw_contents = handle.readlines();
+			for line in raw_contents:
+				if line.startswith("----"):
+					continue
+				b64_contents += line.strip();
+		except Exception as e:
+			raise Exception("Failed to read PEM file: " + str(e));
+		buffer = b64decode(b64_contents);
+		return ECDSALowPublicKey(buffer);
+
+	def __init__(self, buffer = None):
+		self.key = ECC.import_key(buffer);
+		if self.key.curve == 'SECP160R1':
+			self.curve_id = self.SECP160R1;
+		else:
+			raise Exception("Unsupported curve");
+
+	@staticmethod
+	def load_buffer(buffer):
+		return ECDSAPublicKey(buffer);
+
+	def get_curve_id(self):
+		return self.curve_id;
+
+	def get_key_info():
+		return self.key
+
+	def get_x(self):
+		return int(self.key.pointQ.x);
+
+	def get_y(self):
+		return int(self.key.pointQ.y);
+
+	
+
+class ECDSALowPrivateKey():
 	@staticmethod
 	def load_pem(filename):
 		"""

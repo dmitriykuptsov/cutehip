@@ -18,12 +18,14 @@
 from Crypto.Hash import HMAC, SHA256, SHA224, SHA384, SHA1
 
 class HMACDigest():
+	LENGTH = 0x0;
 	def __init__(self, key):
 		self.key = key;
 	def digest(data):
 		raise Exception("Not implemented");
 
 class SHA256HMAC(HMACDigest):
+	LENGTH = 0x20;
 	def __init__(self, key):
 		self.key = key;
 	def digest(self, data):
@@ -32,6 +34,7 @@ class SHA256HMAC(HMACDigest):
 		return self.hmac.digest();
 
 class SHA224HMAC(HMACDigest):
+	LENGTH = 0x1C;
 	def __init__(self, key):
 		self.key = key;
 	def digest(self, data):
@@ -40,6 +43,7 @@ class SHA224HMAC(HMACDigest):
 		return self.hmac.digest();
 
 class SHA384HMAC(HMACDigest):
+	LENGTH = 0x30;
 	def __init__(self, key):
 		self.key = key;
 	def digest(self, data):
@@ -48,6 +52,7 @@ class SHA384HMAC(HMACDigest):
 		return self.hmac.digest();
 
 class SHA1HMAC(HMACDigest):
+	LENGTH = 0x14;
 	def __init__(self, key):
 		self.key = key;
 	def digest(self, data):
@@ -63,6 +68,7 @@ class Digest():
 		raise Exception("Not implemented");
 	def get_length(self):
 		raise Exception("Not implemented");
+
 
 class SHA256Digest(Digest):
 	LENGTH = 0x20;

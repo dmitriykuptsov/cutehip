@@ -48,7 +48,7 @@ from packets import IPv4
 from config import config
 # HIT
 from utils.hit import HIT
-from utils.hi import RSAHostID
+from utils.hi import RSAHostID, ECDSAHostID
 from utils.di import DIFactory
 # Utilities
 from utils.misc import Utils, Math
@@ -56,7 +56,7 @@ from utils.misc import Utils, Math
 from utils.puzzles import PuzzleSolver
 # Crypto
 from crypto import factory
-from crypto.asymmetric import RSAPublicKey
+from crypto.asymmetric import RSAPublicKey, RSAPrivateKey, ECDSAPublicKey, ECDSAPrivateKey
 # Tun interface
 from network import tun
 # Routing
@@ -105,12 +105,23 @@ logging.debug(di);
 logging.info("Loading public key and constructing HIT")
 
 
-pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
-privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+if config.config["security"]["sig_alg"] == 0x5: # RSA
+	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
+	privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+	hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
+elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
+	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
+	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
+	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
+	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
+	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+else:
+	raise Exception("Unsupported Host ID algorithm")
 
-rsa_hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
-ipv6_address = HIT.get_hex_formated(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
-own_hit = HIT.get(rsa_hi.to_byte_array(), HIT.SHA256_OGA);
+ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA256_OGA);
+own_hit = HIT.get(hi.to_byte_array(), HIT.SHA256_OGA);
 logging.info("Configuring TUN device");
 hip_tun = tun.Tun(address=ipv6_address, mtu=MTU);
 logging.info("Configuring IPv6 routes");

@@ -99,8 +99,77 @@ class RSAHostID(HostID):
 	def get_algorithm(self):
 		return self.HI_RSA;
 
-#from crypto.asymmetric import RSAPublicKey
-#pubkey = RSAPublicKey.load_pem("../config/public.pem");
-#hi_ = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
-#from hit import HIT
-#print(HIT.get_hex_formated(hi_.to_byte_array(), HIT.SHA256_OGA));
+class ECDSAHostID(HostID):
+
+	NIST_P_256_CURVE_ID = 0x1;
+	NIST_P_256_LENGTH = 0x20;
+	NIST_P_384_CURVE_ID = 0x2;
+	NIST_P_384_LENGTH = 0x30;
+
+	def __init__(self, curve_id, x, y):
+		self.x = Math.int_to_bytes(x);
+		self.y = Math.int_to_bytes(y);
+		if curve_id == self.NIST_P_256_CURVE_ID:
+			if self.NIST_P_256_LENGTH - len(self.x) > 0:
+				self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
+				self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+		elif curve_id == self.NIST_P_384_CURVE_ID:
+			if self.NIST_P_384_CURVE_ID - len(self.x) > 0:
+				self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
+				self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+		else:
+			raise Exception("Unsupported curve");
+		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
+		self.buffer = self.curve_id + self.x + self.y;
+
+	def to_byte_array(self):
+		return self.buffer;
+
+	def get_length(self):
+		return len(self.buffer);
+
+	def get_curve_id(self):
+		return self.curve_id[0] << 8 | self.curve_id[1];
+
+	def get_x(self):
+		return self.x;
+
+	def get_y(self):
+		return self.y;
+
+	def get_algorithm(self):
+		return self.HI_ECDSA;
+
+class ECDSALowHostID(HostID):
+	SECP160R1_LENGTH = 0x14;
+	SECP160R1_CURVE_ID = 0x1;
+
+	def __init__(self, curve_id, x, y):
+		self.x = Math.int_to_bytes(x);
+		self.y = Math.int_to_bytes(y);
+		if curve_id == self.SECP160R1_CURVE_ID:
+			if self.SECP160R1_LENGTH - len(self.x) > 0:
+				self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
+				self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+		else:
+			raise Exception("Unsupported curve");
+		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
+		self.buffer = self.curve_id + self.x + self.y;
+
+	def to_byte_array(self):
+		return self.buffer;
+
+	def get_length(self):
+		return len(self.buffer);
+
+	def get_curve_id(self):
+		return self.curve_id[0] << 8 | self.curve_id[1];
+
+	def get_x(self):
+		return self.x;
+
+	def get_y(self):
+		return self.y;
+
+	def get_algorithm(self):
+		return self.HI_ECDSA_LOW;
