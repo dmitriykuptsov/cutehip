@@ -54,14 +54,14 @@ then
 		openssl genrsa -out private.pem 2048
 		openssl rsa -in private.pem -outform PEM -pubout -out public.pem
 		#openssl rsa -text -in private.pem
-		mv public.pem private.pem ../config/
+		mv public.pem private.pem ./config/
 	fi
 
 	if [ "$algo" = "ECDSA" ]
 	then
 		openssl ecparam -name $curve -genkey -noout -out private.pem
 		openssl ec -in private.pem -pubout -out public.pem
-		mv public.pem private.pem ../config/
+		mv public.pem private.pem ./config/
 	fi
 fi
 
