@@ -11,8 +11,7 @@ config = {
 		# If signature algorithm is ECDSA, 
 		# then HASH algorithm should be SHA-384,
 		# HASH algorithm is the one that is used
-		# to compute the HMAC, as well as HIT construction
-		# 
+		# to compute the HMAC, as well as to construct HIT
 		"puzzle_difficulty": 0x10,                             # 16 bits
 		"puzzle_lifetime_exponent": 37,                        # 32 seconds
 		"diffie_hellamn_group": 0x8,                           # ECDH NIST 384 group
@@ -30,8 +29,9 @@ config = {
 			"value": "dmitriy.kuptsov@strangebit.com"          # NAI value
 		}
 	},
-	"protocol": {
+	"general": {
 		"i1_timer_s": 5,
 		"i1_retries": 3 
 	}
 }
+

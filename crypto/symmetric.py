@@ -26,6 +26,7 @@ class SymmetricCrypto():
 
 	def unpad(self, ciphertext):
 		return ciphertext[:-ord(ciphertext[len(ciphertext) - 1])];	
+		
 	def encrypt(self, key, iv, data):
 		pass
 	def decrypt(self, key, iv, data):
