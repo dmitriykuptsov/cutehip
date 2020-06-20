@@ -33,9 +33,9 @@ class SymmetricCrypto():
 		pass
 
 class NullCipher(SymmetricCrypto):
-	def encrypt(self, key = None, iv = None, data):
+	def encrypt(self, key = None, iv = None, data = None):
 		return data;
-	def decrtypt(self, key = None, iv = None, data):
+	def decrtypt(self, key = None, iv = None, data = None):
 		return data;
 
 class AESCipher(SymmetricCrypto):
