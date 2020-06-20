@@ -25,8 +25,6 @@ from Crypto.Signature import pkcs1_15
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 
-
-
 """
 Base 64 encoding decoding routines
 """
@@ -180,7 +178,7 @@ class RSAPrivateKey():
 		return RSAPrivateKey(buffer);
 
 	@staticmethod
-	def load_from_params(p, q, e, m):
+	def load_from_params(p, q, e, n):
 		pass
 
 	def __init__(self, buffer):
