@@ -399,13 +399,13 @@ def hip_loop():
 					logging.debug("DI value: %s " % parameter.get_domain_id());
 					logging.debug("Host ID");
 					hi_param = parameter;
-					responder_hi = hi_param.get_host_id();
+					responder_hi = RSAHostID(buffer = hi_param.get_host_id());
 					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
 						logging.critical("Invalid signature algorithm");
 						continue;
 					responders_public_key = RSAPublicKey.load_from_params(
-						responder_hi.get_exponent(), 
-						responder_hi.get_modulus());
+						Math.bytes_to_int(responder_hi.get_exponent()), 
+						Math.bytes_to_int(responder_hi.get_modulus()));
 				if isinstance(parameter, HIP.HITSuitListParameter):
 					logging.debug("HIT suit list");
 					hit_suit_param = parameter;
@@ -453,7 +453,7 @@ def hip_loop():
 			original_length = hip_r1_packet.get_length();
 			packet_length = original_length * 8 + len(buf);
 			hip_r1_packet.set_length(int(packet_length / 8));
-			buf = hip_r1_packet.get_buffer() + buf;
+			buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
 			signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 			if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 				logging.critical("Invalid signature in R1 packet. Dropping the packet");

@@ -126,20 +126,24 @@ class RSAPublicKey():
 
 	@staticmethod
 	def load_buffer(buffer):
-		return RSAPublicKey(buffer);
+		return RSAPublicKey(buffer = buffer);
 
 	@staticmethod
 	def load_from_params(e, n):
 		"""
 		Construct public key from the components
 		"""
-		self.key = RSA.construct((n, e));
+		return RSAPublicKey(key = RSA.construct((n, e)));
 
-	def __init__(self, buffer):
+	def __init__(self, buffer = None, key = None):
 		"""
 		Initializes the buffer
 		"""
-		self.key = RSA.importKey(buffer)
+		if not key:
+			self.key = RSA.importKey(buffer)
+		else:
+			self.key = key;
+
 	def get_key_info(self):
 		"""
 		Returns the RSA public key
@@ -178,17 +182,20 @@ class RSAPrivateKey():
 
 	@staticmethod
 	def load_buffer(buffer):
-		return RSAPrivateKey(buffer);
+		return RSAPrivateKey(buffer = buffer);
 
 	@staticmethod
 	def load_from_params(p, q, d, e, n):
 		"""
 		Construct private key from the components
 		"""
-		self.key = RSA.construct((n, e, d, p, q));
+		return RSAPrivateKey(key = RSA.construct((n, e, d, p, q)));
 
-	def __init__(self, buffer):
-		self.key=RSA.importKey(buffer)
+	def __init__(self, buffer = None, key = None):
+		if not key:
+			self.key = RSA.importKey(buffer)
+		else:
+			self.key = key;
 	def get_key_info(self):
 		"""
 		Returns the RSA private key

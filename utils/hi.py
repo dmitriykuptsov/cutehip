@@ -50,7 +50,10 @@ class HostID():
 
 # https://tools.ietf.org/html/rfc3110#section-2
 class RSAHostID(HostID):
-	def __init__(self, exponent, modulus):
+	def __init__(self, exponent = None, modulus = None, buffer = None):
+		if buffer:
+			self.buffer = buffer;
+			return;
 		exponent_bytes = Math.int_to_bytes(exponent);
 		modulus_bytes = Math.int_to_bytes(modulus);
 		exponent_length = len(exponent_bytes);
@@ -69,6 +72,10 @@ class RSAHostID(HostID):
 		self.buffer[offset:offset + len(exponent_bytes)] = exponent_bytes;
 		offset += len(exponent_bytes);
 		self.buffer[offset:offset + len(modulus_bytes)] = modulus_bytes;
+
+	@staticmethod
+	def from_by_array(buffer):
+		raise Exception("Buffer cannot be null");
 
 	def to_byte_array(self):
 		return self.buffer;
