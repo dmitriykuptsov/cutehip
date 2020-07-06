@@ -3,7 +3,7 @@
 
 In this section we will describe basic background. First, we will
 discuss the problem of mobile Internet and introduce the Host Identity
-Protocol. We then move to a discussion of other layer 3 security protocols.
+Protocol. We then move to the discussion of other layer 3 security protocols.
 We will conclude the section with the discussion of Elliptic Curves and
 a variant of Diffie-Hellman algorithm, which uses EC cryptographgy (ECC).
 
@@ -35,7 +35,13 @@ remote command-line, login, and command execution. But in fact,
 any network service can be secured with SSH. Moreover, SSH provides
 means for creating VPN tunnels between the spatially separated networks.
 
-{\bf IPSec}
+{\bf IPSec} runs directly on top of the IP protocol and offers two 
+various services: (i) it provides the so called Authentication Header (AH),
+which is used only for authentication, i.e., it uses various HMAC algorithms, and 
+(ii) it provides Encapsulated Security Payload (ESP), which is an authentication 
+plus payload encryption mechanism. To establish the security association (negotiate
+secret keys and algorithms) one can use IKE or IKEv2, ISAKMP (popular on Windows) or
+use preshared keys and set of negotiated algorithms.
 
 {\bf Internet Key Exchange protocol (IKE)}
 
