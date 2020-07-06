@@ -306,7 +306,7 @@ def hip_loop():
 			signature_alg = RSASHA256Signature(privkey.get_key_info());
 			signature = signature_alg.sign(bytearray(buf));
 
-			signature_param = Signature2Parameter();
+			signature_param = HIP.Signature2Parameter();
 			signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 			signature_param.set_signature(signature);
 
