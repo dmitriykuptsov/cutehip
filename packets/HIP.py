@@ -143,8 +143,7 @@ class PuzzleParameter(HIPParameter):
 	def get_opaque(self):
 		return (self.buffer[HIP_PUZZLE_OPAQUE_OFFSET] << 8) | self.buffer[HIP_PUZZLE_OPAQUE_OFFSET + 1];
 	def set_opaque(self, opaque):
-		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET] = (opaque << 8) & 0xFF;
-		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET + 1] = (opaque) & 0xFF;
+		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 1] = opaque;
 	def get_random(self):
 		return (self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:
 				HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH]);
@@ -530,6 +529,15 @@ class SignatureParameter(HIPParameter):
 				);
 			self.set_type(HIP_SIG_TYPE);
 			self.set_length(0);
+
+	def set_signature_algorithm(self, alg):
+		self.buffer[HIP_SIG_ALG_TYPE_OFFSET] = (alg >> 0x8) & 0xFF;
+		self.buffer[HIP_SIG_ALG_TYPE_OFFSET + 1] = (alg & 0xFF);
+
+	def get_signature_algorithn(self):
+		return (self.buffer[HIP_SIG_ALG_TYPE_OFFSET] << 0x8) + \
+			self.buffer[HIP_SIG_ALG_TYPE_OFFSET + 1] & 0xFF;
+
 	def get_signature(self):
 		length = self.get_length();
 		return self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length];
@@ -557,9 +565,19 @@ class Signature2Parameter(HIPParameter):
 				);
 			self.set_type(HIP_SIG_2_TYPE);
 			self.set_length(0);
+
+	def set_signature_algorithm(self, alg):
+		self.buffer[HIP_SIG_ALG_TYPE_OFFSET] = (alg >> 0x8) & 0xFF;
+		self.buffer[HIP_SIG_ALG_TYPE_OFFSET + 1] = (alg & 0xFF);
+
+	def get_signature_algorithn(self):
+		return (self.buffer[HIP_SIG_ALG_TYPE_OFFSET] << 0x8) +  \
+			self.buffer[HIP_SIG_ALG_TYPE_OFFSET + 1] & 0xFF;
+	
 	def get_signature(self):
 		length = self.get_length();
 		return self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length];
+	
 	def set_signature(self, sig):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);
 		length = len(sig);

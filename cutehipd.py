@@ -104,6 +104,9 @@ logging.debug(di);
 
 logging.info("Loading public key and constructing HIT")
 
+pubkey = None;
+privkey = None;
+hi = None;
 
 if config.config["security"]["sig_alg"] == 0x5: # RSA
 	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
@@ -193,7 +196,7 @@ def hip_loop():
 			# Construct R1 packet
 			hip_r1_packet = HIP.R1Packet();
 			hip_r1_packet.set_senders_hit(rhit);
-			hip_r1_packet.set_receivers_hit(shit);
+			#hip_r1_packet.set_receivers_hit(shit);
 			hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 			hip_r1_packet.set_version(HIP.HIP_VERSION);
 
@@ -264,10 +267,53 @@ def hip_loop():
 			#
 
 			# Compute signature here
+			"""
+    		 0                   1                   2                   3
+    		 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			| Next Header   | Header Length |0| Packet Type |Version| RES.|1|
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			|          Checksum             |           Controls            |
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			|                Sender's Host Identity Tag (HIT)               |
+   			|                                                               |
+   			|                                                               |
+   			|                                                               |
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			|               Receiver's Host Identity Tag (HIT)              |
+   			|                                                               |
+   			|                                                               |
+   			|                                                               |
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			|                                                               |
+   			/                        HIP Parameters                         /
+   			/                                                               /
+   			|                                                               |
+   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   			"""
+
+			buf = puzzle_param.get_byte_buffer() + \
+					dh_param.get_byte_buffer() + \
+					cipher_param.get_byte_buffer() + \
+					hi_param.get_byte_buffer() + \
+					hit_suit_param.get_byte_buffer() + \
+					dh_groups_param.get_byte_buffer() + \
+					transport_param.get_byte_buffer();
+			original_length = hip_r1_packet.get_length();
+			packet_length = original_length * 8 + len(buf);
+			hip_r1_packet.set_length(packet_length);
+			buf = hip_r1_packet.get_buffer() + buf;
+			signature_alg = RSASHA256Signature(privkey);
+			signature = signature_alg.sign(buf);
+
+			signature_param = Signature2Parameter();
+			signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+			signature_param.set_signature(signature);
 
 			# Add parameters to R1 packet (order is important)
 			# List of mandatory parameters in R1 packet...
 			puzzle_param.set_random(irandom);
+			puzzle_param.set_opaque(Utils.random(2));
 			hip_r1_packet.add_parameter(puzzle_param);
 			hip_r1_packet.add_parameter(dh_param);
 			hip_r1_packet.add_parameter(cipher_param);
@@ -275,12 +321,15 @@ def hip_loop():
 			hip_r1_packet.add_parameter(hit_suit_param);
 			hip_r1_packet.add_parameter(dh_groups_param);
 			hip_r1_packet.add_parameter(transport_param);
-			#hip_r1_packet.add_parameter(signature_param);
+			hip_r1_packet.add_parameter(signature_param);
 
 			# Swap the addresses
 			temp = src;
 			src = dst;
 			dst = temp;
+
+			# Set receiver's HIT
+			hip_r1_packet.set_receivers_hit(shit);
 
 			# Create IPv4 packet
 			ipv4_packet = IPv4.IPv4Packet();
@@ -308,30 +357,108 @@ def hip_loop():
 				(dst_str, 0));
 		elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
 			logging.info("R1 packet");
+			puzzle_param    = None;
+			irandom         = None;
+			opaque          = None;
+			dh_param        = None;
+			cipher_param    = None;
+			hi_param        = None;
+			hit_suit_param  = None;
+			dh_groups_param = None;
+			transport_param = None;
+			signature_param = None;
+			public_key      = None;
 			parameters = hip_packet.get_parameters();
+			
+			hip_r1_packet = HIP.R1Packet();
+			hip_r1_packet.set_senders_hit(hip_packet.get_senders_hit());
+			#hip_r1_packet.set_receivers_hit(shit);
+			hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+			hip_r1_packet.set_version(HIP.HIP_VERSION);
+
 			for parameter in parameters:
 				if isinstance(parameter, HIP.DHGroupListParameter):
 					logging.debug("DH groups parameter");
+					dh_groups_param = parameter;
 				if isinstance(parameter, HIP.R1CounterParameter):
 					logging.debug("R1 counter");
 				if isinstance(parameter, HIP.PuzzleParameter):
 					logging.debug("Puzzle parameter");
-					#PuzzleSolver.
-				if isinstance(parameter, HIP.DHParameter):
+					puzzle_param = parameter;
+					irandom = puzzle_param.get_random();
+					opaque = puzzle_param.get_opaque();
+					r_hash = HIT.get_responders_hash_algorithm(rhit);
+					# Prepare puzzle
+					irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
+					puzzle_param.set_random()
+				if isinstance(parameter, HIP.DHParameter):					
 					logging.debug("DH parameter");
+					dh_param = parameter;
 				if isinstance(parameter, HIP.HostIdParameter):
 					logging.debug("DI type: %d " % parameter.get_di_type());
 					logging.debug("DI value: %s " % parameter.get_domain_id());
 					logging.debug("Host ID");
+					hi_param = parameter;
+					responder_hi = hi_param.get_host_id();
+					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+						logging.critical("Invalid signature algorithm");
+						continue;
+					responders_public_key = RSAPublicKey.load_from_params(
+						responder_hi.get_exponent(), 
+						responder_hi.get_modulus());
 				if isinstance(parameter, HIP.HITSuitListParameter):
 					logging.debug("HIT suit list");
+					hit_suit_param = parameter;
 				if isinstance(parameter, HIP.TransportListParameter):
 					logging.debug("Transport parameter");
 					logging.debug(parameter.get_transport_formats());
+					transport_param = parameter;
 				if isinstance(parameter, HIP.Signature2Parameter):
 					logging.debug("Signature parameter");
+					signature_param = parameter;
 				if isinstance(parameter, HIP.CipherParameter):
 					logging.debug("Ciphers");
+					cipher_param = parameter;
+			if not puzzle_param:
+				logging.critical("Missing puzzle parameter");
+				continue;
+			if not dh_param:
+				logging.critical("Missing DH parameter");
+				continue;
+			if not cipher_param:
+				logging.critical("Missing cipher parameter");
+				continue;
+			if not hi_param:
+				logging.critical("Missing HI parameter");
+				continue;
+			if not hit_suit_param:
+				logging.critical("Missing HIT suit parameter");
+				continue;
+			if not dh_groups_param:
+				logging.critical("Missing DH groups parameter");
+				continue;
+			if not transport_param:
+				logging.critical("Missing transport parameter");
+				continue;
+			if not signature_param:
+				logging.critical("Missing signature parameter");
+				continue;
+			buf = puzzle_param.get_byte_buffer() + \
+					dh_param.get_byte_buffer() + \
+					cipher_param.get_byte_buffer() + \
+					hi_param.get_byte_buffer() + \
+					hit_suit_param.get_byte_buffer() + \
+					dh_groups_param.get_byte_buffer() + \
+					transport_param.get_byte_buffer();
+			original_length = hip_r1_packet.get_length();
+			packet_length = original_length * 8 + len(buf);
+			hip_r1_packet.set_length(packet_length);
+			buf = hip_r1_packet.get_buffer() + buf;
+			signature_alg = RSASHA256Signature(responders_public_key);
+			if not signature_alg.verify(signature_param.get_signature(), buf):
+				logging.critical("Invalid signature in R1 packet. Dropping the packet");
+				continue;
+
 		elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 			logging.info("I2 packet");
 		elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:

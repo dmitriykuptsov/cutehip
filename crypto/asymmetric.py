@@ -130,7 +130,10 @@ class RSAPublicKey():
 
 	@staticmethod
 	def load_from_params(e, n):
-		pass
+		"""
+		Construct public key from the components
+		"""
+		self.key = RSA.construct((n, e));
 
 	def __init__(self, buffer):
 		"""
@@ -178,8 +181,11 @@ class RSAPrivateKey():
 		return RSAPrivateKey(buffer);
 
 	@staticmethod
-	def load_from_params(p, q, e, n):
-		pass
+	def load_from_params(p, q, d, e, n):
+		"""
+		Construct private key from the components
+		"""
+		self.key = RSA.construct((n, e, d, p, q));
 
 	def __init__(self, buffer):
 		self.key=RSA.importKey(buffer)

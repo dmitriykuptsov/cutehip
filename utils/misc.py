@@ -18,6 +18,7 @@
 from math import log, ceil, floor
 from binascii import hexlify
 import logging
+from os import urandom
 
 class ECPoint():
 	def __init__(self, x, y):
@@ -265,4 +266,8 @@ class Utils():
 		while (s >> 16):
 			s = (s & 0xFFFF) + (s >> 16);
 		return ~s & 0xFFFF;
+
+	@staticmethod
+	def generate_random(length):
+		return urandom(length);
 

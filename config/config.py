@@ -6,8 +6,8 @@ config = {
 	"security": {
 		"public_key": "./config/public.pem",                   # ECDSA/RSA public key
 		"private_key": "./config/private.pem",                 # ECDSA/RSA private key
-		"sig_alg": 0x7,                                        # RSA 5, ECDSA 7, ECDSA LOW 9, DSA 3
-		"hash_alg": 0x2,                                       # SHA-256 0x1, SHA-384 0x2, SHA-1 0x3
+		"sig_alg": 0x5,                                        # RSA 5, ECDSA 7, ECDSA LOW 9, DSA 3
+		"hash_alg": 0x1,                                       # SHA-256 0x1, SHA-384 0x2, SHA-1 0x3
 		# If signature algorithm is ECDSA,
 		# then HASH algorithm should be SHA-384,
 		# HASH algorithm is the one that is used
