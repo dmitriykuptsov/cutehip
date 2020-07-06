@@ -32,6 +32,11 @@ class SymmetricCrypto():
 	def decrypt(self, key, iv, data):
 		pass
 
+class NullCipher(SymmetricCrypto):
+	def encrypt(self, key = None, iv = None, data = None):
+		return data;
+	def decrtypt(self, key = None, iv = None, data = None):
+		return data;
 
 class AESCipher(SymmetricCrypto):
 

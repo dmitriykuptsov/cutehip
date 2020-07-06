@@ -109,14 +109,14 @@ if config.config["security"]["sig_alg"] == 0x5: # RSA
 	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
-elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
-	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
-	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
-	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
-elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
-	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
-	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
-	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+#elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
+#	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
+#	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+#	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+#elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
+#	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
+#	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
+#	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 else:
 	raise Exception("Unsupported Host ID algorithm")
 
