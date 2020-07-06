@@ -208,7 +208,7 @@ def hip_loop():
 			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
 			puzzle_param.set_random([0] * r_hash.LENGTH);
-			puzzle_param.set_opaque([0, 0]);
+			#puzzle_param.set_opaque([0, 0]);
 			
 			# HIP DH groups parameter
 			dh_groups_param = HIP.DHGroupListParameter();
@@ -306,14 +306,14 @@ def hip_loop():
 			signature_alg = RSASHA256Signature(privkey.get_key_info());
 			signature = signature_alg.sign(bytearray(buf));
 
-			signature_param = HIP.Signature2Parameter();
 			signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 			signature_param.set_signature(signature);
 
 			# Add parameters to R1 packet (order is important)
+			hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 			# List of mandatory parameters in R1 packet...
 			puzzle_param.set_random(irandom);
-			puzzle_param.set_opaque(Utils.generate_random(2));
+			#puzzle_param.set_opaque(Utils.generate_random(2));
 			hip_r1_packet.add_parameter(puzzle_param);
 			hip_r1_packet.add_parameter(dh_param);
 			hip_r1_packet.add_parameter(cipher_param);
@@ -390,7 +390,7 @@ def hip_loop():
 					r_hash = HIT.get_responders_hash_algorithm(rhit);
 					# Prepare puzzle
 					irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-					puzzle_param.set_random()
+					#puzzle_param.set_random(irandom)
 				if isinstance(parameter, HIP.DHParameter):					
 					logging.debug("DH parameter");
 					dh_param = parameter;

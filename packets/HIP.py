@@ -37,6 +37,8 @@ HIP_VERSION                      = 0x2;
 HIP_HEADER_LENGTH                = 0x28;
 HIP_TLV_LENGTH                   = 0x4;
 
+HIP_DEFAULT_PACKET_LENGTH        = 0x4;
+
 class HIPParameter():
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
