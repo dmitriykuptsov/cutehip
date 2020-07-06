@@ -249,7 +249,7 @@ def hip_loop():
 
 			# HIP host ID parameter
 			hi_param = HIP.HostIdParameter();
-			hi_param.set_host_id(rsa_hi);
+			hi_param.set_host_id(hi);
 			# It is important to set domain ID after host ID was set
 			logging.debug(di);
 			hi_param.set_domain_id(di);
