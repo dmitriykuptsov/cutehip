@@ -208,7 +208,7 @@ def hip_loop():
 			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
 			puzzle_param.set_random([0] * r_hash.LENGTH);
-			puzzle_param.set_opaque(0);
+			puzzle_param.set_opaque([0, 0]);
 			
 			# HIP DH groups parameter
 			dh_groups_param = HIP.DHGroupListParameter();
