@@ -301,7 +301,7 @@ def hip_loop():
 					transport_param.get_byte_buffer();
 			original_length = hip_r1_packet.get_length();
 			packet_length = original_length * 8 + len(buf);
-			hip_r1_packet.set_length(packet_length);
+			hip_r1_packet.set_length(packet_length / 8);
 			buf = hip_r1_packet.get_buffer() + buf;
 			signature_alg = RSASHA256Signature(privkey);
 			signature = signature_alg.sign(bytearray(buf));
@@ -452,7 +452,7 @@ def hip_loop():
 					transport_param.get_byte_buffer();
 			original_length = hip_r1_packet.get_length();
 			packet_length = original_length * 8 + len(buf);
-			hip_r1_packet.set_length(packet_length);
+			hip_r1_packet.set_length(packet_length / 8);
 			buf = hip_r1_packet.get_buffer() + buf;
 			signature_alg = RSASHA256Signature(responders_public_key);
 			if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
