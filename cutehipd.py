@@ -304,7 +304,7 @@ def hip_loop():
 			hip_r1_packet.set_length(packet_length);
 			buf = hip_r1_packet.get_buffer() + buf;
 			signature_alg = RSASHA256Signature(privkey);
-			signature = signature_alg.sign(buf);
+			signature = signature_alg.sign(bytearray(buf));
 
 			signature_param = Signature2Parameter();
 			signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
@@ -455,7 +455,7 @@ def hip_loop():
 			hip_r1_packet.set_length(packet_length);
 			buf = hip_r1_packet.get_buffer() + buf;
 			signature_alg = RSASHA256Signature(responders_public_key);
-			if not signature_alg.verify(signature_param.get_signature(), buf):
+			if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 				logging.critical("Invalid signature in R1 packet. Dropping the packet");
 				continue;
 
