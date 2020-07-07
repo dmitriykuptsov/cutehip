@@ -267,31 +267,6 @@ def hip_loop():
 			#
 
 			# Compute signature here
-			"""
-    		 0                   1                   2                   3
-    		 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			| Next Header   | Header Length |0| Packet Type |Version| RES.|1|
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			|          Checksum             |           Controls            |
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			|                Sender's Host Identity Tag (HIT)               |
-   			|                                                               |
-   			|                                                               |
-   			|                                                               |
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			|               Receiver's Host Identity Tag (HIT)              |
-   			|                                                               |
-   			|                                                               |
-   			|                                                               |
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			|                                                               |
-   			/                        HIP Parameters                         /
-   			/                                                               /
-   			|                                                               |
-   			+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   			"""
-
 			buf = puzzle_param.get_byte_buffer() + \
 					dh_param.get_byte_buffer() + \
 					cipher_param.get_byte_buffer() + \
@@ -313,7 +288,7 @@ def hip_loop():
 			hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 			# List of mandatory parameters in R1 packet...
 			puzzle_param.set_random(irandom);
-			#puzzle_param.set_opaque(Utils.generate_random(2));
+			# puzzle_param.set_opaque(Utils.generate_random(2));
 			hip_r1_packet.add_parameter(puzzle_param);
 			hip_r1_packet.add_parameter(dh_param);
 			hip_r1_packet.add_parameter(cipher_param);
@@ -391,7 +366,7 @@ def hip_loop():
 					# Prepare puzzle
 					irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
 					#puzzle_param.set_random(irandom)
-				if isinstance(parameter, HIP.DHParameter):					
+				if isinstance(parameter, HIP.DHParameter):	
 					logging.debug("DH parameter");
 					dh_param = parameter;
 				if isinstance(parameter, HIP.HostIdParameter):
@@ -399,13 +374,13 @@ def hip_loop():
 					logging.debug("DI value: %s " % parameter.get_domain_id());
 					logging.debug("Host ID");
 					hi_param = parameter;
-					responder_hi = RSAHostID(buffer = hi_param.get_host_id());
+					responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
 					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
 						logging.critical("Invalid signature algorithm");
 						continue;
 					responders_public_key = RSAPublicKey.load_from_params(
-						Math.bytes_to_int(responder_hi.get_exponent()), 
-						Math.bytes_to_int(responder_hi.get_modulus()));
+						responder_hi.get_exponent(), 
+						responder_hi.get_modulus());
 				if isinstance(parameter, HIP.HITSuitListParameter):
 					logging.debug("HIT suit list");
 					hit_suit_param = parameter;

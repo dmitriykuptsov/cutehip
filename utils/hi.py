@@ -50,10 +50,7 @@ class HostID():
 
 # https://tools.ietf.org/html/rfc3110#section-2
 class RSAHostID(HostID):
-	def __init__(self, exponent = None, modulus = None, buffer = None):
-		if buffer:
-			self.buffer = buffer;
-			return;
+	def __init__(self, exponent = None, modulus = None):
 		exponent_bytes = Math.int_to_bytes(exponent);
 		modulus_bytes = Math.int_to_bytes(modulus);
 		exponent_length = len(exponent_bytes);
@@ -75,7 +72,17 @@ class RSAHostID(HostID):
 
 	@staticmethod
 	def from_by_array(buffer):
-		raise Exception("Buffer cannot be null");
+		offset = 0;
+		if buffer[offset] == 0x0:
+			exponent_length = (buffer[offset + 1] << 8) | buffer[offset + 2];
+			offset = 0x3;			
+		else:
+			exponent_length = buffer[offset];
+			offset = 0x1;
+		exponent_bytes = buffer[offset:exponent_length];
+		offset += exponent_length;
+		modulus = buffer[offset:];
+		return RSAHostID(exponent, modulus);
 
 	def to_byte_array(self):
 		return self.buffer;
@@ -91,7 +98,7 @@ class RSAHostID(HostID):
 			offset = 0x3;
 		else:
 			exponent_length = self.buffer[0];
-		return self.buffer[offset:offset + exponent_length];
+		return Math.bytes_to_int(self.buffer[offset:offset + exponent_length]);
 
 	def get_modulus(self):
 		offset = 0x1;
@@ -101,7 +108,7 @@ class RSAHostID(HostID):
 			offset = 0x3;
 		else:
 			exponent_length = self.buffer[0];
-		return self.buffer[offset + exponent_length:];
+		return Math.bytes_to_int(self.buffer[offset + exponent_length:]);
 
 	def get_algorithm(self):
 		return self.HI_RSA;
@@ -128,6 +135,20 @@ class ECDSAHostID(HostID):
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
 		self.buffer = self.curve_id + self.x + self.y;
+
+	CURVE_ID_LENGTH = 0x2;
+	@staticmethod
+	def from_byte_buffer(buffer):
+		curve_id = (buffer[0] << 8) | buffer[1];
+		if curve_id == ECDSAHostID.NIST_P_256_CURVE_ID:
+			x = buffer[CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH];
+			y = buffer[CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH:];
+		elif curve_id == ECDSAHostID.NIST_P_384_CURVE_ID:
+			x = buffer[CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID];
+			y = buffer[CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID:];
+		else:
+			raise Exception("Unsupported curve");
+		return ECDSAHostID(curve_id, Math.bytes_to_int(x), Math.bytes_to_int(y));
 
 	def to_byte_array(self):
 		return self.buffer;
@@ -162,6 +183,20 @@ class ECDSALowHostID(HostID):
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
 		self.buffer = self.curve_id + self.x + self.y;
+
+	CURVE_ID_LENGTH = 0x2;
+	@staticmethod
+	def from_byte_buffer(buffer):
+		curve_id = (buffer[0] << 8) | buffer[1];
+		if curve_id == ECDSALowHostID.NIST_P_256_CURVE_ID:
+			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_256_LENGTH];
+			y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_256_LENGTH:];
+		elif curve_id == ECDSALowHostID.NIST_P_384_CURVE_ID:
+			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_384_CURVE_ID];
+			y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_384_CURVE_ID:];
+		else:
+			raise Exception("Unsupported curve");
+		return ECDSALowHostID(curve_id, Math.bytes_to_int(x), Math.bytes_to_int(y));
 
 	def to_byte_array(self):
 		return self.buffer;
