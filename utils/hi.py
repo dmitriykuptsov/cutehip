@@ -32,6 +32,9 @@ Base 64 encoding decoding routines
 from base64 import b64decode
 from base64 import b64encode
 
+# Logging
+import logging
+
 class HostID():
 
 	HI_DSA = 0x3;
@@ -71,18 +74,18 @@ class RSAHostID(HostID):
 		self.buffer[offset:offset + len(modulus_bytes)] = modulus_bytes;
 
 	@staticmethod
-	def from_by_array(buffer):
+	def from_byte_buffer(buffer):
 		offset = 0;
 		if buffer[offset] == 0x0:
 			exponent_length = (buffer[offset + 1] << 8) | buffer[offset + 2];
-			offset = 0x3;			
+			offset = 0x3;
 		else:
 			exponent_length = buffer[offset];
 			offset = 0x1;
-		exponent_bytes = buffer[offset:exponent_length];
+		exponent = buffer[offset:offset + exponent_length];
 		offset += exponent_length;
 		modulus = buffer[offset:];
-		return RSAHostID(exponent, modulus);
+		return RSAHostID(Math.bytes_to_int(exponent), Math.bytes_to_int(modulus));
 
 	def to_byte_array(self):
 		return self.buffer;
