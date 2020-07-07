@@ -578,7 +578,7 @@ class Signature2Parameter(HIPParameter):
 	
 	def get_signature(self):
 		length = self.get_length();
-		return self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length];
+		return self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length - HIP_SIG_ALG_TYPE_LENGTH];
 	
 	def set_signature(self, sig):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);

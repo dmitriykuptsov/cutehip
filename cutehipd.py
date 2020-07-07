@@ -283,8 +283,6 @@ def hip_loop():
 
 				logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
-				print(signature)
-				logging.debug(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);
 
@@ -437,12 +435,12 @@ def hip_loop():
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
-				logging.debug(buf);
-				print(signature_param.get_signature());
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
-
+				jrandom = PuzzleSolver.solve_puzzle(irandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash)
+				if PuzzleSolver.verify_puzzle(irandom, jrandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash):
+					logging.debug("Puzzle was solved and verified....");
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
