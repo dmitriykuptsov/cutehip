@@ -145,7 +145,7 @@ class PuzzleParameter(HIPParameter):
 	def get_opaque(self):
 		return (self.buffer[HIP_PUZZLE_OPAQUE_OFFSET] << 8) | self.buffer[HIP_PUZZLE_OPAQUE_OFFSET + 1];
 	def set_opaque(self, opaque):
-		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 1] = opaque;
+		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 2] = opaque;
 	def get_random(self):
 		return (self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:
 				HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH]);
