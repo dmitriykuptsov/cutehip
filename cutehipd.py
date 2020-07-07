@@ -138,314 +138,318 @@ def hip_loop():
 	logging.info("Starting the HIP loop");
 
 	while True:
-		buf = bytearray(hip_socket.recv(MTU));
-		ipv4_packet = IPv4.IPv4Packet(buf);
+		try:
+			buf = bytearray(hip_socket.recv(MTU));
+			ipv4_packet = IPv4.IPv4Packet(buf);
 
-		src = ipv4_packet.get_source_address();
-		dst = ipv4_packet.get_destination_address();
+			src = ipv4_packet.get_source_address();
+			dst = ipv4_packet.get_destination_address();
 
-		if ipv4_packet.get_protocol() != HIP.HIP_PROTOCOL:
-			logging.debug("Invalid protocol type");
-			continue;
-
-		if len(ipv4_packet.get_payload()) % 8:
-			logging.debug("Invalid length of the payload. Must be multiple of 8 bytes");
-			continue;
-
-		hip_packet = HIP.HIPPacket(ipv4_packet.get_payload());
-
-		shit = hip_packet.get_senders_hit();
-		rhit = hip_packet.get_receivers_hit();
-
-		logging.info("Got HIP packet");
-		logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
-		logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
-
-		if hip_packet.get_version() != HIP.HIP_VERSION:
-			logging.critical("Only HIP version 2 is supported");
-			continue;
-
-		# Check wether the destination address is our own HIT
-		if not Utils.hits_equal(rhit, own_hit) and not Utils.hits_equal(rhit, [0] * 16):
-			logging.critical("Not our HIT");
-			continue;
-
-		# https://tools.ietf.org/html/rfc7401#section-5
-		original_checksum = hip_packet.get_checksum();
-		hip_packet.set_checksum(0x0);
-		# Verify checksum
-		checksum = misc.Utils.hip_ipv4_checksum(
-			src, 
-			dst, 
-			HIP.HIP_PROTOCOL, 
-			hip_packet.get_length() * 8 + 8, 
-			hip_packet.get_buffer());
-		
-		if original_checksum != checksum:
-			logging.critical("Invalid checksum");
-			continue;
-
-		if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
-			logging.info("I1 packet");
-			
-			# Check the state of the HIP protocol
-			# R1 packet should be constructed only 
-			# if the state is not associated
-			# Need to check with the RFC
-
-			# Construct R1 packet
-			hip_r1_packet = HIP.R1Packet();
-			hip_r1_packet.set_senders_hit(rhit);
-			#hip_r1_packet.set_receivers_hit(shit);
-			hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
-			hip_r1_packet.set_version(HIP.HIP_VERSION);
-
-			r_hash = HIT.get_responders_hash_algorithm(rhit);
-
-			# Prepare puzzle
-			irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-			puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = r_hash.LENGTH);
-			puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
-			puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
-			puzzle_param.set_random([0] * r_hash.LENGTH);
-			#puzzle_param.set_opaque([0, 0]);
-			
-			# HIP DH groups parameter
-			dh_groups_param = HIP.DHGroupListParameter();
-			# Prepare Diffie-Hellman parameters
-			dh_groups_param_initiator = None;
-			parameters = hip_packet.get_parameters();
-			for parameter in parameters:
-				if isinstance(parameter, HIP.DHGroupListParameter):
-					dh_groups_param_initiator = parameter;
-			if not dh_groups_param_initiator:
-				# Drop HIP BEX?
-				logging.debug("No DH groups parameter found");
-				continue;
-			offered_dh_groups = dh_groups_param_initiator.get_groups();
-			supported_dh_groups = config.config["security"]["supported_DH_groups"];
-			selected_dh_group = None;
-			for group in supported_dh_groups:
-				if group in offered_dh_groups:
-					dh_groups_param.add_groups([group]);
-					selected_dh_group = group;
-					break;
-			if not selected_dh_group:
-				logging.debug("Unsupported DH group");
+			if ipv4_packet.get_protocol() != HIP.HIP_PROTOCOL:
+				logging.debug("Invalid protocol type");
 				continue;
 
-			dh = factory.DHFactory.get(selected_dh_group);
-			dh.generate_private_key();
-			public_key = dh.generate_public_key();
-			dh_param = HIP.DHParameter();
-			dh_param.set_group_id(selected_dh_group);
-			#logging.debug("DH public key: %s " + Math.int_to_bytes(dh.encode_public_key()));
-			dh_param.add_public_value(dh.encode_public_key());
+			if len(ipv4_packet.get_payload()) % 8:
+				logging.debug("Invalid length of the payload. Must be multiple of 8 bytes");
+				continue;
 
+			hip_packet = HIP.HIPPacket(ipv4_packet.get_payload());
 
-			# HIP cipher param
-			cipher_param = HIP.CipherParameter();
-			cipher_param.add_ciphers(config.config["security"]["supported_ciphers"]);
+			shit = hip_packet.get_senders_hit();
+			rhit = hip_packet.get_receivers_hit();
 
-			# HIP host ID parameter
-			hi_param = HIP.HostIdParameter();
-			hi_param.set_host_id(hi);
-			# It is important to set domain ID after host ID was set
-			logging.debug(di);
-			hi_param.set_domain_id(di);
+			logging.info("Got HIP packet");
+			logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
+			logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
-			# HIP HIT suit list parameter
-			hit_suit_param = HIP.HITSuitListParameter();
-			hit_suit_param.add_suits(config.config["security"]["supported_hit_suits"]);
+			if hip_packet.get_version() != HIP.HIP_VERSION:
+				logging.critical("Only HIP version 2 is supported");
+				continue;
 
-			# Transport format list
-			transport_param = HIP.TransportListParameter();
-			transport_param.add_transport_formats(config.config["security"]["supported_transports"]);
+			# Check wether the destination address is our own HIT
+			if not Utils.hits_equal(rhit, own_hit) and not Utils.hits_equal(rhit, [0] * 16):
+				logging.critical("Not our HIT");
+				continue;
 
-			# HIP signature parameter
-			signature_param = HIP.Signature2Parameter();
-			#
-
-			# Compute signature here
-			buf = puzzle_param.get_byte_buffer() + \
-					dh_param.get_byte_buffer() + \
-					cipher_param.get_byte_buffer() + \
-					hi_param.get_byte_buffer() + \
-					hit_suit_param.get_byte_buffer() + \
-					dh_groups_param.get_byte_buffer() + \
-					transport_param.get_byte_buffer();
-			original_length = hip_r1_packet.get_length();
-			packet_length = original_length * 8 + len(buf);
-			hip_r1_packet.set_length(int(packet_length / 8));
-			buf = hip_r1_packet.get_buffer() + buf;
-			signature_alg = RSASHA256Signature(privkey.get_key_info());
-			signature = signature_alg.sign(bytearray(buf));
-
-			signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
-			signature_param.set_signature(signature);
-
-			# Add parameters to R1 packet (order is important)
-			hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
-			# List of mandatory parameters in R1 packet...
-			puzzle_param.set_random(irandom);
-			# puzzle_param.set_opaque(Utils.generate_random(2));
-			hip_r1_packet.add_parameter(puzzle_param);
-			hip_r1_packet.add_parameter(dh_param);
-			hip_r1_packet.add_parameter(cipher_param);
-			hip_r1_packet.add_parameter(hi_param);
-			hip_r1_packet.add_parameter(hit_suit_param);
-			hip_r1_packet.add_parameter(dh_groups_param);
-			hip_r1_packet.add_parameter(transport_param);
-			hip_r1_packet.add_parameter(signature_param);
-
-			# Swap the addresses
-			temp = src;
-			src = dst;
-			dst = temp;
-
-			# Set receiver's HIT
-			hip_r1_packet.set_receivers_hit(shit);
-
-			# Create IPv4 packet
-			ipv4_packet = IPv4.IPv4Packet();
-			ipv4_packet.set_version(IPv4.IPV4_VERSION);
-			ipv4_packet.set_destination_address(dst);
-			ipv4_packet.set_source_address(src);
-			ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
-			ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
-			ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
-
-			# Calculate the checksum
+			# https://tools.ietf.org/html/rfc7401#section-5
+			original_checksum = hip_packet.get_checksum();
+			hip_packet.set_checksum(0x0);
+			# Verify checksum
 			checksum = misc.Utils.hip_ipv4_checksum(
 				src, 
 				dst, 
 				HIP.HIP_PROTOCOL, 
-				hip_r1_packet.get_length() * 8 + 8, 
-				hip_r1_packet.get_buffer());
-			hip_r1_packet.set_checksum(checksum);
-			ipv4_packet.set_payload(hip_r1_packet.get_buffer());
-			# Send the packet
-			dst_str = Utils.ipv4_bytes_to_string(dst);
-			logging.debug("Sending R1 packet to %s " % dst_str);
-			hip_socket.sendto(
-				bytearray(ipv4_packet.get_buffer()), 
-				(dst_str, 0));
-		elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
-			logging.info("R1 packet");
-			puzzle_param    = None;
-			irandom         = None;
-			opaque          = None;
-			dh_param        = None;
-			cipher_param    = None;
-			hi_param        = None;
-			hit_suit_param  = None;
-			dh_groups_param = None;
-			transport_param = None;
-			signature_param = None;
-			public_key      = None;
-			parameters = hip_packet.get_parameters();
+				hip_packet.get_length() * 8 + 8, 
+				hip_packet.get_buffer());
 			
-			hip_r1_packet = HIP.R1Packet();
-			hip_r1_packet.set_senders_hit(hip_packet.get_senders_hit());
-			#hip_r1_packet.set_receivers_hit(shit);
-			hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
-			hip_r1_packet.set_version(HIP.HIP_VERSION);
-
-			for parameter in parameters:
-				if isinstance(parameter, HIP.DHGroupListParameter):
-					logging.debug("DH groups parameter");
-					dh_groups_param = parameter;
-				if isinstance(parameter, HIP.R1CounterParameter):
-					logging.debug("R1 counter");
-				if isinstance(parameter, HIP.PuzzleParameter):
-					logging.debug("Puzzle parameter");
-					puzzle_param = parameter;
-					irandom = puzzle_param.get_random();
-					opaque = puzzle_param.get_opaque();
-					r_hash = HIT.get_responders_hash_algorithm(rhit);
-					# Prepare puzzle
-					irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-					#puzzle_param.set_random(irandom)
-				if isinstance(parameter, HIP.DHParameter):	
-					logging.debug("DH parameter");
-					dh_param = parameter;
-				if isinstance(parameter, HIP.HostIdParameter):
-					logging.debug("DI type: %d " % parameter.get_di_type());
-					logging.debug("DI value: %s " % parameter.get_domain_id());
-					logging.debug("Host ID");
-					hi_param = parameter;
-					responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
-					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
-						logging.critical("Invalid signature algorithm");
-						continue;
-					responders_public_key = RSAPublicKey.load_from_params(
-						responder_hi.get_exponent(), 
-						responder_hi.get_modulus());
-				if isinstance(parameter, HIP.HITSuitListParameter):
-					logging.debug("HIT suit list");
-					hit_suit_param = parameter;
-				if isinstance(parameter, HIP.TransportListParameter):
-					logging.debug("Transport parameter");
-					logging.debug(parameter.get_transport_formats());
-					transport_param = parameter;
-				if isinstance(parameter, HIP.Signature2Parameter):
-					logging.debug("Signature parameter");
-					signature_param = parameter;
-				if isinstance(parameter, HIP.CipherParameter):
-					logging.debug("Ciphers");
-					cipher_param = parameter;
-			if not puzzle_param:
-				logging.critical("Missing puzzle parameter");
-				continue;
-			if not dh_param:
-				logging.critical("Missing DH parameter");
-				continue;
-			if not cipher_param:
-				logging.critical("Missing cipher parameter");
-				continue;
-			if not hi_param:
-				logging.critical("Missing HI parameter");
-				continue;
-			if not hit_suit_param:
-				logging.critical("Missing HIT suit parameter");
-				continue;
-			if not dh_groups_param:
-				logging.critical("Missing DH groups parameter");
-				continue;
-			if not transport_param:
-				logging.critical("Missing transport parameter");
-				continue;
-			if not signature_param:
-				logging.critical("Missing signature parameter");
-				continue;
-			buf = puzzle_param.get_byte_buffer() + \
-					dh_param.get_byte_buffer() + \
-					cipher_param.get_byte_buffer() + \
-					hi_param.get_byte_buffer() + \
-					hit_suit_param.get_byte_buffer() + \
-					dh_groups_param.get_byte_buffer() + \
-					transport_param.get_byte_buffer();
-			original_length = hip_r1_packet.get_length();
-			packet_length = original_length * 8 + len(buf);
-			hip_r1_packet.set_length(int(packet_length / 8));
-			buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
-			signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
-			if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
-				logging.critical("Invalid signature in R1 packet. Dropping the packet");
+			if original_checksum != checksum:
+				logging.critical("Invalid checksum");
 				continue;
 
-		elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
-			logging.info("I2 packet");
-		elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
-			logging.info("R2 packet");
-		elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
-			logging.info("UPDATE packet");
-		elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
-			logging.info("NOTIFY packet");
-		elif hip_packet.get_packet_type() == HIP.HIP_CLOSE_PACKET:
-			logging.info("CLOSE packet");
-		elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
-			logging.info("CLOSE ACK packet");
+			if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
+				logging.info("I1 packet");
+				
+				# Check the state of the HIP protocol
+				# R1 packet should be constructed only 
+				# if the state is not associated
+				# Need to check with the RFC
+
+				# Construct R1 packet
+				hip_r1_packet = HIP.R1Packet();
+				hip_r1_packet.set_senders_hit(rhit);
+				#hip_r1_packet.set_receivers_hit(shit);
+				hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_r1_packet.set_version(HIP.HIP_VERSION);
+
+				r_hash = HIT.get_responders_hash_algorithm(rhit);
+
+				# Prepare puzzle
+				irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
+				puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = r_hash.LENGTH);
+				puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
+				puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
+				puzzle_param.set_random([0] * r_hash.LENGTH);
+				#puzzle_param.set_opaque([0, 0]);
+				
+				# HIP DH groups parameter
+				dh_groups_param = HIP.DHGroupListParameter();
+				# Prepare Diffie-Hellman parameters
+				dh_groups_param_initiator = None;
+				parameters = hip_packet.get_parameters();
+				for parameter in parameters:
+					if isinstance(parameter, HIP.DHGroupListParameter):
+						dh_groups_param_initiator = parameter;
+				if not dh_groups_param_initiator:
+					# Drop HIP BEX?
+					logging.debug("No DH groups parameter found. Dropping I1 packet");
+					continue;
+				offered_dh_groups = dh_groups_param_initiator.get_groups();
+				supported_dh_groups = config.config["security"]["supported_DH_groups"];
+				selected_dh_group = None;
+				for group in supported_dh_groups:
+					if group in offered_dh_groups:
+						dh_groups_param.add_groups([group]);
+						selected_dh_group = group;
+						break;
+				if not selected_dh_group:
+					logging.debug("Unsupported DH group");
+					continue;
+
+				dh = factory.DHFactory.get(selected_dh_group);
+				dh.generate_private_key();
+				public_key = dh.generate_public_key();
+				dh_param = HIP.DHParameter();
+				dh_param.set_group_id(selected_dh_group);
+				#logging.debug("DH public key: %s " + Math.int_to_bytes(dh.encode_public_key()));
+				dh_param.add_public_value(dh.encode_public_key());
+
+
+				# HIP cipher param
+				cipher_param = HIP.CipherParameter();
+				cipher_param.add_ciphers(config.config["security"]["supported_ciphers"]);
+
+				# HIP host ID parameter
+				hi_param = HIP.HostIdParameter();
+				hi_param.set_host_id(hi);
+				# It is important to set domain ID after host ID was set
+				logging.debug(di);
+				hi_param.set_domain_id(di);
+
+				# HIP HIT suit list parameter
+				hit_suit_param = HIP.HITSuitListParameter();
+				hit_suit_param.add_suits(config.config["security"]["supported_hit_suits"]);
+
+				# Transport format list
+				transport_param = HIP.TransportListParameter();
+				transport_param.add_transport_formats(config.config["security"]["supported_transports"]);
+
+				# HIP signature parameter
+				signature_param = HIP.Signature2Parameter();
+				#
+
+				# Compute signature here
+				buf = puzzle_param.get_byte_buffer() + \
+						dh_param.get_byte_buffer() + \
+						cipher_param.get_byte_buffer() + \
+						hi_param.get_byte_buffer() + \
+						hit_suit_param.get_byte_buffer() + \
+						dh_groups_param.get_byte_buffer() + \
+						transport_param.get_byte_buffer();
+				original_length = hip_r1_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_r1_packet.set_length(int(packet_length / 8));
+				buf = hip_r1_packet.get_buffer() + buf;
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature = signature_alg.sign(bytearray(buf));
+
+				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+				signature_param.set_signature(signature);
+
+				# Add parameters to R1 packet (order is important)
+				hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+				# List of mandatory parameters in R1 packet...
+				puzzle_param.set_random(irandom);
+				# puzzle_param.set_opaque(Utils.generate_random(2));
+				hip_r1_packet.add_parameter(puzzle_param);
+				hip_r1_packet.add_parameter(dh_param);
+				hip_r1_packet.add_parameter(cipher_param);
+				hip_r1_packet.add_parameter(hi_param);
+				hip_r1_packet.add_parameter(hit_suit_param);
+				hip_r1_packet.add_parameter(dh_groups_param);
+				hip_r1_packet.add_parameter(transport_param);
+				hip_r1_packet.add_parameter(signature_param);
+
+				# Swap the addresses
+				temp = src;
+				src = dst;
+				dst = temp;
+
+				# Set receiver's HIT
+				hip_r1_packet.set_receivers_hit(shit);
+
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
+				# Calculate the checksum
+				checksum = misc.Utils.hip_ipv4_checksum(
+					src, 
+					dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_r1_packet.get_length() * 8 + 8, 
+					hip_r1_packet.get_buffer());
+				hip_r1_packet.set_checksum(checksum);
+				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
+				# Send the packet
+				dst_str = Utils.ipv4_bytes_to_string(dst);
+				logging.debug("Sending R1 packet to %s " % dst_str);
+				hip_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(dst_str, 0));
+			elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
+				logging.info("R1 packet");
+				puzzle_param    = None;
+				irandom         = None;
+				opaque          = None;
+				dh_param        = None;
+				cipher_param    = None;
+				hi_param        = None;
+				hit_suit_param  = None;
+				dh_groups_param = None;
+				transport_param = None;
+				signature_param = None;
+				public_key      = None;
+				parameters = hip_packet.get_parameters();
+				
+				hip_r1_packet = HIP.R1Packet();
+				hip_r1_packet.set_senders_hit(hip_packet.get_senders_hit());
+				#hip_r1_packet.set_receivers_hit(shit);
+				hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_r1_packet.set_version(HIP.HIP_VERSION);
+
+				for parameter in parameters:
+					if isinstance(parameter, HIP.DHGroupListParameter):
+						logging.debug("DH groups parameter");
+						dh_groups_param = parameter;
+					if isinstance(parameter, HIP.R1CounterParameter):
+						logging.debug("R1 counter");
+					if isinstance(parameter, HIP.PuzzleParameter):
+						logging.debug("Puzzle parameter");
+						puzzle_param = parameter;
+						irandom = puzzle_param.get_random();
+						opaque = puzzle_param.get_opaque();
+						r_hash = HIT.get_responders_hash_algorithm(rhit);
+						# Prepare puzzle
+						irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
+						#puzzle_param.set_random(irandom)
+					if isinstance(parameter, HIP.DHParameter):	
+						logging.debug("DH parameter");
+						dh_param = parameter;
+					if isinstance(parameter, HIP.HostIdParameter):
+						logging.debug("DI type: %d " % parameter.get_di_type());
+						logging.debug("DI value: %s " % parameter.get_domain_id());
+						logging.debug("Host ID");
+						hi_param = parameter;
+						responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+							logging.critical("Invalid signature algorithm");
+							continue;
+						responders_public_key = RSAPublicKey.load_from_params(
+							responder_hi.get_exponent(), 
+							responder_hi.get_modulus());
+					if isinstance(parameter, HIP.HITSuitListParameter):
+						logging.debug("HIT suit list");
+						hit_suit_param = parameter;
+					if isinstance(parameter, HIP.TransportListParameter):
+						logging.debug("Transport parameter");
+						logging.debug(parameter.get_transport_formats());
+						transport_param = parameter;
+					if isinstance(parameter, HIP.Signature2Parameter):
+						logging.debug("Signature parameter");
+						signature_param = parameter;
+					if isinstance(parameter, HIP.CipherParameter):
+						logging.debug("Ciphers");
+						cipher_param = parameter;
+				if not puzzle_param:
+					logging.critical("Missing puzzle parameter");
+					continue;
+				if not dh_param:
+					logging.critical("Missing DH parameter");
+					continue;
+				if not cipher_param:
+					logging.critical("Missing cipher parameter");
+					continue;
+				if not hi_param:
+					logging.critical("Missing HI parameter");
+					continue;
+				if not hit_suit_param:
+					logging.critical("Missing HIT suit parameter");
+					continue;
+				if not dh_groups_param:
+					logging.critical("Missing DH groups parameter");
+					continue;
+				if not transport_param:
+					logging.critical("Missing transport parameter");
+					continue;
+				if not signature_param:
+					logging.critical("Missing signature parameter");
+					continue;
+				buf = puzzle_param.get_byte_buffer() + \
+						dh_param.get_byte_buffer() + \
+						cipher_param.get_byte_buffer() + \
+						hi_param.get_byte_buffer() + \
+						hit_suit_param.get_byte_buffer() + \
+						dh_groups_param.get_byte_buffer() + \
+						transport_param.get_byte_buffer();
+				original_length = hip_r1_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_r1_packet.set_length(int(packet_length / 8));
+				buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
+				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.critical("Invalid signature in R1 packet. Dropping the packet");
+					continue;
+
+			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
+				logging.info("I2 packet");
+			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
+				logging.info("R2 packet");
+			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
+				logging.info("UPDATE packet");
+			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
+				logging.info("NOTIFY packet");
+			elif hip_packet.get_packet_type() == HIP.HIP_CLOSE_PACKET:
+				logging.info("CLOSE packet");
+			elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
+				logging.info("CLOSE ACK packet");
+		except Exception as e:
+			# We need more inteligent handling of exceptions here
+			logging.critical("Exception occured. Dropping packet HIPv2.")
 
 def ip_sec_loop():
 	"""
@@ -455,8 +459,11 @@ def ip_sec_loop():
 	logging.info("Starting the IPSec loop");
 
 	while True:
-		buf = bytearray(ip_sec_socket.recv(MTU));
-		ipv4_packet = IPv4.IPv4Packet(buf);
+		try:
+			buf = bytearray(ip_sec_socket.recv(MTU));
+			ipv4_packet = IPv4.IPv4Packet(buf);
+		except Exception as e:
+			logging.critical("Exception occured. Dropping IPSec packet.");
 
 def tun_if_loop():
 	"""
@@ -465,80 +472,83 @@ def tun_if_loop():
 	"""
 	logging.info("Starting the TUN interface loop");
 	while True:
-		buf = hip_tun.read(MTU);
-		logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
-		packet = IPv6.IPv6Packet(buf);
-		shit = packet.get_source_address();
-		rhit = packet.get_destination_address();
-		logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(shit));
-		logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
-		logging.info("Version %s " % (packet.get_version()));
-		logging.info("Traffic class %s " % (packet.get_traffic_class()));
-		logging.info("Flow label %s " % (packet.get_flow_label()));
-		logging.info("Packet length %s " %(packet.get_payload_length()));
-		logging.info("Next header %s " % (packet.get_next_header()));
-		logging.info("Hop limit %s" % (packet.get_hop_limit()));
-		# Get the state
-		hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-			Utils.ipv6_bytes_to_hex_formatted(rhit));
-		if hip_state.is_unassociated():
-			logging.debug("Unassociate state reached");
-			logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
-
-			# Resolve the HIT code can be improved
-			if not hit_resolver.resolve(Utils.ipv6_bytes_to_hex_formatted(rhit)):
-				logging.critical("Cannot resolve HIT to IPv4 address");
-				continue;
-
-			# Convert bytes to string representation of IPv6 address
-			dst_str = hit_resolver.resolve(
+		try:
+			buf = hip_tun.read(MTU);
+			logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
+			packet = IPv6.IPv6Packet(buf);
+			shit = packet.get_source_address();
+			rhit = packet.get_destination_address();
+			logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(shit));
+			logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
+			logging.info("Version %s " % (packet.get_version()));
+			logging.info("Traffic class %s " % (packet.get_traffic_class()));
+			logging.info("Flow label %s " % (packet.get_flow_label()));
+			logging.info("Packet length %s " %(packet.get_payload_length()));
+			logging.info("Next header %s " % (packet.get_next_header()));
+			logging.info("Hop limit %s" % (packet.get_hop_limit()));
+			# Get the state
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 				Utils.ipv6_bytes_to_hex_formatted(rhit));
-			dst = misc.Math.int_to_bytes(
-				misc.Utils.ipv4_to_int(dst_str));
-			src = misc.Math.int_to_bytes(
-				misc.Utils.ipv4_to_int(
-					routing.Routing.get_default_IPv4_address()));
+			if hip_state.is_unassociated():
+				logging.debug("Unassociate state reached");
+				logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-			# Construct the DH groups parameter
-			dh_groups_param = HIP.DHGroupListParameter();
-			dh_groups_param.add_groups(config.config["security"]["supported_DH_groups"]);
+				# Resolve the HIT code can be improved
+				if not hit_resolver.resolve(Utils.ipv6_bytes_to_hex_formatted(rhit)):
+					logging.critical("Cannot resolve HIT to IPv4 address");
+					continue;
 
-			# Create I1 packet
-			hip_i1_packet = HIP.I1Packet();
-			hip_i1_packet.set_senders_hit(shit);
-			hip_i1_packet.set_receivers_hit(rhit);
-			hip_i1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
-			hip_i1_packet.set_version(HIP.HIP_VERSION);
-			hip_i1_packet.add_parameter(dh_groups_param);
+				# Convert bytes to string representation of IPv6 address
+				dst_str = hit_resolver.resolve(
+					Utils.ipv6_bytes_to_hex_formatted(rhit));
+				dst = misc.Math.int_to_bytes(
+					misc.Utils.ipv4_to_int(dst_str));
+				src = misc.Math.int_to_bytes(
+					misc.Utils.ipv4_to_int(
+						routing.Routing.get_default_IPv4_address()));
 
-			# Compute the checksum of HIP packet
-			checksum = misc.Utils.hip_ipv4_checksum(
-				src, 
-				dst, 
-				HIP.HIP_PROTOCOL, 
-				hip_i1_packet.get_length() * 8 + 8, 
-				hip_i1_packet.get_buffer());
-			hip_i1_packet.set_checksum(checksum);
+				# Construct the DH groups parameter
+				dh_groups_param = HIP.DHGroupListParameter();
+				dh_groups_param.add_groups(config.config["security"]["supported_DH_groups"]);
 
-			# Construct the IPv4 packet
-			ipv4_packet = IPv4.IPv4Packet();
-			ipv4_packet.set_version(IPv4.IPV4_VERSION);
-			ipv4_packet.set_destination_address(dst);
-			ipv4_packet.set_source_address(src);
-			ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
-			ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
-			ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
-			ipv4_packet.set_payload(hip_i1_packet.get_buffer());
+				# Create I1 packet
+				hip_i1_packet = HIP.I1Packet();
+				hip_i1_packet.set_senders_hit(shit);
+				hip_i1_packet.set_receivers_hit(rhit);
+				hip_i1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_i1_packet.set_version(HIP.HIP_VERSION);
+				hip_i1_packet.add_parameter(dh_groups_param);
 
-			# Send HIP I1 packet to destination
-			hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
+				# Compute the checksum of HIP packet
+				checksum = misc.Utils.hip_ipv4_checksum(
+					src, 
+					dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_i1_packet.get_length() * 8 + 8, 
+					hip_i1_packet.get_buffer());
+				hip_i1_packet.set_checksum(checksum);
 
-			# Transition to an I1-Sent state
-			hip_state.i1_sent();
+				# Construct the IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+				ipv4_packet.set_payload(hip_i1_packet.get_buffer());
 
-		elif hip_state.is_established():
-			# Send ESP packet to destination
-			pass
+				# Send HIP I1 packet to destination
+				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
+
+				# Transition to an I1-Sent state
+				hip_state.i1_sent();
+
+			elif hip_state.is_established():
+				# Send ESP packet to destination
+				pass
+		except Exception as e:
+			logging.critical("Exception occured while processing packet from TUN interface. Dropping the packet.");
 
 
 hip_th_loop = threading.Thread(target = hip_loop, args = (), daemon = True);
