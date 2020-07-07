@@ -280,8 +280,9 @@ def hip_loop():
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = hip_r1_packet.get_buffer() + buf;
 				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
-
+				logging.debug(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);
 
@@ -365,8 +366,8 @@ def hip_loop():
 						opaque = puzzle_param.get_opaque();
 						r_hash = HIT.get_responders_hash_algorithm(rhit);
 						# Prepare puzzle
-						irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-						#puzzle_param.set_random(irandom)
+						#$irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
+						puzzle_param.set_random(irandom)
 					if isinstance(parameter, HIP.DHParameter):	
 						logging.debug("DH parameter");
 						dh_param = parameter;
@@ -431,6 +432,7 @@ def hip_loop():
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				logging.debug(buf);
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
@@ -450,6 +452,7 @@ def hip_loop():
 		except Exception as e:
 			# We need more inteligent handling of exceptions here
 			logging.critical("Exception occured. Dropping packet HIPv2.")
+			logging.critical(e);
 
 def ip_sec_loop():
 	"""
