@@ -242,6 +242,7 @@ def hip_loop():
 				dh_param.set_group_id(selected_dh_group);
 				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				dh_param.add_public_value(dh.encode_public_key());
+				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
 
 				# HIP cipher param
