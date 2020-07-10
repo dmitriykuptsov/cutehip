@@ -79,6 +79,8 @@ logging.basicConfig(
 	]
 );
 
+#print(Utils.kdf(0x1, bytearray([1, 2, 3, 4, 5, 6, 7, 8]), bytearray([1, 2, 3, 4, 5, 6, 7, 8]), bytearray([1, 2, 3, 4, 5, 6, 7, 8]), 4))
+
 MTU = config.config["network"]["mtu"];
 
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3

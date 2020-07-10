@@ -26,11 +26,6 @@ from os import urandom
 
 #print(sys.modules);
 
-import crypto
-#from crypto import factory
-#from crypto.factory import HMACFactory
-
-
 class ECPoint():
 	def __init__(self, x, y):
 		self.x = x;
@@ -195,6 +190,8 @@ class Math():
 		# a = 1, b = 0
 		return a;
 
+import crypto
+from crypto.factory import HMACFactory
 
 class Utils():
 	"""
@@ -293,9 +290,10 @@ class Utils():
 
 	@staticmethod
 	def kdf(alg, salt, ikm, info, l_octets):
-		rhash = factory.factory.HMACFactory.get(alg, salt);
+		
+		rhash = HMACFactory.get(alg, salt);
 		prk   = rhash.digest(ikm);
-		rhash = factory.factory.HMACFactory.get(alg, prk);
+		rhash = HMACFactory.get(alg, prk);
 		n     = ceil(l_octets / rhash.LENGTH);
 		okm   = bytearray([]);
 		T     = bytearray([]);
