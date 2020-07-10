@@ -47,6 +47,7 @@ from packets import IPv4
 # Configuration
 from config import config
 # HIT
+import utils
 from utils.hit import HIT
 from utils.hi import RSAHostID, ECDSAHostID
 from utils.di import DIFactory
@@ -66,7 +67,7 @@ from databases import HIPState
 from databases import SA
 from databases import resolver
 # Utilities
-from utils import misc
+from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
@@ -175,7 +176,7 @@ def hip_loop():
 			original_checksum = hip_packet.get_checksum();
 			hip_packet.set_checksum(0x0);
 			# Verify checksum
-			checksum = misc.Utils.hip_ipv4_checksum(
+			checksum = Utils.hip_ipv4_checksum(
 				src, 
 				dst, 
 				HIP.HIP_PROTOCOL, 
@@ -319,7 +320,7 @@ def hip_loop():
 				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
 
 				# Calculate the checksum
-				checksum = misc.Utils.hip_ipv4_checksum(
+				checksum = Utils.hip_ipv4_checksum(
 					src, 
 					dst, 
 					HIP.HIP_PROTOCOL, 
@@ -531,10 +532,10 @@ def tun_if_loop():
 				# Convert bytes to string representation of IPv6 address
 				dst_str = hit_resolver.resolve(
 					Utils.ipv6_bytes_to_hex_formatted(rhit));
-				dst = misc.Math.int_to_bytes(
-					misc.Utils.ipv4_to_int(dst_str));
-				src = misc.Math.int_to_bytes(
-					misc.Utils.ipv4_to_int(
+				dst = Math.int_to_bytes(
+					Utils.ipv4_to_int(dst_str));
+				src = Math.int_to_bytes(
+					Utils.ipv4_to_int(
 						routing.Routing.get_default_IPv4_address()));
 
 				# Construct the DH groups parameter
@@ -550,7 +551,7 @@ def tun_if_loop():
 				hip_i1_packet.add_parameter(dh_groups_param);
 
 				# Compute the checksum of HIP packet
-				checksum = misc.Utils.hip_ipv4_checksum(
+				checksum = Utils.hip_ipv4_checksum(
 					src, 
 					dst, 
 					HIP.HIP_PROTOCOL, 

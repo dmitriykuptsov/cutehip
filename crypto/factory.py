@@ -17,13 +17,17 @@
 
 import sys
 import os
-sys.path.append(os.getcwd() + "/..")
+sys.path.append(os.getcwd())
 
 import crypto
+
 
 from crypto.ecdh import ECDHSECP160R1, ECDHNIST521, ECDHNIST384, ECDHNIST256
 from crypto.dh import DH5, DH15
 from crypto.symmetric import AES128CBCCipher
+from crypto.digest import SHA256HMAC, SHA384HMAC, SHA1HMAC
+
+import packets
 from packets import IPSec
 
 class DHFactory():
@@ -57,6 +61,18 @@ class SymmetricCiphersFactory():
 	def get(cipher):
 		if cipher == 0x2:
 			return AES128CBCCipher();
+		else:
+			raise Exception("Not implemented");
+
+class HMACFactory():
+	@staticmethod
+	def get(alg, key):
+		if alg == 0x1 or alg == 0x10:
+			return SHA256HMAC(key);
+		elif alg == 0x2 or alg == 0x20:
+			return SHA384HMAC(key);
+		elif alg == 0x3 or alg == 0x30:
+			return SHA1HMAC(key);
 		else:
 			raise Exception("Not implemented");
 

@@ -22,9 +22,10 @@ from binascii import unhexlify
 # Add upper directory to path
 import sys
 import os
-sys.path.append("./../")
+sys.path.append(os.getcwd())
 
-from utils.misc import Math
+from utils import misc
+#from utils.misc import misc.Math
 
 DH_GROUP_5_PRIME = """
 	FFFFFFFF FFFFFFFF C90FDAA2 2168C234 C4C6628B 80DC1CD1
@@ -167,27 +168,27 @@ DH_GROUP_18_PRIME = """
 	9558E447 5677E9AA 9E3050E2 765694DF C81F56E8 80B96E71
 	60C980DD 98EDD3DF FFFFFFFF FFFFFFFF""";
 
-DH_GROUP_5_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_5_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_5_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_5_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_5_GENERATOR = 2;
 DH_GROUP_5_EXPONENT_LENGTH = 192;
 
-DH_GROUP_14_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_14_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_14_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_14_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_14_GENERATOR = 2;
 DH_GROUP_14_EXPONENT_LENGTH = 256;
 
-DH_GROUP_15_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_15_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_15_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_15_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_15_GENERATOR = 2;
 DH_GROUP_15_EXPONENT_LENGTH = 384;
 
-DH_GROUP_16_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_16_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_16_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_16_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_16_GENERATOR = 2;
 DH_GROUP_16_EXPONENT_LENGTH = 512;
 
-DH_GROUP_17_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_17_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_17_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_17_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_17_GENERATOR = 2;
 DH_GROUP_17_EXPONENT_LENGTH = 768;
 
-DH_GROUP_18_BINARY_PRIME = Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_18_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
+DH_GROUP_18_BINARY_PRIME = misc.Math.bytes_to_int(bytearray(unhexlify(DH_GROUP_18_PRIME.replace(" ", "").replace("\n", "").replace("\t", ""))));
 DH_GROUP_18_GENERATOR = 2;
 DH_GROUP_18_EXPONENT_LENGTH = 1024;
 
@@ -227,23 +228,23 @@ class DH5():
 		self.exp_size = DH_GROUP_5_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);
 
 class DH14():
 
@@ -253,22 +254,22 @@ class DH14():
 		self.exp_size = DH_GROUP_14_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);
 
 class DH15():
 
@@ -278,23 +279,23 @@ class DH15():
 		self.exp_size = DH_GROUP_15_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 	
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);
 
 class DH16():
 
@@ -304,23 +305,23 @@ class DH16():
 		self.exp_size = DH_GROUP_16_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);
 
 class DH17():
 
@@ -330,23 +331,23 @@ class DH17():
 		self.exp_size = DH_GROUP_17_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);
 
 class DH18():
 
@@ -356,20 +357,20 @@ class DH18():
 		self.exp_size = DH_GROUP_18_EXPONENT_LENGTH;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.exp_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.exp_size)));
 		return self.private_key;
 
 	def generate_public_key(self):
-		self.public_key = Math.square_and_multiply(self.g, self.private_key, self.p);
+		self.public_key = misc.Math.square_and_multiply(self.g, self.private_key, self.p);
 		return self.public_key;
 
 	def compute_shared_secret(self, other_public_key):
-		self.shared_secret = Math.square_and_multiply(other_public_key, self.private_key, self.p);
+		self.shared_secret = misc.Math.square_and_multiply(other_public_key, self.private_key, self.p);
 		return self.shared_secret;
 
 	def encode_public_key(self):
-		return Math.int_to_bytes(self.public_key);
+		return misc.Math.int_to_bytes(self.public_key);
 
 	@staticmethod
 	def decode_public_key(buffer):
-		return Math.bytes_to_int(buffer);
+		return misc.Math.bytes_to_int(buffer);

@@ -18,10 +18,9 @@
 
 import sys
 import os
-#print(os.getcwd())
-#sys.path.append(os.getcwd() + "/../utils/");
-#sys.path.append(os.getcwd() + "/../crypto/");
+sys.path.append(os.getcwd());
 
+import crypto
 from binascii import unhexlify
 from binascii import hexlify
 from crypto import digest

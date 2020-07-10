@@ -19,12 +19,12 @@
 
 import logging
 
-import sys
-import os
+#import sys
+#import os
+#sys.path.append(os.getcwd() + "/..")
 
-sys.path.append("../");
-
-from utils.misc import Math
+#import utils
+#from utils.misc import Math
 
 HIP_TLV_TYPE_OFFSET              = 0x0;
 HIP_TLV_CRITICAL_BIT_OFFSET      = 0x0;

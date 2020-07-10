@@ -21,9 +21,9 @@
 
 import sys
 import os
+sys.path.append(os.getcwd())
 
-sys.path.append("../");
-
+import utils
 from utils.misc import Math
 
 """

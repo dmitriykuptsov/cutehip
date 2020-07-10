@@ -15,10 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import os
+sys.path.append(os.getcwd())
+
 from math import log, ceil, floor
 from binascii import hexlify
 import logging
 from os import urandom
+
+#print(sys.modules);
+
+import crypto
+#from crypto import factory
+#from crypto.factory import HMACFactory
+
 
 class ECPoint():
 	def __init__(self, x, y):
@@ -270,4 +281,29 @@ class Utils():
 	@staticmethod
 	def generate_random(length):
 		return urandom(length);
+
+	@staticmethod
+	def sort_hits(shit_bytes, rhit_bytes):
+		shit = Math.bytes_to_int(shit_bytes);
+		rhit = Math.bytes_to_int(rhit_bytes);
+		if shit > rhit:
+			return rhit_bytes + shit_bytes;
+		else:
+			return shit_bytes + rhit_bytes;
+
+	@staticmethod
+	def kdf(alg, salt, ikm, info, l_octets):
+		rhash = factory.factory.HMACFactory.get(alg, salt);
+		prk   = rhash.digest(ikm);
+		rhash = factory.factory.HMACFactory.get(alg, prk);
+		n     = ceil(l_octets / rhash.LENGTH);
+		okm   = bytearray([]);
+		T     = bytearray([]);
+		for i in range(1, n + 1):
+			T = rhash.digest(T + info + bytearray([i]));
+			okm += T;
+		return okm[:l_octets];
+
+
+
 

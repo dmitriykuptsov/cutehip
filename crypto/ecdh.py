@@ -19,11 +19,14 @@
 
 import sys
 import os
-sys.path.append("./../")
+sys.path.append(os.getcwd())
 
-from utils.misc import Math, ECPoint
+import utils
+#from utils.misc import misc.Math, misc.ECPoint
+from utils import misc
 from binascii import unhexlify
 from os import urandom
+import crypto
 from crypto.dh import DH
 
 #https://tools.ietf.org/html/rfc4753#section-3.1
@@ -105,7 +108,7 @@ class ECDHSECP160R1(ECDH):
 		self.gy = 0x23A628553168947D59DCC912042351377AC5FB32;
 		self.h = 0x1;
 		self.a = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFC;
-		self.G = ECPoint(self.gx, self.gy);
+		self.G = misc.ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x14;
 
 	def get_component_length(self):
@@ -115,29 +118,29 @@ class ECDHSECP160R1(ECDH):
 		self.private_key = key;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = misc.Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
+		return misc.Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
-		x = Math.int_to_bytes(self.public_key.get_x());
+		x = misc.Math.int_to_bytes(self.public_key.get_x());
 		if len(x) != self.component_bit_length:
 			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
-		y = Math.int_to_bytes(self.public_key.get_y());
+		y = misc.Math.int_to_bytes(self.public_key.get_y());
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
 	@staticmethod
 	def decode_public_key(buffer):
-		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
-		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
-		return ECPoint(x, y);
+		x = misc.Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = misc.Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return misc.ECPoint(x, y);
 
 # https://tools.ietf.org/html/rfc5903#section-3
 
@@ -152,7 +155,7 @@ class ECDHNIST256(ECDH):
 		#self.a = 0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc;
 		self.h = 0x1;
 		self.a = -3;
-		self.G = ECPoint(self.gx, self.gy);
+		self.G = misc.ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x20;
 
 	def get_component_length(self):
@@ -162,29 +165,29 @@ class ECDHNIST256(ECDH):
 		self.private_key = key;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = misc.Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
+		return misc.Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
-		x = Math.int_to_bytes(self.public_key.get_x());
+		x = misc.Math.int_to_bytes(self.public_key.get_x());
 		if len(x) != self.component_bit_length:
 			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
-		y = Math.int_to_bytes(self.public_key.get_y());
+		y = misc.Math.int_to_bytes(self.public_key.get_y());
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
 	@staticmethod
 	def decode_public_key(buffer):
-		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
-		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
-		return ECPoint(x, y);
+		x = misc.Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = misc.Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return misc.ECPoint(x, y);
 
 class ECDHNIST384(ECDH):
 	def __init__(self):
@@ -197,7 +200,7 @@ class ECDHNIST384(ECDH):
 		#self.a = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000fffffffc;
 		self.h = 0x1;
 		self.a = -3;
-		self.G = ECPoint(self.gx, self.gy);
+		self.G = misc.ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x30;
 
 	def get_component_length(self):
@@ -207,29 +210,29 @@ class ECDHNIST384(ECDH):
 		self.private_key = key;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = misc.Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
+		return misc.Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
-		x = Math.int_to_bytes(self.public_key.get_x());
+		x = misc.Math.int_to_bytes(self.public_key.get_x());
 		if len(x) != self.component_bit_length:
 			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
-		y = Math.int_to_bytes(self.public_key.get_y());
+		y = misc.Math.int_to_bytes(self.public_key.get_y());
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
 	@staticmethod
 	def decode_public_key(buffer):
-		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
-		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
-		return ECPoint(x, y);
+		x = misc.Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = misc.Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return misc.ECPoint(x, y);
 
 class ECDHNIST521(ECDH):
 	def __init__(self):
@@ -242,7 +245,7 @@ class ECDHNIST521(ECDH):
 		#self.a = 0x000001fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc;
 		self.h = 0x1;
 		self.a = -3;
-		self.G = ECPoint(self.gx, self.gy);
+		self.G = misc.ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x42;
 
 	def get_component_length(self):
@@ -252,29 +255,29 @@ class ECDHNIST521(ECDH):
 		self.private_key = key;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = misc.Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
+		return misc.Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
-		x = Math.int_to_bytes(self.public_key.get_x());
+		x = misc.Math.int_to_bytes(self.public_key.get_x());
 		if len(x) != self.component_bit_length:
 			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
-		y = Math.int_to_bytes(self.public_key.get_y());
+		y = misc.Math.int_to_bytes(self.public_key.get_y());
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
 	@staticmethod
 	def decode_public_key(buffer):
-		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
-		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
-		return ECPoint(x, y);
+		x = misc.Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = misc.Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return misc.ECPoint(x, y);
 
 class ECDHBrainpool256(ECDH):
 	def __init__(self):
@@ -286,7 +289,7 @@ class ECDHBrainpool256(ECDH):
 		self.gy = 0x547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997;
 		self.a = 0x7D5A0975FC2C3057EEF67530417AFFE7FB8055C126DC5C6CE94A4B44F330B5D9;
 		self.h = 0x1;
-		self.G = ECPoint(self.gx, self.gy);
+		self.G = misc.ECPoint(self.gx, self.gy);
 		self.component_bit_length = 0x20;
 
 	def get_component_length(self):
@@ -296,29 +299,29 @@ class ECDHBrainpool256(ECDH):
 		self.private_key = key;
 
 	def generate_private_key(self):
-		self.private_key = Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
+		self.private_key = misc.Math.bytes_to_int(bytearray(urandom(self.private_key_size)));
 
 	def generate_public_key(self):
-		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
+		self.public_key = misc.Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
 	# The Diffie-Hellman shared secret value consists of the x value of the
 	# Diffie-Hellman common value.
 	# https://tools.ietf.org/html/rfc5903
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
+		return misc.Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
-		x = Math.int_to_bytes(self.public_key.get_x());
+		x = misc.Math.int_to_bytes(self.public_key.get_x());
 		if len(x) != self.component_bit_length:
 			x = bytearray([0] * (self.component_bit_length - len(x))) + x;
-		y = Math.int_to_bytes(self.public_key.get_y());
+		y = misc.Math.int_to_bytes(self.public_key.get_y());
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
 	@staticmethod
 	def decode_public_key(buffer):
-		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
-		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
-		return ECPoint(x, y);
+		x = misc.Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = misc.Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return misc.ECPoint(x, y);
