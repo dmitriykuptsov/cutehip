@@ -284,12 +284,11 @@ class DHParameter(HIPParameter):
 		self.set_length(length);
 		self.set_public_value_length(len(public_value));
 		self.buffer += public_value;
-		print(Math.bytes_to_int(public_value));
 		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_public_value(self):
 		public_value_length = self.get_public_value_length();
-		return self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET:HIP_PUBLIC_VALUE_LENGTH_OFFSET + public_value_length]
+		return self.buffer[HIP_PUBLIC_VALUE_OFFSET:HIP_PUBLIC_VALUE_OFFSET + public_value_length]
 
 HIP_CIPHER_TYPE                     = 0x243;
 HIP_CIPHER_LIST_OFFSET              = 0x4;
