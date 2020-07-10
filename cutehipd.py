@@ -443,6 +443,24 @@ def hip_loop():
 				#if PuzzleSolver.verify_puzzle(irandom, jrandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash):
 				logging.debug("Puzzle was solved and verified....");
 				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
+				
+				offered_dh_groups = dh_groups_param.get_groups();
+				supported_dh_groups = config.config["security"]["supported_DH_groups"];
+				selected_dh_group = None;
+				for group in supported_dh_groups:
+					if group in offered_dh_groups:
+						selected_dh_group = group;
+						break;
+				if not selected_dh_group:
+					logging.debug("Unsupported DH group");
+					continue;
+					
+				dh = factory.DHFactory.get(selected_dh_group);
+				private_key  = dh.generate_private_key();
+				public_key_a = dh.generate_public_key();
+				public_key_b = dh.decode_public_key(dh_param.get_public_value());
+				share_secret = dh.compute_shared_secret(public_key_a);
+
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:

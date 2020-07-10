@@ -63,6 +63,10 @@ class ECDH(DH):
 	def encode_public_key(self):
 		pass
 
+	@staticmethod
+	def decode_public_key(buffer):
+		pass
+
 
 """
    https://tools.ietf.org/html/rfc5903#section-7
@@ -118,7 +122,7 @@ class ECDHSECP160R1(ECDH):
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
 		x = Math.int_to_bytes(self.public_key.get_x());
@@ -129,6 +133,11 @@ class ECDHSECP160R1(ECDH):
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
 
+	@staticmethod
+	def decode_public_key(buffer):
+		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return ECPoint(x, y);
 
 # https://tools.ietf.org/html/rfc5903#section-3
 
@@ -160,7 +169,7 @@ class ECDHNIST256(ECDH):
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
 		x = Math.int_to_bytes(self.public_key.get_x());
@@ -170,6 +179,12 @@ class ECDHNIST256(ECDH):
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
+
+	@staticmethod
+	def decode_public_key(buffer):
+		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return ECPoint(x, y);
 
 class ECDHNIST384(ECDH):
 	def __init__(self):
@@ -199,7 +214,7 @@ class ECDHNIST384(ECDH):
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
 		x = Math.int_to_bytes(self.public_key.get_x());
@@ -209,6 +224,12 @@ class ECDHNIST384(ECDH):
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
+
+	@staticmethod
+	def decode_public_key(buffer):
+		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return ECPoint(x, y);
 
 class ECDHNIST521(ECDH):
 	def __init__(self):
@@ -238,7 +259,7 @@ class ECDHNIST521(ECDH):
 		return self.public_key;
 
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
 		x = Math.int_to_bytes(self.public_key.get_x());
@@ -248,6 +269,12 @@ class ECDHNIST521(ECDH):
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
+
+	@staticmethod
+	def decode_public_key(buffer):
+		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return ECPoint(x, y);
 
 class ECDHBrainpool256(ECDH):
 	def __init__(self):
@@ -275,8 +302,11 @@ class ECDHBrainpool256(ECDH):
 		self.public_key = Math.double_and_add(self.G, self.private_key, self.a, self.b, self.modulus);
 		return self.public_key;
 
+	# The Diffie-Hellman shared secret value consists of the x value of the
+	# Diffie-Hellman common value.
+	# https://tools.ietf.org/html/rfc5903
 	def compute_shared_secret(self, public_key):
-		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus);
+		return Math.double_and_add(public_key, self.private_key, self.a, self.b, self.modulus).x;
 
 	def encode_public_key(self):
 		x = Math.int_to_bytes(self.public_key.get_x());
@@ -286,3 +316,9 @@ class ECDHBrainpool256(ECDH):
 		if len(y) != self.component_bit_length:
 			y = bytearray([0] * (self.component_bit_length - len(y))) + y;
 		return x + y;
+
+	@staticmethod
+	def decode_public_key(buffer):
+		x = Math.bytes_to_int(buffer[:int(len(buffer)/2)])
+		y = Math.bytes_to_int(buffer[int(len(buffer)/2):])
+		return ECPoint(x, y);

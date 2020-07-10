@@ -206,6 +206,9 @@ class DH():
 		pass
 	def encode_public_key(self):
 		pass
+	@staticmethod
+	def decode_public_key(buffer):
+		pass
 
 class DHFactory():
 	@staticmethod
@@ -238,6 +241,10 @@ class DH5():
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
 
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
+
 class DH14():
 
 	def __init__(self):
@@ -259,6 +266,9 @@ class DH14():
 
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
 
 class DH15():
 
@@ -281,6 +291,10 @@ class DH15():
 
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
+	
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
 
 class DH16():
 
@@ -304,6 +318,10 @@ class DH16():
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
 
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
+
 class DH17():
 
 	def __init__(self):
@@ -326,6 +344,10 @@ class DH17():
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
 
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
+
 class DH18():
 
 	def __init__(self):
@@ -347,3 +369,7 @@ class DH18():
 
 	def encode_public_key(self):
 		return Math.int_to_bytes(self.public_key);
+
+	@staticmethod
+	def decode_public_key(buffer):
+		return Math.bytes_to_int(buffer);
