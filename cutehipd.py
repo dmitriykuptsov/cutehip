@@ -240,7 +240,7 @@ def hip_loop():
 				public_key = dh.generate_public_key();
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
-				logging.debug("DH public key: %s " + Math.bytes_to_int(dh.encode_public_key()));
+				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				dh_param.add_public_value(dh.encode_public_key());
 
 
@@ -441,7 +441,7 @@ def hip_loop():
 				jrandom = PuzzleSolver.solve_puzzle(irandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash)
 				#if PuzzleSolver.verify_puzzle(irandom, jrandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash):
 				logging.debug("Puzzle was solved and verified....");
-				logging.dedug("DH public key value: %s ", Math.bytes_to_int(dh_param.get_public_value()));
+				logging.dedug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
