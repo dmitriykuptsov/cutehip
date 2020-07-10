@@ -19,6 +19,13 @@
 
 import logging
 
+import sys
+import os
+
+sys.path.append("../");
+
+from utils.misc import Math
+
 HIP_TLV_TYPE_OFFSET              = 0x0;
 HIP_TLV_CRITICAL_BIT_OFFSET      = 0x0;
 HIP_TLV_LENGTH_OFFSET            = 0x2;
@@ -277,6 +284,7 @@ class DHParameter(HIPParameter):
 		self.set_length(length);
 		self.set_public_value_length(len(public_value));
 		self.buffer += public_value;
+		print(Math.bytes_to_int(public_value));
 		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_public_value(self):
