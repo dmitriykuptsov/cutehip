@@ -357,6 +357,8 @@ def hip_loop():
 				hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_r1_packet.set_version(HIP.HIP_VERSION);
 
+				r_hash = HIT.get_responders_hash_algorithm(rhit);
+
 				for parameter in parameters:
 					if isinstance(parameter, HIP.DHGroupListParameter):
 						logging.debug("DH groups parameter");
@@ -367,9 +369,7 @@ def hip_loop():
 						logging.debug("Puzzle parameter");
 						puzzle_param = parameter;
 						irandom = puzzle_param.get_random();
-						opaque = puzzle_param.get_opaque();
-
-						r_hash = HIT.get_responders_hash_algorithm(rhit);
+						opaque = puzzle_param.get_opaque();		
 						puzzle_param.set_random([0] * r_hash.LENGTH);
 						puzzle_param.set_opaque(list([0, 0]));
 						# Prepare puzzle
@@ -460,12 +460,16 @@ def hip_loop():
 
 				dh = factory.DHFactory.get(selected_dh_group);
 				private_key  = dh.generate_private_key();
-				public_key_a = dh.generate_public_key();
-				public_key_b = dh.decode_public_key(dh_param.get_public_value());
-				share_secret = dh.compute_shared_secret(public_key_a);
+				public_key_i = dh.generate_public_key();
+				public_key_r = dh.decode_public_key(dh_param.get_public_value());
+				shared_secret = dh.compute_shared_secret(public_key_r);
 
-				# https://tools.ietf.org/html/rfc5869
-				# Key derivation function
+				info = Utils.sort_hits(shit, rhit);
+				salt = irandom + jrandom;
+				alg  = HIT.get_responders_oga_id(rhit);
+
+				keymat_length_in_octets = Utils.compute_keymat_length(alg, 0x4);
+				keymat = Utils.kdf(alg, salt, shared_secret, info, keymat_length_in_octets);
 
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");

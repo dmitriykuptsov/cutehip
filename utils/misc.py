@@ -280,6 +280,10 @@ class Utils():
 		return urandom(length);
 
 	@staticmethod
+	def compute_keymat_length(hmac_alg, cipher_alg):
+		return 0;
+
+	@staticmethod
 	def sort_hits(shit_bytes, rhit_bytes):
 		shit = Math.bytes_to_int(shit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
@@ -288,9 +292,10 @@ class Utils():
 		else:
 			return shit_bytes + rhit_bytes;
 
+	# https://tools.ietf.org/html/rfc5869
+	# Key derivation function
 	@staticmethod
 	def kdf(alg, salt, ikm, info, l_octets):
-		
 		rhash = HMACFactory.get(alg, salt);
 		prk   = rhash.digest(ikm);
 		rhash = HMACFactory.get(alg, prk);

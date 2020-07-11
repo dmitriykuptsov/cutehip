@@ -53,6 +53,10 @@ class HIT():
 		return rhash; 
 
 	@staticmethod
+	def get_responders_oga_id(rhit):
+		return rhit[OGA_OFFSET];
+
+	@staticmethod
 	def bytearray_to_int(b):
 		int_value = 0;
 		for byte in b:
