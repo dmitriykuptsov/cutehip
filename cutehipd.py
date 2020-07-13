@@ -542,12 +542,10 @@ def hip_loop():
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
 
 				solution_param = HIP.SolutionParameter(buffer = None, rhash_length = r_hash.LENGTH);
-				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-				logging.debug(puzzle_param.get_k_value());
 				solution_param.set_k_value(puzzle_param.get_k_value());
-				solution_param.set_opaque(list(opaque));
-				solution_param.set_random(list(irandom));
-				solution_param.set_solution(list(jrandom));
+				solution_param.set_opaque(opaque);
+				solution_param.set_random(irandom);
+				solution_param.set_solution(jrandom);
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
