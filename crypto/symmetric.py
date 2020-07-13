@@ -40,7 +40,7 @@ class NullCipher(SymmetricCrypto):
 
 class AESCipher(SymmetricCrypto):
 
-	KEY_SIZE_128_BITS = 0x16;
+	KEY_SIZE_BITS = 0x16;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
 
@@ -66,7 +66,33 @@ class AESCipher(SymmetricCrypto):
 
 class AES128CBCCipher(SymmetricCrypto):
 
-	KEY_SIZE_128_BITS = 0x16;
+	KEY_SIZE_BITS = 0x10;
+	MODE_CBC = AES.MODE_CBC;
+	BLOCK_SIZE = AES.block_size;
+
+	"""
+	Advanced Encryption Standard
+	"""
+	def __init__(self):
+		pass
+
+	def encrypt(self, key, iv, data):
+		"""
+		Encryptes the plaintext using
+		"""
+		cipher = AES.new(key, self.mode, iv);
+		return cipher.encrypt(self.pad(data, block_size));
+
+	def decrypt(self, key, iv, data):
+		"""
+		This method decryptes the ciphertext
+		"""
+		cipher = AES.new(key, self.mode, iv);
+		return self.unpad(cipher.decrypt(data));
+
+class AES256CBCCipher(SymmetricCrypto):
+
+	KEY_SIZE_BITS = 0x20;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
 

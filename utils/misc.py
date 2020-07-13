@@ -191,7 +191,7 @@ class Math():
 		return a;
 
 import crypto
-from crypto.factory import HMACFactory
+from crypto.factory import HMACFactory, SymmetricCiphersFactory
 
 class Utils():
 	"""
@@ -281,7 +281,22 @@ class Utils():
 
 	@staticmethod
 	def compute_keymat_length(hmac_alg, cipher_alg):
-		return 0;
+		hmac = HMACFactory.get(hmac_alg, None);
+		aes  = SymmetricCiphersFactory.get(cipher_alg);
+		return 2 * (hmac.LENGTH + aes.KEY_SIZE_BITS);
+
+	@staticmethod
+	def get_keys(keymat, hmac_alg, cipher_alg, shit_bytes, rhit_bytes):
+		offset = 0;
+		shit = Math.bytes_to_int(shit_bytes);
+		rhit = Math.bytes_to_int(rhit_bytes);
+
+		hmac = HMACFactory.get(hmac_alg, None);
+		aes  = SymmetricCiphersFactory.get(cipher_alg);
+		if shit < rhit:
+			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
+		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
+			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
 	def sort_hits(shit_bytes, rhit_bytes):
@@ -307,6 +322,6 @@ class Utils():
 			okm += T;
 		return okm[:l_octets];
 
-
+		
 
 
