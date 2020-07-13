@@ -201,7 +201,6 @@ class SolutionParameter(HIPParameter):
 	def get_k_value(self):
 		return self.buffer[HIP_SOLUTION_K_OFFSET] & 0xFF;
 	def set_k_value(self, k):
-		print(k);
 		self.buffer[HIP_SOLUTION_K_OFFSET] = k & 0xFF;
 	def get_opaque(self):
 		return self.buffer[HIP_SOLITION_OPAQUE_OFFSET:HIP_SOLITION_OPAQUE_OFFSET + 2];

@@ -549,8 +549,6 @@ def hip_loop():
 				solution_param.set_random(list(irandom));
 				solution_param.set_solution(list(jrandom));
 
-				logging.debug(solution_param.get_byte_buffer());
-
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
 				dh_param.add_public_value(dh.encode_public_key());
