@@ -376,13 +376,9 @@ def hip_loop():
 						logging.debug("Puzzle parameter");
 						puzzle_param = parameter;
 						irandom = puzzle_param.get_random();
-						from binascii import hexlify
 						opaque = puzzle_param.get_opaque();
 						puzzle_param.set_random([0] * r_hash.LENGTH);
 						puzzle_param.set_opaque(list([0, 0]));
-						# Prepare puzzle
-						#irandom = PuzzleSolver.generate_irandom(r_hash.LENGTH);
-						#puzzle_param.set_random(irandom)
 					if isinstance(parameter, HIP.DHParameter):	
 						logging.debug("DH parameter");
 						dh_param = parameter;
@@ -534,7 +530,6 @@ def hip_loop():
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
 				# Transition to I2 state
-
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(rhit);
 				hip_i2_packet.set_receivers_hit(shit);
@@ -564,35 +559,51 @@ def hip_loop():
 				mac_param = HIP.MACParameter();
 
 				# Compute HMAC here
-				buf = solution_param.get_byte_buffer() + \
+				buf = [];
+				if r1_counter_param:
+					buf += r1_counter_param.get_byte_buffer();
+
+				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						hi_param.get_byte_buffer() + \
-						transport_param.get_byte_buffer();
+						hi_param.get_byte_buffer();
+
+				if echo_signed:
+					buf += echo_signed.get_byte_buffer();
+
+				buf += transport_param.get_byte_buffer();
 
 				original_length = hip_i2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
-				#buf = hip_i2_packet.get_buffer() + buf;
+				buf = hip_i2_packet.get_buffer() + buf;
 				
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
-				mac_param.set_hmac(hmac.digest(bytearray(hip_i2_packet.get_buffer() + buf)));
+				mac_param.set_hmac(hmac.digest(bytearray(buf)));
 
 				# Compute signature here
-				buf = solution_param.get_byte_buffer() + \
+				buf = [];
+				if r1_counter_param:
+					buf += r1_counter_param.get_byte_buffer();
+
+				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						hi_param.get_byte_buffer() + \
-						transport_param.get_byte_buffer() + \
-						mac_param.get_byte_buffer();
+						hi_param.get_byte_buffer();
 
+				if echo_signed:
+					buf += echo_signed.get_byte_buffer();
+
+				buf += transport_param.get_byte_buffer() + \
+						mac_param.get_byte_buffer();
+				
 				original_length = hip_i2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
-				#buf = hip_i2_packet.get_buffer() + buf;
+				buf = hip_i2_packet.get_buffer() + buf;
 				signature_alg = RSASHA256Signature(privkey.get_key_info());
-				signature = signature_alg.sign(bytearray(hip_i2_packet.get_buffer() + buf));
+				signature = signature_alg.sign(bytearray(buf));
 
 				signature_param = HIP.SignatureParameter();
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
