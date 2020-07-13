@@ -598,17 +598,18 @@ def hip_loop():
 				signature_param.set_signature(signature);
 
 				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
-				#if r1_counter_param:
-				#	hip_i2_packet.add_parameter(r1_counter_param);
+				if r1_counter_param:
+					hip_i2_packet.add_parameter(r1_counter_param);
 				hip_i2_packet.add_parameter(solution_param);
 				hip_i2_packet.add_parameter(dh_param);
 				hip_i2_packet.add_parameter(cipher_param);
 				hip_i2_packet.add_parameter(hi_param);
-				#if echo_signed:
-				#	hip_i2_packet.add_parameter(echo_signed);
+				if echo_signed:
+					hip_i2_packet.add_parameter(echo_signed);
 				hip_i2_packet.add_parameter(transport_param);
 				hip_i2_packet.add_parameter(mac_param);
 				hip_i2_packet.add_parameter(signature_param);
+
 
 				# Swap the addresses
 				temp = src;

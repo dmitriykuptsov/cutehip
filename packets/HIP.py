@@ -1078,7 +1078,7 @@ class I2Packet(HIPPacket):
 		self.set_packet_type(HIP_I2_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
@@ -1089,7 +1089,7 @@ class R2Packet(HIPPacket):
 		self.set_packet_type(HIP_R2_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
@@ -1100,7 +1100,7 @@ class UpdatePacket(HIPPacket):
 		self.set_packet_type(HIP_UPDATE_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
@@ -1111,7 +1111,7 @@ class NotifyPacket(HIPPacket):
 		self.set_packet_type(HIP_NOTIFY_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
@@ -1122,7 +1122,7 @@ class ClosePacket(HIPPacket):
 		self.set_packet_type(HIP_CLOSE_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
@@ -1133,7 +1133,7 @@ class CloseAckPacket(HIPPacket):
 		self.set_packet_type(HIP_CLOSE_ACK_PACKET);
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
-		length = self.get_length();
+		length = self.get_length() * 8;
 		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
 		self.set_length(int(length / 8));
