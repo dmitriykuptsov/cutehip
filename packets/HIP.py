@@ -474,7 +474,7 @@ class TransportListParameter(HIPParameter):
 				has_more_transport_formats = False;
 		return transport_formats;
 
-HIP_MAC_TYPE      = 0x801;
+HIP_MAC_TYPE      = 0xF041;
 HIP_MAC_OFFSET    = 0x4;
 
 class MACParameter(HIPParameter):
