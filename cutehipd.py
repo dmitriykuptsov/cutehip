@@ -376,7 +376,8 @@ def hip_loop():
 						logging.debug("Puzzle parameter");
 						puzzle_param = parameter;
 						irandom = puzzle_param.get_random();
-						opaque = puzzle_param.get_opaque();		
+						from binascii import hexlify
+						opaque = puzzle_param.get_opaque();
 						puzzle_param.set_random([0] * r_hash.LENGTH);
 						puzzle_param.set_opaque(list([0, 0]));
 						# Prepare puzzle
@@ -540,11 +541,15 @@ def hip_loop():
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
 
-				solution_param = HIP.SolutionParameter();
+				solution_param = HIP.SolutionParameter(buffer = None, rhash_length = r_hash.LENGTH);
+				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+				logging.debug(puzzle_param.get_k_value());
 				solution_param.set_k_value(puzzle_param.get_k_value());
-				solution_param.set_opaque(puzzle_param.get_opaque());
-				solution_param.set_random(irandom);
-				solution_param.set_solution(jrandom);
+				solution_param.set_opaque(list(opaque));
+				solution_param.set_random(list(irandom));
+				solution_param.set_solution(list(jrandom));
+
+				logging.debug(solution_param.get_byte_buffer());
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
@@ -609,7 +614,8 @@ def hip_loop():
 				hip_i2_packet.add_parameter(transport_param);
 				hip_i2_packet.add_parameter(mac_param);
 				hip_i2_packet.add_parameter(signature_param);
-
+				for unsigned_param in echo_unsigned:
+					hip_i2_packet.add_parameter(unsigned_param);
 
 				# Swap the addresses
 				temp = src;

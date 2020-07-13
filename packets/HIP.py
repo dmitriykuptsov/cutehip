@@ -150,9 +150,9 @@ class PuzzleParameter(HIPParameter):
 	def set_lifetime(self, lifetime):
 		self.buffer[HIP_PUZZLE_LIFETIME_OFFSET] = lifetime & 0xFF;
 	def get_opaque(self):
-		return (self.buffer[HIP_PUZZLE_OPAQUE_OFFSET] << 8) | self.buffer[HIP_PUZZLE_OPAQUE_OFFSET + 1];
+		return self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 1];
 	def set_opaque(self, opaque):
-		 self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 2] = opaque;
+		self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 1] = opaque;
 	def get_random(self):
 		return (self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:
 				HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH]);
@@ -201,12 +201,12 @@ class SolutionParameter(HIPParameter):
 	def get_k_value(self):
 		return self.buffer[HIP_SOLUTION_K_OFFSET] & 0xFF;
 	def set_k_value(self, k):
+		print(k);
 		self.buffer[HIP_SOLUTION_K_OFFSET] = k & 0xFF;
 	def get_opaque(self):
 		return (self.buffer[HIP_SOLITION_OPAQUE_OFFSET] << 8) | self.buffer[HIP_SOLITION_OPAQUE_OFFSET + 1];
 	def set_opaque(self, opaque):
-		 self.buffer[HIP_SOLITION_OPAQUE_OFFSET] = (opaque << 8) & 0xFF;
-		 self.buffer[HIP_SOLITION_OPAQUE_OFFSET + 1] = (opaque) & 0xFF;
+		self.buffer[HIP_SOLITION_OPAQUE_OFFSET:HIP_SOLITION_OPAQUE_OFFSET + 1] = opaque;
 	def get_random(self):
 		return (self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH]);
 	def set_random(self, random):
