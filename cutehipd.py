@@ -201,6 +201,8 @@ def hip_loop():
 
 			if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
 				logging.info("I1 packet");
+
+				st = time.time();
 				
 				# Check the state of the HIP protocol
 				# R1 packet should be constructed only 
@@ -345,7 +347,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending R1 packet to %s " % dst_str);
+				logging.debug("Sending R1 packet to %s %d" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -367,6 +369,8 @@ def hip_loop():
 				echo_unsigned    = [];
 				parameters       = hip_packet.get_parameters();
 				
+				st = time.time();
+
 				hip_r1_packet = HIP.R1Packet();
 				hip_r1_packet.set_senders_hit(hip_packet.get_senders_hit());
 				#hip_r1_packet.set_receivers_hit(shit);
@@ -554,6 +558,10 @@ def hip_loop():
 				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 
+				logging.debug("Processing R1 packet %d" % (time.time() - st));
+
+				st = time.time();
+
 				# Transition to I2 state
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(rhit);
@@ -682,13 +690,15 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_i2_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending I2 packet to %s " % dst_str);
+				logging.debug("Sending I2 packet to %s %d" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
+				st = time.time();
+
 				solution_param   = None;
 				r1_counter_param = None;
 				dh_param         = None;
@@ -807,7 +817,9 @@ def hip_loop():
 
 				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+
 				
+
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(shit);
 				hip_i2_packet.set_receivers_hit(rhit);
@@ -877,6 +889,10 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
+				logging.debug("Processing I2 packet %d" % (time.time() - st));
+				
+				st = time.time();
+
 				hip_r2_packet = HIP.R2Packet();
 				hip_r2_packet.set_senders_hit(rhit);
 				hip_r2_packet.set_receivers_hit(shit);
@@ -940,12 +956,15 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r2_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending R2 packet to %s " % dst_str);
+				logging.debug("Sending R2 packet to %s %d" % (dst_str, time.time() - st));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
+				
+				st = time.time();
+
 				logging.info("R2 packet");
 				keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit));
@@ -1008,6 +1027,8 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
+				logging.debug("Processing R2 packet %d" % time.time() - st);
+				logging.debug("Ending HIP BEX %d" % time.time());
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
@@ -1062,6 +1083,7 @@ def tun_if_loop():
 				Utils.ipv6_bytes_to_hex_formatted(rhit));
 			if hip_state.is_unassociated():
 				logging.debug("Unassociate state reached");
+				logging.debug("Starting HIP BEX %d" % time.time);
 				logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				# Resolve the HIT code can be improved
@@ -1078,6 +1100,7 @@ def tun_if_loop():
 					Utils.ipv4_to_int(
 						routing.Routing.get_default_IPv4_address()));
 
+				st = time.time();
 				# Construct the DH groups parameter
 				dh_groups_param = HIP.DHGroupListParameter();
 				dh_groups_param.add_groups(config.config["security"]["supported_DH_groups"]);
@@ -1110,6 +1133,7 @@ def tun_if_loop():
 				ipv4_packet.set_payload(hip_i1_packet.get_buffer());
 
 				# Send HIP I1 packet to destination
+				logging.debug("Sending I1 packet to %s %d" % (dst_str, time.time - st));
 				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
 
 				# Transition to an I1-Sent state
