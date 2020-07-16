@@ -53,3 +53,24 @@ to reduced key sizes.
 \label{tab:strength}
 \end{table}
 
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{graphics/packet_processing.pdf}
+	\caption{Packets' processing time}
+	\label{fig:packet_processing}
+\end{figure}
+
+We have ran the HIPv2 BEX for 20 times and measured the total packet processing time (we have combined packet 
+processing time for initiator and responder). In Figure~\ref{fig:packet_processing} we show the boxplots for 
+the packet processing durations. To run the tests we have used the following configuration: for signatures 
+we have used RSA with $2048$ bits long modulus, SHA-256 for HMAC and hashing, ECDH with NIST521 curve, 
+AES-256 for encryption and $16$ bits for puzzle difficulty. We have noticed that processing R1 packet consumes considerable
+amount of time on responder. Since our implimentation was lacking pre-creation of R1 packets, such lengthy packet 
+processing time was expected. We have also measured the overall duration of the HIPv2 base exchange (BEX). 
+In Figure~\ref{fig:duration_bex} we demonstrate distribution of HIP BEX durations.
+
+\begin{figure}
+	\includegraphics[width=0.5\textwidth]{graphics/duration_bex.pdf}
+	\caption{Duration of HIPv2 BEX}
+	\label{fig:duration_bex}
+\end{figure}

@@ -1028,7 +1028,7 @@ def hip_loop():
 					logging.debug("Signature is correct");
 
 				logging.debug("Processing R2 packet %f" % (time.time() - st));
-				logging.debug("Ending HIP BEX %d" % (time.time()));
+				logging.debug("Ending HIP BEX %f" % (time.time()));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
@@ -1083,7 +1083,7 @@ def tun_if_loop():
 				Utils.ipv6_bytes_to_hex_formatted(rhit));
 			if hip_state.is_unassociated():
 				logging.debug("Unassociate state reached");
-				logging.debug("Starting HIP BEX %d" % (time.time()));
+				logging.debug("Starting HIP BEX %f" % (time.time()));
 				logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				# Resolve the HIT code can be improved
