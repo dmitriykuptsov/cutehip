@@ -141,6 +141,7 @@ logging.debug("Configuring state machine and storage");
 hip_state_machine = HIPState.StateMachine();
 keymat_storage = HIPState.Storage();
 dh_storage = HIPState.Storage();
+pubkey_storage = HIPState.Storage();
 
 def hip_loop():
 	"""
@@ -297,7 +298,7 @@ def hip_loop():
 				buf = hip_r1_packet.get_buffer() + buf;
 				signature_alg = RSASHA256Signature(privkey.get_key_info());
 
-				logging.debug(privkey.get_key_info());
+				#logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);
@@ -409,6 +410,10 @@ def hip_loop():
 						responders_public_key = RSAPublicKey.load_from_params(
 							responder_hi.get_exponent(), 
 							responder_hi.get_modulus());
+						pubkey_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit), 
+							responders_public_key);
+
 					if isinstance(parameter, HIP.HITSuitListParameter):
 						logging.debug("HIT suit list");
 						hit_suit_param = parameter;
@@ -601,12 +606,6 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				mac_param.set_hmac(hmac.digest(bytearray(buf)));
-
-
-				logging.debug(list(hmac_key));
-				logging.debug(buf);
-				logging.debug(list(hmac.digest(bytearray(buf))));
-				logging.debug(mac_param.get_hmac());
 
 				# Compute signature here
 				
@@ -839,11 +838,6 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, shit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
-				logging.debug(list(hmac_key));
-				logging.debug(buf);
-				logging.debug(list(hmac.digest(bytearray(buf))));
-				logging.debug(list(mac_param.get_hmac()));
-
 				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
@@ -958,13 +952,26 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, shit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				parameters       = hip_packet.get_parameters();
+				
+				hmac_param      = None;
+				signature_param = None;
+
 				for parameter in parameters:
 					if isinstance(parameter, HIP.Signature2Parameter):
 						logging.debug("Signature2 parameter");
 						signature_param = parameter;
 					if isinstance(parameter, HIP.MAC2Parameter):
 						logging.debug("MAC2 parameter");	
-						mac_param = parameter;
+						hmac_param = parameter;
+				
+				if not hmac_param:
+					logging.critical("Missing HMAC parameter");
+					continue;
+
+				if not signature_param:
+					logging.critical("Missing signature parameter");
+					continue;
+
 				hip_r2_packet = HIP.R2Packet();
 				hip_r2_packet.set_senders_hit(shit);
 				hip_r2_packet.set_receivers_hit(rhit);
@@ -972,9 +979,34 @@ def hip_loop():
 				hip_r2_packet.set_version(HIP.HIP_VERSION);
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
-				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()))) != list(mac_param.get_hmac()):
+				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()))) != list(hmac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
+				else:
+					logging.debug("HMAC is ok. Continue with signature");
+
+				buf = [];
+				hip_r2_packet = HIP.R2Packet();
+				hip_r2_packet.set_senders_hit(shit);
+				hip_r2_packet.set_receivers_hit(rhit);
+				hip_r2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_r2_packet.set_version(HIP.HIP_VERSION);
+				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				#hip_r2_packet.add_parameter(hmac_param);
+				buf = list(hmac_param.get_byte_buffer());
+				original_length = hip_r2_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_r2_packet.set_length(int(packet_length / 8));
+				buf = hip_r2_packet.get_buffer() + buf;
+
+				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit));
+				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.critical("Invalid signature. Dropping the packet");
+				else:
+					logging.debug("Signature is correct");
 
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
