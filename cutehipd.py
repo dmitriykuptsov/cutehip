@@ -1268,12 +1268,12 @@ def tun_if_loop():
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
 				logging.debug("Padded data");
-				logging.debug(encrypted_data);
+				logging.debug(list(encrypted_data));
 
 				ip_sec_packet = IPSec.IPSecPacket();
 				ip_sec_packet.set_spi(spi);
 				ip_sec_packet.set_sequence(seq);
-				ip_sec_packet.add_payload(list(encrypted_data));
+				ip_sec_packet.add_payload(iv + list(encrypted_data));
 
 				logging.debug("Calculating ICV over IPSec packet");
 				logging.debug(list(ip_sec_packet.get_byte_buffer()));
