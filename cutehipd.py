@@ -705,6 +705,18 @@ def hip_loop():
 					if isinstance(parameter, HIP.HostIdParameter):
 						logging.debug("Host ID");
 						hi_param = parameter;
+						responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+							logging.critical("Invalid signature algorithm");
+							continue;
+						oga = HIT.get_responders_oga_id(rhit);
+						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
+						if not Utils.hits_equal(shit, responders_hit):
+							logging.critical("Not our HIT");
+							raise Exception("Invalid HIT");
+						responders_public_key = RSAPublicKey.load_from_params(
+							responder_hi.get_exponent(), 
+							responder_hi.get_modulus());
 					if isinstance(parameter, HIP.TransportListParameter):
 						logging.debug("Transport parameter");
 						transport_param = parameter;
@@ -833,7 +845,7 @@ def hip_loop():
 				hip_i2_packet.set_receivers_hit(rhit);
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
-				
+
 				buf = [];
 				if r1_counter_param:
 					buf += r1_counter_param.get_byte_buffer();
@@ -853,7 +865,7 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
 
