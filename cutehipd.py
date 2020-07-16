@@ -609,6 +609,14 @@ def hip_loop():
 				logging.debug(mac_param.get_hmac());
 
 				# Compute signature here
+				
+				hip_i2_packet = HIP.I2Packet();
+				hip_i2_packet.set_senders_hit(rhit);
+				hip_i2_packet.set_receivers_hit(shit);
+				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_i2_packet.set_version(HIP.HIP_VERSION);
+				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
 				buf = [];
 				if r1_counter_param:
 					buf += r1_counter_param.get_byte_buffer();
