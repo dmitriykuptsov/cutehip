@@ -812,6 +812,7 @@ def hip_loop():
 				hip_i2_packet.set_receivers_hit(rhit);
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
+				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				# Compute HMAC here
 				buf = [];
@@ -851,6 +852,7 @@ def hip_loop():
 				hip_i2_packet.set_receivers_hit(rhit);
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
+				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = [];
 				if r1_counter_param:
@@ -869,14 +871,16 @@ def hip_loop():
 				
 				original_length = hip_i2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
-				hip_i2_packet.set_length(int(packet_length / 8));
-				buf = hip_i2_packet.get_buffer() + buf;
+				
 				logging.debug("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 				logging.debug(packet_length);
 				logging.debug(original_length);
 				logging.debug(len(buf));
+				hip_i2_packet.set_length(int(packet_length / 8));
+				buf = hip_i2_packet.get_buffer() + buf;
 				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 				logging.debug(list(buf));
+
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
