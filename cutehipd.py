@@ -790,8 +790,8 @@ def hip_loop():
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 				
 				hip_i2_packet = HIP.I2Packet();
-				hip_i2_packet.set_senders_hit(rhit);
-				hip_i2_packet.set_receivers_hit(shit);
+				hip_i2_packet.set_senders_hit(shit);
+				hip_i2_packet.set_receivers_hit(rhit);
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
 
