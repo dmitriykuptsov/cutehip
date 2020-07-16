@@ -892,6 +892,8 @@ def hip_loop():
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
+				else:
+					logging.debug("Signature is correct");
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
