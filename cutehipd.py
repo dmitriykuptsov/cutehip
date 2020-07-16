@@ -821,9 +821,9 @@ def hip_loop():
 				logging.debug(list(hmac_key));
 				logging.debug(buf);
 				logging.debug(list(hmac.digest(bytearray(buf))));
-				logging.debug(mac_param.get_hmac());
+				logging.debug(list(mac_param.get_hmac()));
 
-				if list(hmac.digest(bytearray(buf))) != mac_param.get_hmac():
+				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 
