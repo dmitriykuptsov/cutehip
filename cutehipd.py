@@ -815,6 +815,8 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
+				logging.critical(hmac.digest(bytearray(buf)));
+				logging.critical(mac_param.get_hmac());
 				if hmac.digest(bytearray(buf)) != mac_param.get_hmac():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
