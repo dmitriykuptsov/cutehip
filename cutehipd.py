@@ -966,7 +966,8 @@ def hip_loop():
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
-				ip_sec_sa.add_record(shit, rhit, sa_record);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
@@ -1049,12 +1050,13 @@ def hip_loop():
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
-				ip_sec_sa.add_record(shit, rhit, sa_record);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
-				
+
 				# Transition to an Established state
 				hip_state.established();
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
