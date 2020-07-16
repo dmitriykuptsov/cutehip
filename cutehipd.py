@@ -1268,6 +1268,8 @@ def tun_if_loop():
 				logging.debug(iv);
 
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
+				logging.debug("Length of the padded data %d" % (len(padded_data)));
+				
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
 				logging.debug("Padded data");

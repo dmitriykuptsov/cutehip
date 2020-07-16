@@ -18,6 +18,8 @@
 # https://tools.ietf.org/html/rfc7402
 # https://tools.ietf.org/html/rfc4303
 
+import logging
+
 IPSEC_TRANSPORT_FORMAT      = 0x0FFF;
 
 IPSEC_PROTOCOL              = 0x32;
@@ -68,8 +70,13 @@ class IPSecPacket():
 class IPSecUtils():
 	@staticmethod
 	def pad(block_size, data, next_header):
-		pad_length = ((len(data) + 2) % block_size) & 0xFF;
+		pad_length = block_size - ((len(data) + 2) % block_size) & 0xFF;
+		logging.debug(block_size);
+		logging.debug("Padding length...................................");
+		logging.debug(pad_length);
+		logging.debug(data);
 		padding = [i for i in range(1, pad_length + 1)];
+		logging.debug(padding);
 		return data + padding + [pad_length, next_header];
 
 	@staticmethod
@@ -79,4 +86,4 @@ class IPSecUtils():
 	@staticmethod
 	def unpad(block_size, data):
 		pad_length = (data[len(data) - 2]) & 0xFF;
-		return data[:len(data) - pad_length];
+		return data[:len(data) - pad_length - 2];
