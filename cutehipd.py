@@ -895,6 +895,73 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
+				hip_r2_packet = HIP.I2Packet();
+				hip_r2_packet.set_senders_hit(rhit);
+				hip_r2_packet.set_receivers_hit(shit);
+				hip_r2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_r2_packet.set_version(HIP.HIP_VERSION);
+				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
+				mac_param = HIP.MAC2Parameter();
+				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer())));
+
+				# Compute signature here
+				
+				hip_r2_packet = HIP.I2Packet();
+				hip_r2_packet.set_senders_hit(rhit);
+				hip_r2_packet.set_receivers_hit(shit);
+				hip_r2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_r2_packet.set_version(HIP.HIP_VERSION);
+				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				buf = mac_param.get_byte_buffer();				
+				original_length = hip_r2_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_r2_packet.set_length(int(packet_length / 8));
+				buf = hip_r2_packet.get_buffer() + buf;
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature = signature_alg.sign(bytearray(buf));
+
+				signature_param = HIP.Signature2Parameter();
+				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+				signature_param.set_signature(signature);
+
+				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+				hip_r2_packet.add_parameter(mac_param);
+				hip_r2_packet.add_parameter(signature_param);
+				
+				# Swap the addresses
+				temp = src;
+				src = dst;
+				dst = temp;
+
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
+				# Calculate the checksum
+				checksum = Utils.hip_ipv4_checksum(
+					src, 
+					dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_r2_packet.get_length() * 8 + 8, 
+					hip_r2_packet.get_buffer());
+				hip_r2_packet.set_checksum(checksum);
+				ipv4_packet.set_payload(hip_r2_packet.get_buffer());
+				# Send the packet
+				dst_str = Utils.ipv4_bytes_to_string(dst);
+				logging.debug("Sending I2 packet to %s " % dst_str);
+				hip_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(dst_str, 0));
+
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
