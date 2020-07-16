@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.CRITICAL,
+	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -1167,7 +1167,7 @@ def tun_if_loop():
 	logging.info("Starting the TUN interface loop");
 	while True:
 		try:
-			buf = hip_tun.read(MTU + 4);
+			buf = hip_tun.read(MTU);
 			logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
 			packet = IPv6.IPv6Packet(buf);
 			shit = packet.get_source_address();
