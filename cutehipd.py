@@ -628,6 +628,8 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
+				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+				logging.debug(list(buf));
 				signature_alg = RSASHA256Signature(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
 
@@ -865,6 +867,8 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
+				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+				logging.debug(list(buf));
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
