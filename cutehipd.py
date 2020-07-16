@@ -1145,8 +1145,10 @@ def ip_sec_loop():
 			# Send IPv6 packet to destination
 			ipv6_packet = IPv6.IPv6Packet();
 			ipv6_packet.set_version(IPv6.IPV6_VERSION);
-			ipv6_packet.set_destination_address(shit);
-			ipv6_packet.set_source_address(rhit);
+			ipv6_packet.set_destination_address(rhit);
+			ipv6_packet.set_source_address(shit);
+			logging.debug("Next header .......................");
+			logging.debug(next_header);
 			ipv6_packet.set_next_header(next_header);
 			ipv6_packet.set_payload(unpadded_data);
 
