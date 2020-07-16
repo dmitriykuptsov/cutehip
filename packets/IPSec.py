@@ -71,12 +71,7 @@ class IPSecUtils():
 	@staticmethod
 	def pad(block_size, data, next_header):
 		pad_length = block_size - ((len(data) + 2) % block_size) & 0xFF;
-		logging.debug(block_size);
-		logging.debug("Padding length...................................");
-		logging.debug(pad_length);
-		logging.debug(data);
 		padding = [i for i in range(1, pad_length + 1)];
-		logging.debug(padding);
 		return data + padding + [pad_length, next_header];
 
 	@staticmethod

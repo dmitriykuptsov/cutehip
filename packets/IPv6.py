@@ -85,3 +85,5 @@ class IPv6Packet():
 		return self.buffer[IPV6_HEADER_LENGTH:]
 	def set_payload(self, buffer):
 		self.buffer[IPV6_HEADER_LENGTH:] = buffer;
+	def get_buffer(self):
+		return self.buffer;
