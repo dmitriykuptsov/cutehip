@@ -1123,7 +1123,7 @@ def ip_sec_loop():
 				logging.critical("Invalid ICV in IPSec packet");
 				continue;
 
-			padded_data = list(ip_sec_packet.get_payload())[-hmac_alg.LENGTH:];
+			padded_data = list(ip_sec_packet.get_payload())[:-hmac_alg.LENGTH];
 			logging.debug("Encrypted padded data");
 			logging.debug(padded_data);
 
