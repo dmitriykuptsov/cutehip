@@ -1147,7 +1147,7 @@ def ip_sec_loop():
 			ipv6_packet.set_version(IPv6.IPV6_VERSION);
 			ipv6_packet.set_destination_address(shit);
 			ipv6_packet.set_source_address(rhit);
-			ipv6_packet.set_next_header(58);
+			ipv6_packet.set_next_header(next_header);
 			ipv6_packet.set_hop_limit(1);
 			ipv6_packet.set_payload_length(len(unpadded_data));
 			ipv6_packet.set_payload(unpadded_data);
@@ -1246,7 +1246,7 @@ def tun_if_loop():
 				# IPv6 fields
 				rhit_str    = Utils.ipv6_bytes_to_hex_formatted(rhit);
 				shit_str    = Utils.ipv6_bytes_to_hex_formatted(shit);
-				next_header = IPv6.IPV6_PROTOCOL;
+				next_header = packet.get_next_header();
 				data        = list(packet.get_payload());
 
 				# Get SA record and construct the ESP payload
