@@ -895,7 +895,7 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				hip_r2_packet = HIP.I2Packet();
+				hip_r2_packet = HIP.R2Packet();
 				hip_r2_packet.set_senders_hit(rhit);
 				hip_r2_packet.set_receivers_hit(shit);
 				hip_r2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
@@ -909,7 +909,7 @@ def hip_loop():
 
 				# Compute signature here
 				
-				hip_r2_packet = HIP.I2Packet();
+				hip_r2_packet = HIP.R2Packet();
 				hip_r2_packet.set_senders_hit(rhit);
 				hip_r2_packet.set_receivers_hit(shit);
 				hip_r2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
