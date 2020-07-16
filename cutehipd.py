@@ -1303,7 +1303,7 @@ def tun_if_loop():
 				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
 				ipv4_packet.set_payload(ip_sec_packet.get_byte_buffer());
 
-				logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer()));
+				logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer())));
 
 				ip_sec_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
