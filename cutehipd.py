@@ -520,6 +520,8 @@ def hip_loop():
 				public_key_r = dh.decode_public_key(dh_param.get_public_value());
 				shared_secret = dh.compute_shared_secret(public_key_r);
 
+				logging.debug("Secret key %d" % shared_secret);
+
 				dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
 
@@ -729,6 +731,10 @@ def hip_loop():
 				if not mac_param:
 					logging.critical("Missing MAC parameter");
 				
+				oga = HIT.get_responders_oga_id(rhit);
+				if oga not in config.config["security"]["supported_hit_suits"]:
+					logging.critical("Unsupported HIT suit");
+					continue;
 				if not PuzzleSolver.verify_puzzle(solution_param.get_random(), 
 					solution_param.get_solution(), 
 					hip_packet.get_senders_hit(), 
@@ -737,6 +743,37 @@ def hip_loop():
 					logging.debug("Puzzle was not solved....");
 					continue;
 				logging.debug("Puzzle was solved");
+
+				dh_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				public_key_r = dh.decode_public_key(dh_param.get_public_value());
+				shared_secret = dh.compute_shared_secret(public_key_r);
+				logging.debug("Secret key %d" % shared_secret);
+
+				info = Utils.sort_hits(shit, rhit);
+				salt = irandom + jrandom;
+				hmac_alg  = HIT.get_responders_oga_id(rhit);
+
+				offered_ciphers = cipher_param.get_ciphers();
+				supported_ciphers = config.config["security"]["supported_ciphers"];
+				selected_cipher = None;
+
+				for cipher in supported_ciphers:
+					if cipher in offered_ciphers:
+						selected_cipher = cipher;
+						break;
+
+				if not selected_cipher:
+					logging.critical("Unsupported cipher");
+					# Transition to unassociated state
+					raise Exception("Unsupported cipher");
+
+				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
+				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
+
+				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 				
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
