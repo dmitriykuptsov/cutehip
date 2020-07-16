@@ -1167,7 +1167,7 @@ def tun_if_loop():
 	logging.info("Starting the TUN interface loop");
 	while True:
 		try:
-			buf = hip_tun.read(MTU);
+			buf = hip_tun.read(MTU + 4);
 			logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
 			packet = IPv6.IPv6Packet(buf);
 			shit = packet.get_source_address();
