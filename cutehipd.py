@@ -1109,9 +1109,19 @@ def ip_sec_loop():
 			shit        = sa_record.get_src();
 			rhit        = sa_record.get_dst();
 
+			logging.debug("HMAC key");
+			logging.debug(hmac_key);
+			logging.debug("Cipher key");
+			logging.debug(cipher_key);
+
 			icv         = list(ip_sec_packet.get_byte_buffer())[-hmac_alg.LENGTH:];
+
+			logging.debug("Calculating ICV over IPSec packet");
+			logging.debug(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH]);
+				
 			if icv != hmac_alg.digest(bytearray(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH])):
 				logging.critical("Invalid ICV in IPSec packet");
+				continue;
 
 			padded_data = list(ip_sec_packet.get_payload())[-hmac_alg.LENGTH:];
 			iv          = padded_data[:cipher.BLOCK_SIZE];
@@ -1238,6 +1248,12 @@ def tun_if_loop():
 				iv         = list(Utils.generate_random(cipher.BLOCK_SIZE));
 				sa_record.increment_sequence();
 
+				logging.debug("HMAC key");
+				logging.debug(hmac_key);
+				logging.debug("Cipher key");
+				logging.debug(cipher_key);
+			
+
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 
@@ -1245,6 +1261,9 @@ def tun_if_loop():
 				ip_sec_packet.set_spi(spi);
 				ip_sec_packet.set_sequence(seq);
 				ip_sec_packet.add_payload(list(encrypted_data));
+
+				logging.debug("Calculating ICV over IPSec packet");
+				logging.debug(list(ip_sec_packet.get_byte_buffer()));
 
 				icv = hmac_alg.digest(bytearray(ip_sec_packet.get_byte_buffer()));
 				ip_sec_packet.add_payload(list(icv));
