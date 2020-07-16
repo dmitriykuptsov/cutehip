@@ -29,6 +29,8 @@ IPSEC_SPI_OFFSET            = 0x0;
 IPSEC_SEQUENCE_OFFSET       = 0x4;
 IPSEC_PAYLOAD_OFFSET        = 0x8;
 
+IPSEC_IV_LENGTH             = 0x10;
+
 class IPSecPacket():
 	def __init__(self, buffer = None):
 		if not buffer:
@@ -37,11 +39,10 @@ class IPSecPacket():
 			self.buffer = buffer
 	def add_payload(self, payload):
 		self.buffer += payload;
-	def get_payload(self, iv_length):
+	def get_payload(self):
 		payload_length = (len(self.buffer) - 
 			IPSEC_SPI_LENGTH - 
-			IPSEC_SEQUENCE_LENGTH - 
-			iv_length);
+			IPSEC_SEQUENCE_LENGTH);
 		return self.buffer[IPSEC_PAYLOAD_OFFSET:IPSEC_PAYLOAD_OFFSET + payload_length];
 	def set_spi(self, spi):
 		self.buffer[IPSEC_SPI_OFFSET] = (spi >> 24) & 0xFF;
@@ -63,4 +64,22 @@ class IPSecPacket():
 			(self.buffer[IPSEC_SEQUENCE_OFFSET + 1] << 16) |
 			(self.buffer[IPSEC_SEQUENCE_OFFSET + 2] << 8)  |
 			self.buffer[IPSEC_SEQUENCE_OFFSET + 3]);
+	def get_byte_buffer(self):
+		return self.buffer;
 
+
+class IPSecUtils():
+	@staticmethod
+	def pad(block_size, data, next_header):
+		pad_length = ((len(data) + 2) % block_size) & 0xFF;
+		padding = [i for i in range(1, pad_length + 1)];
+		return data + padding + [pad_length, next_header];
+
+	@staticmethod
+	def get_next_header(data):
+		return data[len(data) - 1];
+
+	@staticmethod
+	def unpad(block_size, data):
+		pad_length = (data[len(data) - 2]) & 0xFF;
+		return data[:len(data) - pad_length];

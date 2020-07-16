@@ -34,6 +34,9 @@ IPV6_DESTINATION_ADDRESS_LENGTH          = 0x10;
 
 IPV6_HEADER_LENGTH                       = 0x28;
 
+IPV6_PROTOCOL                            = 0x29;
+IPV6_VERSION                             = 0x6;
+
 class IPv6Packet():
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
@@ -78,3 +81,7 @@ class IPv6Packet():
 		return (self.buffer[IPV6_DESTINATION_ADDRESS_OFFSET:IPV6_DESTINATION_ADDRESS_OFFSET + IPV6_SOURCE_ADDRESS_LENGTH]);
 	def set_destination_address(self, destination_address):
 		self.buffer[IPV6_DESTINATION_ADDRESS_OFFSET:IPV6_DESTINATION_ADDRESS_OFFSET + IPV6_DESTINATION_ADDRESS_LENGTH] = destination_address;
+	def get_payload(self):
+		return self.buffer[IPV6_HEADER_LENGTH:]
+	def set_payload(self, buffer):
+		self.buffer[IPV6_HEADER_LENGTH:] = buffer;

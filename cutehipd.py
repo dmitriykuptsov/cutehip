@@ -175,8 +175,8 @@ def hip_loop():
 			logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 			logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
-			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-				Utils.ipv6_bytes_to_hex_formatted(rhit));
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+				Utils.ipv6_bytes_to_hex_formatted(shit));
 
 			if hip_packet.get_version() != HIP.HIP_VERSION:
 				logging.critical("Only HIP version 2 is supported");
@@ -968,16 +968,17 @@ def hip_loop():
 				logging.debug("Setting SA records...");
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
-				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(shit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(shit), sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, shit);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
 				# Transition to an Established state
 				hip_state.established();
+
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
 				st = time.time();
@@ -1052,16 +1053,17 @@ def hip_loop():
 				src_str = Utils.ipv4_bytes_to_string(src);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
-				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(shit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(shit), sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, shit);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
 				# Transition to an Established state
 				hip_state.established();
+				logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
@@ -1085,10 +1087,53 @@ def ip_sec_loop():
 
 	while True:
 		try:
-			buf = bytearray(ip_sec_socket.recv(MTU));
-			ipv4_packet = IPv4.IPv4Packet(buf);
+			buf           = bytearray(ip_sec_socket.recv(MTU));
+			ipv4_packet   = IPv4.IPv4Packet(buf);
+
+			data          = list(packet.get_payload());
+			ip_sec_packet = IPSec.IPSecPacket(data);
+
+			# IPv4 fields
+			src           = packet.get_source_address();
+			dst           = packet.get_destination_address();
+
+			src_str       = Utils.ipv4_bytes_to_string(src);
+			dst_str       = Utils.ipv4_bytes_to_string(dst);
+
+			# Get SA record and construct the ESP payload
+			sa_record  = ip_sec_sa.get_record(src_str, dst_str);
+			hmac_alg   = sa_record.get_hmac_alg();
+			cipher     = sa_record.get_aes_alg();
+			hmac_key   = sa_record.get_hmac_key();
+			cipher_key = sa_record.get_aes_key();
+			shit        = sa_record.get_src();
+			rhit        = sa_record.get_dst();
+
+			icv         = list(ip_sec_packet.get_byte_buffer())[-hmac_alg.LENGTH:];
+			if icv != hmac_alg.digest(bytearray(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH])):
+				logging.critical("Invalid ICV in IPSec packet");
+
+			padded_data = list(ip_sec_packet.get_payload())[-hmac_alg.LENGTH:];
+			iv          = padded_data[:cipher.BLOCK_SIZE];
+			padded_data = padded_data[cipher.BLOCK_SIZE:];
+			decrypted_data = cipher.decrypt(cipher_key, bytearray(iv), bytearray(padded_data));
+			unpadded_data  = IPSec.IPSecUtils.unpad(cipher.BLOCK_SIZE, decrypted_data);
+			next_header    = IPSec.IPSecUtils.get_next_header(decrypted_data);
+			
+			# Send IPv6 packet to destination
+			ipv6_packet = IPv6.IPv6Packet();
+			ipv6_packet.set_version(IPv6.IPV6_VERSION);
+			ipv6_packet.set_destination_address(shit);
+			ipv6_packet.set_source_address(rhit);
+			ipv6_packet.set_next_header(next_header);
+			ipv6_packet.set_payload(unpadded_data);
+
+			logging.debug("Sending IPv6 packet to %s" % (Utils.ipv6_bytes_to_hex_formatted(shit)));
+			hip_tun.write(bytearray(ipv6_packet.get_buffer()));
 		except Exception as e:
 			logging.critical("Exception occured. Dropping IPSec packet.");
+			logging.critical(e);
+			traceback.print_exc();
 
 def tun_if_loop():
 	"""
@@ -1173,8 +1218,53 @@ def tun_if_loop():
 				hip_state.i1_sent();
 
 			elif hip_state.is_established():
+				logging.debug("Sending IPSEC packet...")
+				# IPv6 fields
+				rhit_str    = Utils.ipv6_bytes_to_hex_formatted(rhit);
+				shit_str    = Utils.ipv6_bytes_to_hex_formatted(shit);
+				next_header = IPv6.IPV6_PROTOCOL;
+				data        = list(packet.get_payload());
+
+				# Get SA record and construct the ESP payload
+				sa_record  = ip_sec_sa.get_record(shit_str, rhit_str);
+				seq        = sa_record.get_sequence();
+				spi        = sa_record.get_spi();
+				hmac_alg   = sa_record.get_hmac_alg();
+				cipher     = sa_record.get_aes_alg();
+				hmac_key   = sa_record.get_hmac_key();
+				cipher_key = sa_record.get_aes_key();
+				src        = sa_record.get_src();
+				dst        = sa_record.get_dst();
+				iv         = list(Utils.generate_random(cipher.BLOCK_SIZE));
+				sa_record.increment_sequence();
+
+				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
+				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
+
+				ip_sec_packet = IPSec.IPSecPacket();
+				ip_sec_packet.set_spi(spi);
+				ip_sec_packet.set_sequence(seq);
+				ip_sec_packet.add_payload(list(encrypted_data));
+
+				icv = hmac_alg.digest(bytearray(ip_sec_packet.get_byte_buffer()));
+				ip_sec_packet.add_payload(list(icv));
+
 				# Send ESP packet to destination
-				pass
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(IPSec.IPSEC_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+				ipv4_packet.set_payload(ip_sec_packet.get_byte_buffer());
+
+				logging.debug("Sending IPSEC packet to %s" % (Utils.ipv4_bytes_to_string(dst)));
+				ip_sec_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(Utils.ipv4_bytes_to_string(dst), 0));
+			else:
+				logging.debug("Unknown state reached....");
 		except Exception as e:
 			logging.critical("Exception occured while processing packet from TUN interface. Dropping the packet.");
 			logging.critical(e);

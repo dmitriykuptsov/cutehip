@@ -19,6 +19,9 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
+# Logging
+import logging
+
 # Crypto stuff
 import crypto
 from crypto import factory
@@ -26,13 +29,16 @@ from crypto import factory
 SPI_COUNTER = 1;
 
 class SecurityAssociationRecord():
-	def __init__(self, aes_alg, hmac_alg, aes_key, hmac_key):
-		self.sequnce = 0;
-		self.spi = 0;
+	def __init__(self, aes_alg, hmac_alg, aes_key, hmac_key, src, dst):
+		self.sequnce  = 1;
+		self.spi      = SPI_COUNTER;
 		self.aes_key  = aes_key;
 		self.hmac_key = hmac_key;
 		self.aes_alg  = factory.SymmetricCiphersFactory.get(aes_alg);
 		self.hmac_alg = factory.HMACFactory.get(hmac_alg, self.hmac_key);
+		self.src      = src;
+		self.dst      = dst;
+
 	def get_spi(self):
 		return self.spi;
 	def set_spi(self, spi):
@@ -49,6 +55,10 @@ class SecurityAssociationRecord():
 		return self.aes_key;
 	def get_hmac_key(self):
 		return self.hmac_key;
+	def get_src(self):
+		return self.src;
+	def get_dst(self):
+		return self.dst;
 
 class SecurityAssociationDatabase():
 	def __init__(self):
@@ -56,6 +66,7 @@ class SecurityAssociationDatabase():
 	def key(self, source, destination):
 		return hash(source + destination);
 	def add_record(self, source, destination, record):
+		logging.debug("Adding record for %s - %s" % (source, destination));
 		self.db[self.key(source, destination)] = record;
 	def get_record(self, source, destination):
 		return self.db[self.key(source, destination)];

@@ -54,14 +54,14 @@ class AESCipher(SymmetricCrypto):
 		"""
 		Encryptes the plaintext using
 		"""
-		cipher = AES.new(key, self.mode, iv);
-		return cipher.encrypt(self.pad(data, block_size));
+		cipher = AES.new(key, AESCipher.MODE_CBC, iv);
+		return cipher.encrypt(self.pad(data, AESCipher.BLOCK_SIZE));
 
 	def decrypt(self, key, iv, data):
 		"""
 		This method decryptes the ciphertext
 		"""
-		cipher = AES.new(key, self.mode, iv);
+		cipher = AES.new(key, AESCipher.MODE_CBC, iv);
 		return self.unpad(cipher.decrypt(data));
 
 class AES128CBCCipher(SymmetricCrypto):
@@ -80,14 +80,14 @@ class AES128CBCCipher(SymmetricCrypto):
 		"""
 		Encryptes the plaintext using
 		"""
-		cipher = AES.new(key, self.mode, iv);
-		return cipher.encrypt(self.pad(data, block_size));
+		cipher = AES.new(key, AES128CBCCipher.MODE_CBC, iv);
+		return cipher.encrypt(self.pad(data, AES128CBCCipher.BLOCK_SIZE));
 
 	def decrypt(self, key, iv, data):
 		"""
 		This method decryptes the ciphertext
 		"""
-		cipher = AES.new(key, self.mode, iv);
+		cipher = AES.new(key, AES128CBCCipher.MODE_CBC, iv);
 		return self.unpad(cipher.decrypt(data));
 
 class AES256CBCCipher(SymmetricCrypto):
@@ -106,12 +106,12 @@ class AES256CBCCipher(SymmetricCrypto):
 		"""
 		Encryptes the plaintext using
 		"""
-		cipher = AES.new(key, self.mode, iv);
-		return cipher.encrypt(self.pad(data, block_size));
+		cipher = AES.new(key, AES256CBCCipher.MODE_CBC, iv);
+		return cipher.encrypt(self.pad(data, AES256CBCCipher.BLOCK_SIZE));
 
 	def decrypt(self, key, iv, data):
 		"""
 		This method decryptes the ciphertext
 		"""
-		cipher = AES.new(key, self.mode, iv);
+		cipher = AES.new(key, AES256CBCCipher.MODE_CBC, iv);
 		return self.unpad(cipher.decrypt(data));
