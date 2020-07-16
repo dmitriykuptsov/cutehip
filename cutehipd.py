@@ -674,25 +674,70 @@ def hip_loop():
 
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
+				solution_param   = None;
+				r1_counter_param = None;
+				dh_param         = None;
+				cipher_param     = None;
+				hi_param         = None;
+				transport_param  = None;
+				mac_param        = None;
+				signature_param  = None;
 				parameters       = hip_packet.get_parameters();
 				for parameter in parameters:
 					if isinstance(parameter, HIP.R1CounterParameter):
 						logging.debug("R1 counter");
+						r1_counter_param = parameter;
 					if isinstance(parameter, HIP.SolutionParameter):
 						logging.debug("Puzzle solution parameter");
+						solution_param = parameter;
 					if isinstance(parameter, HIP.DHParameter):	
 						logging.debug("DH parameter");
 						dh_param = parameter;
 					if isinstance(parameter, HIP.HostIdParameter):
 						logging.debug("Host ID");
+						hi_param = parameter;
 					if isinstance(parameter, HIP.TransportListParameter):
 						logging.debug("Transport parameter");
+						transport_param = parameter;
 					if isinstance(parameter, HIP.SignatureParameter):
 						logging.debug("Signature parameter");
+						signature_param = parameter;
 					if isinstance(parameter, HIP.CipherParameter):
 						logging.debug("Ciphers");
+						cipher_param = parameter;
 					if isinstance(parameter, HIP.MACParameter):
 						logging.debug("MAC parameter");	
+						mac_param = parameter;
+				if not solution_param:
+					logging.critical("Missing solution parameter");
+					continue;
+				if not dh_param:
+					logging.critical("Missing DH parameter");
+					continue;
+				if not cipher_param:
+					logging.critical("Missing cipher parameter");
+					continue;
+				if not hi_param:
+					logging.critical("Missing HI parameter");
+					continue;
+				if not transport_param:
+					logging.critical("Missing transport parameter");
+					continue;
+				if not signature_param:
+					logging.critical("Missing signature parameter");
+					continue;
+				if not mac_param:
+					logging.critical("Missing MAC parameter");
+				
+				if not PuzzleSolver.verify_puzzle(solution_param.get_random(), 
+					solution_param.get_solution(), 
+					hip_packet.get_receivers_hit(), 
+					hip_packet.get_senders_hit(), 
+					puzzle_param.get_k_value(), r_hash):
+					logging.debug("Puzzle was not solved....");
+					continue;
+				logging.debug("Puzzle was solved");
+				
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
