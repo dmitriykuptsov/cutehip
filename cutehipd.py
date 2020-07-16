@@ -956,11 +956,24 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r2_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
+				src_str = Utils.ipv4_bytes_to_string(src);
 				logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 
+				logging.debug("Setting SA records...");
+
+				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
+				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				ip_sec_sa.add_record(shit, rhit, sa_record);
+
+				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
+				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				ip_sec_sa.add_record(dst_str, src_str, sa_record);
+
+				# Transition to an Established state
+				hip_state.established();
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
 				st = time.time();
@@ -1026,9 +1039,24 @@ def hip_loop():
 					logging.critical("Invalid signature. Dropping the packet");
 				else:
 					logging.debug("Signature is correct");
-
 				logging.debug("Processing R2 packet %f" % (time.time() - st));
 				logging.debug("Ending HIP BEX %f" % (time.time()));
+
+				logging.debug("Setting SA records...");
+
+				dst_str = Utils.ipv4_bytes_to_string(dst);
+				src_str = Utils.ipv4_bytes_to_string(src);
+
+				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
+				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				ip_sec_sa.add_record(shit, rhit, sa_record);
+
+				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
+				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				ip_sec_sa.add_record(dst_str, src_str, sa_record);
+				
+				# Transition to an Established state
+				hip_state.established();
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:

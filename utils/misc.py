@@ -299,6 +299,22 @@ class Utils():
 			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
+	def get_keys_esp(keymat, hmac_alg, cipher_alg, shit_bytes, rhit_bytes):
+		
+		shit = Math.bytes_to_int(shit_bytes);
+		rhit = Math.bytes_to_int(rhit_bytes);
+
+		hmac = HMACFactory.get(hmac_alg, None);
+		aes  = SymmetricCiphersFactory.get(cipher_alg);
+		
+		offset = 2*(hmac.LENGTH + aes.KEY_SIZE_BITS);
+
+		if shit < rhit:
+			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
+		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
+			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
+
+	@staticmethod
 	def sort_hits(shit_bytes, rhit_bytes):
 		shit = Math.bytes_to_int(shit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);

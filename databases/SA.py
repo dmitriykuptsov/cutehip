@@ -15,20 +15,49 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-class SecurityAssociation():
-	def __init__(self):
-		pass;
+import sys
+import os
+sys.path.append(os.getcwd())
+
+# Crypto stuff
+import crypto
+from crypto import factory
+
+SPI_COUNTER = 1;
+
+class SecurityAssociationRecord():
+	def __init__(self, aes_alg, hmac_alg, aes_key, hmac_key):
+		self.sequnce = 0;
+		self.spi = 0;
+		self.aes_key  = aes_key;
+		self.hmac_key = hmac_key;
+		self.aes_alg  = factory.SymmetricCiphersFactory.get(aes_alg);
+		self.hmac_alg = factory.HMACFactory.get(hmac_alg, self.hmac_key);
 	def get_spi(self):
-		return None;
+		return self.spi;
+	def set_spi(self, spi):
+		self.spi = spi;
+	def get_sequence(self):
+		return self.sequnce;
+	def increment_sequence(self):
+		self.sequnce += 1;
+	def get_hmac_alg(self):
+		return self.hmac_alg;
+	def get_aes_alg(self):
+		return self.aes_alg;
+	def get_aes_key(self):
+		return self.aes_key;
+	def get_hmac_key(self):
+		return self.hmac_key;
 
 class SecurityAssociationDatabase():
 	def __init__(self):
 		self.db = dict();
-	def key(self, shit, rhit):
-		return hash(shit + rhit);
-	def add_record(self, sspi, rspi):
-		self.db[self.key(shit + rhit)];
-	def get_record(self, spi):
-		return None;
+	def key(self, source, destination):
+		return hash(source + destination);
+	def add_record(self, source, destination, record):
+		self.db[self.key(source, destination)] = record;
+	def get_record(self, source, destination):
+		return self.db[self.key(source, destination)];
 	def delete_record(self):
-		return False;
+		del self.db[self.key(source, destination)];
