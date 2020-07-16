@@ -1124,6 +1124,9 @@ def ip_sec_loop():
 				continue;
 
 			padded_data = list(ip_sec_packet.get_payload())[-hmac_alg.LENGTH:];
+			logging.debug("Encrypted padded data");
+			logging.debug(padded_data);
+
 			iv          = padded_data[:cipher.BLOCK_SIZE];
 			
 			logging.debug("IV");
@@ -1268,7 +1271,11 @@ def tun_if_loop():
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
 				logging.debug("Padded data");
+				logging.debug(iv + list(encrypted_data));
 				logging.debug(list(encrypted_data));
+
+				logging.debug("Encrypted padded data");
+				logging.debug(padded_data);
 
 				ip_sec_packet = IPSec.IPSecPacket();
 				ip_sec_packet.set_spi(spi);

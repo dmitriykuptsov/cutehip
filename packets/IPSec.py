@@ -40,10 +40,7 @@ class IPSecPacket():
 	def add_payload(self, payload):
 		self.buffer += payload;
 	def get_payload(self):
-		payload_length = (len(self.buffer) - 
-			IPSEC_SPI_LENGTH - 
-			IPSEC_SEQUENCE_LENGTH);
-		return self.buffer[IPSEC_PAYLOAD_OFFSET:IPSEC_PAYLOAD_OFFSET + payload_length];
+		return self.buffer[IPSEC_PAYLOAD_OFFSET:];
 	def set_spi(self, spi):
 		self.buffer[IPSEC_SPI_OFFSET] = (spi >> 24) & 0xFF;
 		self.buffer[IPSEC_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
