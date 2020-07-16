@@ -1047,10 +1047,10 @@ def hip_loop():
 				logging.debug("Processing R2 packet %f" % (time.time() - st));
 				logging.debug("Ending HIP BEX %f" % (time.time()));
 
-				logging.debug("Setting SA records...");
-
 				dst_str = Utils.ipv4_bytes_to_string(dst);
 				src_str = Utils.ipv4_bytes_to_string(src);
+
+				logging.debug("Setting SA records... %s - %s" % (src_str, dst_str));
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
@@ -1059,7 +1059,7 @@ def hip_loop():
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, shit);
-				ip_sec_sa.add_record(dst_str, src_str, sa_record);
+				ip_sec_sa.add_record(src_str, dst_str, sa_record);
 
 				# Transition to an Established state
 				hip_state.established();
@@ -1100,6 +1100,7 @@ def ip_sec_loop():
 			src_str       = Utils.ipv4_bytes_to_string(src);
 			dst_str       = Utils.ipv4_bytes_to_string(dst);
 
+			logging.debug("Got packet from %s to %s" % (src_str, dst_str));
 			# Get SA record and construct the ESP payload
 			sa_record   = ip_sec_sa.get_record(src_str, dst_str);
 			hmac_alg    = sa_record.get_hmac_alg();
@@ -1169,6 +1170,8 @@ def tun_if_loop():
 			packet = IPv6.IPv6Packet(buf);
 			shit = packet.get_source_address();
 			rhit = packet.get_destination_address();
+			if Utils.hits_equal(rhit, own_hit):
+				continue;
 			logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(shit));
 			logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
 			logging.info("Version %s " % (packet.get_version()));
