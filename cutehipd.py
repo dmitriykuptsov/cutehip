@@ -1094,8 +1094,8 @@ def ip_sec_loop():
 			ip_sec_packet = IPSec.IPSecPacket(data);
 
 			# IPv4 fields
-			src           = packet.get_source_address();
-			dst           = packet.get_destination_address();
+			src           = ipv4_packet.get_source_address();
+			dst           = ipv4_packet.get_destination_address();
 
 			src_str       = Utils.ipv4_bytes_to_string(src);
 			dst_str       = Utils.ipv4_bytes_to_string(dst);
