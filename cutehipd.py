@@ -1090,7 +1090,7 @@ def ip_sec_loop():
 			buf           = bytearray(ip_sec_socket.recv(MTU));
 			ipv4_packet   = IPv4.IPv4Packet(buf);
 
-			data          = list(packet.get_payload());
+			data          = list(ipv4_packet.get_payload());
 			ip_sec_packet = IPSec.IPSecPacket(data);
 
 			# IPv4 fields
