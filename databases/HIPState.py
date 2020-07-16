@@ -74,6 +74,6 @@ class Storage():
 	def __init__(self):
 		self.storage = dict();
 	def get(self, shit, rhit):
-		return self.storage.get(list(shit) + list(rhit), None);
+		return self.storage.get(shit + rhit, None);
 	def save(self, shit, rhit, value):
-		self.storage[list(shit) + list(rhit)] = value;
+		self.storage[shit + rhit] = value;

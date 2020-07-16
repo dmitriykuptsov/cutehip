@@ -250,7 +250,8 @@ def hip_loop():
 				dh = factory.DHFactory.get(selected_dh_group);
 				private_key = dh.generate_private_key();
 				public_key = dh.generate_public_key();
-				dh_storage.save(shit, rhit, dh);
+				dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
@@ -519,7 +520,8 @@ def hip_loop():
 				public_key_r = dh.decode_public_key(dh_param.get_public_value());
 				shared_secret = dh.compute_shared_secret(public_key_r);
 
-				dh_storage.save(shit, rhit, dh);
+				dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
 
 				info = Utils.sort_hits(shit, rhit);
 				salt = irandom + jrandom;
@@ -542,7 +544,8 @@ def hip_loop():
 				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
-				keymat_storage.save(shit, rhit, keymat);
+				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 
 				# Transition to I2 state
 				hip_i2_packet = HIP.I2Packet();
