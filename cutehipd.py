@@ -602,6 +602,12 @@ def hip_loop():
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				mac_param.set_hmac(hmac.digest(bytearray(buf)));
 
+
+				logging.critical(hmac_key);
+				logging.critical(buf);
+				logging.critical(hmac.digest(bytearray(buf)));
+				logging.critical(mac_param.get_hmac());
+
 				# Compute signature here
 				buf = [];
 				if r1_counter_param:
@@ -815,6 +821,8 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
+				logging.critical(hmac_key);
+				logging.critical(buf);
 				logging.critical(hmac.digest(bytearray(buf)));
 				logging.critical(mac_param.get_hmac());
 				if hmac.digest(bytearray(buf)) != mac_param.get_hmac():
