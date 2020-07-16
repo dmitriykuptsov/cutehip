@@ -66,7 +66,7 @@ from network import tun
 # Routing
 from network import routing
 # States
-from databases import HIPState
+from databases import HIPState, Storage
 from databases import SA
 from databases import resolver
 # Utilities
@@ -89,7 +89,7 @@ MTU = config.config["network"]["mtu"];
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3
 logging.info("Using hosts file to resolve HITS %s" % (config.config["resolver"]["hosts_file"]));
 hit_resolver = resolver.HostsFileResolver(filename = config.config["resolver"]["hosts_file"]);
-hip_state_machine = HIPState.StateMachine();
+
 ip_sec_sa = SA.SecurityAssociationDatabase();
 
 logging.info("Initializing HIP socket");
@@ -129,12 +129,18 @@ if config.config["security"]["sig_alg"] == 0x5: # RSA
 else:
 	raise Exception("Unsupported Host ID algorithm")
 
+logging.debug("Configuring TUN interface");
 ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA256_OGA);
 own_hit = HIT.get(hi.to_byte_array(), HIT.SHA256_OGA);
 logging.info("Configuring TUN device");
 hip_tun = tun.Tun(address=ipv6_address, mtu=MTU);
 logging.info("Configuring IPv6 routes");
 routing.Routing.add_hip_default_route();
+
+logging.debug("Configuring state machine and storage");
+hip_state_machine = HIPState.StateMachine();
+keymat_storage = Storage();
+dh_storage = Storage();
 
 def hip_loop():
 	"""
@@ -244,6 +250,8 @@ def hip_loop():
 				dh = factory.DHFactory.get(selected_dh_group);
 				private_key = dh.generate_private_key();
 				public_key = dh.generate_public_key();
+				dh_storage.save(shit, rhit, dh);
+
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
 				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
@@ -412,10 +420,13 @@ def hip_loop():
 						signature_param = parameter;
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
 						logging.debug("Echo request signed parameter");
-						echo_signed = parameter;
+						echo_signed = EchoResponseSignedParameter();
+						echo_signed.add_opaque_data(parameter.get_opaque_data());
 					if isinstance(parameter, HIP.EchoRequestUnsignedParameter):
 						logging.debug("Echo request unsigned parameter");
-						echo_unsigned.append(parameter);
+						echo_unsigned_param = EchoResponseUnsignedParameter();
+						echo_unsigned_param.add_opaque_data(parameter.get_opaque_data());
+						echo_unsigned.append(echo_unsigned_param);
 					if isinstance(parameter, HIP.CipherParameter):
 						logging.debug("Ciphers");
 						cipher_param = parameter;
@@ -508,6 +519,8 @@ def hip_loop():
 				public_key_r = dh.decode_public_key(dh_param.get_public_value());
 				shared_secret = dh.compute_shared_secret(public_key_r);
 
+				dh_storage.save(shit, rhit, dh);
+
 				info = Utils.sort_hits(shit, rhit);
 				salt = irandom + jrandom;
 				hmac_alg  = HIT.get_responders_oga_id(rhit);
@@ -529,6 +542,8 @@ def hip_loop():
 				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
+				keymat_storage.save(shit, rhit, keymat);
+				
 				# Transition to I2 state
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(rhit);
