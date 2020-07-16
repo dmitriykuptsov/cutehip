@@ -628,6 +628,8 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				logging.debug("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 				logging.debug(packet_length);
+				logging.debug(original_length);
+				logging.debug(len(buf));
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
 				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -871,6 +873,8 @@ def hip_loop():
 				buf = hip_i2_packet.get_buffer() + buf;
 				logging.debug("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 				logging.debug(packet_length);
+				logging.debug(original_length);
+				logging.debug(len(buf));
 				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 				logging.debug(list(buf));
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
