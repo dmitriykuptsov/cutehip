@@ -1119,7 +1119,7 @@ def ip_sec_loop():
 			logging.debug("Calculating ICV over IPSec packet");
 			logging.debug(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH]);
 				
-			if icv != hmac_alg.digest(bytearray(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH])):
+			if bytearray(icv) != hmac_alg.digest(bytearray(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH])):
 				logging.critical("Invalid ICV in IPSec packet");
 				continue;
 
