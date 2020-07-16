@@ -347,7 +347,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending R1 packet to %s %d" % (dst_str, (time.time() - st)));
+				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -558,7 +558,7 @@ def hip_loop():
 				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 
-				logging.debug("Processing R1 packet %d" % (time.time() - st));
+				logging.debug("Processing R1 packet %f" % (time.time() - st));
 
 				st = time.time();
 
@@ -690,7 +690,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_i2_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending I2 packet to %s %d" % (dst_str, (time.time() - st)));
+				logging.debug("Sending I2 packet to %s %f" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -889,7 +889,7 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				logging.debug("Processing I2 packet %d" % (time.time() - st));
+				logging.debug("Processing I2 packet %f" % (time.time() - st));
 				
 				st = time.time();
 
@@ -956,7 +956,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r2_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending R2 packet to %s %d" % (dst_str, time.time() - st));
+				logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -1027,7 +1027,7 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				logging.debug("Processing R2 packet %d" % (time.time() - st));
+				logging.debug("Processing R2 packet %f" % (time.time() - st));
 				logging.debug("Ending HIP BEX %d" % (time.time()));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
@@ -1133,7 +1133,7 @@ def tun_if_loop():
 				ipv4_packet.set_payload(hip_i1_packet.get_buffer());
 
 				# Send HIP I1 packet to destination
-				logging.debug("Sending I1 packet to %s %d" % (dst_str, time.time() - st));
+				logging.debug("Sending I1 packet to %s %f" % (dst_str, time.time() - st));
 				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
 
 				# Transition to an I1-Sent state
