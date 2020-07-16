@@ -1149,7 +1149,7 @@ def ip_sec_loop():
 			ipv6_packet.set_source_address(shit);
 			logging.debug("Next header .......................");
 			logging.debug(next_header);
-			ipv6_packet.set_next_header(next_header);
+			ipv6_packet.set_next_header(58);
 			ipv6_packet.set_payload(unpadded_data);
 
 			logging.debug("Sending IPv6 packet to %s" % (Utils.ipv6_bytes_to_hex_formatted(shit)));
