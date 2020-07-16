@@ -283,7 +283,7 @@ class Utils():
 	def compute_keymat_length(hmac_alg, cipher_alg):
 		hmac = HMACFactory.get(hmac_alg, None);
 		aes  = SymmetricCiphersFactory.get(cipher_alg);
-		return 2 * (hmac.LENGTH + aes.KEY_SIZE_BITS);
+		return 4 * (hmac.LENGTH + aes.KEY_SIZE_BITS);
 
 	@staticmethod
 	def get_keys(keymat, hmac_alg, cipher_alg, shit_bytes, rhit_bytes):
