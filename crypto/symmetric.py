@@ -21,11 +21,13 @@ class SymmetricCrypto():
 	# PKCS7 padding is described in
 	# https://tools.ietf.org/html/rfc5652
 	def pad(self, plaintext, block_size):
-		return plaintext + bytearray((block_size - len(plaintext) % block_size) * \
-			chr(block_size - len(plaintext) % block_size), encoding="ascii")
+		#return plaintext + bytearray((block_size - len(plaintext) % block_size) * \
+		#	chr(block_size - len(plaintext) % block_size), encoding="ascii")
+		return plaintext;
 
 	def unpad(self, ciphertext):
-		return ciphertext[:-ord(ciphertext[len(ciphertext) - 1])];	
+		#return ciphertext[:-ord(ciphertext[len(ciphertext) - 1])];	
+		return ciphertext;
 		
 	def encrypt(self, key, iv, data):
 		pass
