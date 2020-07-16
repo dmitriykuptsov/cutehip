@@ -42,7 +42,7 @@ class Tun():
 	"""
 	Writes buffer to device
 	"""
-	def write(self, buffer):
+	def write(self, buf):
 		return self.tun.send(buf);
 	"""
 	Closes TUN interface
