@@ -1027,8 +1027,8 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				logging.debug("Processing R2 packet %d" % time.time() - st);
-				logging.debug("Ending HIP BEX %d" % time.time());
+				logging.debug("Processing R2 packet %d" % (time.time() - st));
+				logging.debug("Ending HIP BEX %d" % (time.time()));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
@@ -1083,7 +1083,7 @@ def tun_if_loop():
 				Utils.ipv6_bytes_to_hex_formatted(rhit));
 			if hip_state.is_unassociated():
 				logging.debug("Unassociate state reached");
-				logging.debug("Starting HIP BEX %d" % time.time);
+				logging.debug("Starting HIP BEX %d" % (time.time()));
 				logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				# Resolve the HIT code can be improved
@@ -1133,7 +1133,7 @@ def tun_if_loop():
 				ipv4_packet.set_payload(hip_i1_packet.get_buffer());
 
 				# Send HIP I1 packet to destination
-				logging.debug("Sending I1 packet to %s %d" % (dst_str, time.time - st));
+				logging.debug("Sending I1 packet to %s %d" % (dst_str, time.time() - st));
 				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
 
 				# Transition to an I1-Sent state
@@ -1144,7 +1144,8 @@ def tun_if_loop():
 				pass
 		except Exception as e:
 			logging.critical("Exception occured while processing packet from TUN interface. Dropping the packet.");
-
+			logging.critical(e);
+			traceback.print_exc()
 
 hip_th_loop = threading.Thread(target = hip_loop, args = (), daemon = True);
 ip_sec_th_loop = threading.Thread(target = ip_sec_loop, args = (), daemon = True);
