@@ -732,11 +732,15 @@ def hip_loop():
 					logging.critical("Missing MAC parameter");
 				
 				oga = HIT.get_responders_oga_id(rhit);
-				if oga not in config.config["security"]["supported_hit_suits"]:
-					logging.critical("Unsupported HIT suit");
-					continue;
-				if not PuzzleSolver.verify_puzzle(solution_param.get_random(), 
-					solution_param.get_solution(), 
+
+				#if oga not in config.config["security"]["supported_hit_suits"]:
+				#	logging.critical("Unsupported HIT suit");
+				#	continue;
+				jrandom = solution_param.get_solution();
+				irandom = solution_param.get_random();
+				if not PuzzleSolver.verify_puzzle(
+					irandom, 
+					jrandom, 
 					hip_packet.get_senders_hit(), 
 					hip_packet.get_receivers_hit(), 
 					puzzle_param.get_k_value(), r_hash):
