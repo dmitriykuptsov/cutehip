@@ -965,11 +965,11 @@ def hip_loop():
 				logging.debug("Setting SA records...");
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
-				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
 				ip_sec_sa.add_record(shit, rhit, sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
-				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
 				# Transition to an Established state
@@ -1048,11 +1048,11 @@ def hip_loop():
 				src_str = Utils.ipv4_bytes_to_string(src);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
-				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
 				ip_sec_sa.add_record(shit, rhit, sa_record);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, shit);
-				sa_record = SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 				
 				# Transition to an Established state
