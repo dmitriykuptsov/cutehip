@@ -684,6 +684,7 @@ def hip_loop():
 				transport_param  = None;
 				mac_param        = None;
 				signature_param  = None;
+				echo_signed      = None;
 				parameters       = hip_packet.get_parameters();
 				for parameter in parameters:
 					if isinstance(parameter, HIP.R1CounterParameter):
@@ -710,6 +711,9 @@ def hip_loop():
 					if isinstance(parameter, HIP.MACParameter):
 						logging.debug("MAC parameter");	
 						mac_param = parameter;
+					if isinstance(parameter, HIP.EchoResponseSignedParameter):
+						logging.debug("Echo response signed");
+						echo_signed = parameter;
 				if not solution_param:
 					logging.critical("Missing solution parameter");
 					continue;
@@ -815,7 +819,7 @@ def hip_loop():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 
-				
+
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
