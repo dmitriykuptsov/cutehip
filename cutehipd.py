@@ -603,10 +603,10 @@ def hip_loop():
 				mac_param.set_hmac(hmac.digest(bytearray(buf)));
 
 
-				logging.critical(hmac_key);
-				logging.critical(buf);
-				logging.critical(hmac.digest(bytearray(buf)));
-				logging.critical(mac_param.get_hmac());
+				logging.debug(list(hmac_key));
+				logging.debug(buf);
+				logging.debug(list(hmac.digest(bytearray(buf))));
+				logging.debug(mac_param.get_hmac());
 
 				# Compute signature here
 				buf = [];
@@ -789,9 +789,6 @@ def hip_loop():
 				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 				
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
-				hmac = HMACFactory.get(hmac_alg, hmac_key);
-
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(rhit);
 				hip_i2_packet.set_receivers_hit(shit);
@@ -818,13 +815,14 @@ def hip_loop():
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
 				
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, shit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
-				logging.critical(hmac_key);
-				logging.critical(buf);
-				logging.critical(hmac.digest(bytearray(buf)));
-				logging.critical(mac_param.get_hmac());
+				logging.debug(list(hmac_key));
+				logging.debug(buf);
+				logging.debug(list(hmac.digest(bytearray(buf))));
+				logging.debug(mac_param.get_hmac());
+
 				if hmac.digest(bytearray(buf)) != mac_param.get_hmac():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
