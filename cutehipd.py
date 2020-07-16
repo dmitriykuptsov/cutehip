@@ -1101,11 +1101,11 @@ def ip_sec_loop():
 			dst_str       = Utils.ipv4_bytes_to_string(dst);
 
 			# Get SA record and construct the ESP payload
-			sa_record  = ip_sec_sa.get_record(src_str, dst_str);
-			hmac_alg   = sa_record.get_hmac_alg();
-			cipher     = sa_record.get_aes_alg();
-			hmac_key   = sa_record.get_hmac_key();
-			cipher_key = sa_record.get_aes_key();
+			sa_record   = ip_sec_sa.get_record(src_str, dst_str);
+			hmac_alg    = sa_record.get_hmac_alg();
+			cipher      = sa_record.get_aes_alg();
+			hmac_key    = sa_record.get_hmac_key();
+			cipher_key  = sa_record.get_aes_key();
 			shit        = sa_record.get_src();
 			rhit        = sa_record.get_dst();
 
@@ -1125,7 +1125,15 @@ def ip_sec_loop():
 
 			padded_data = list(ip_sec_packet.get_payload())[-hmac_alg.LENGTH:];
 			iv          = padded_data[:cipher.BLOCK_SIZE];
+			
+			logging.debug("IV");
+			logging.debug(iv);
+
 			padded_data = padded_data[cipher.BLOCK_SIZE:];
+
+			logging.debug("Padded data");
+			logging.debug(padded_data);
+
 			decrypted_data = cipher.decrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 			unpadded_data  = IPSec.IPSecUtils.unpad(cipher.BLOCK_SIZE, decrypted_data);
 			next_header    = IPSec.IPSecUtils.get_next_header(decrypted_data);
@@ -1253,9 +1261,14 @@ def tun_if_loop():
 				logging.debug("Cipher key");
 				logging.debug(cipher_key);
 			
+				logging.debug("IV");
+				logging.debug(iv);
 
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
+				
+				logging.debug("Padded data");
+				logging.debug(encrypted_data);
 
 				ip_sec_packet = IPSec.IPSecPacket();
 				ip_sec_packet.set_spi(spi);
