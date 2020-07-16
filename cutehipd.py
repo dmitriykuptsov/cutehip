@@ -66,7 +66,7 @@ from network import tun
 # Routing
 from network import routing
 # States
-from databases import HIPState, Storage
+from databases import HIPState
 from databases import SA
 from databases import resolver
 # Utilities
@@ -139,8 +139,8 @@ routing.Routing.add_hip_default_route();
 
 logging.debug("Configuring state machine and storage");
 hip_state_machine = HIPState.StateMachine();
-keymat_storage = Storage();
-dh_storage = Storage();
+keymat_storage = HIPState.Storage();
+dh_storage = HIPState.Storage();
 
 def hip_loop():
 	"""
@@ -543,7 +543,7 @@ def hip_loop():
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
 				keymat_storage.save(shit, rhit, keymat);
-				
+
 				# Transition to I2 state
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(rhit);
