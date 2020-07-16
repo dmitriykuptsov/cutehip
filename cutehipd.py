@@ -1172,8 +1172,6 @@ def tun_if_loop():
 			packet = IPv6.IPv6Packet(buf);
 			shit = packet.get_source_address();
 			rhit = packet.get_destination_address();
-			if Utils.hits_equal(rhit, own_hit):
-				continue;
 			logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(shit));
 			logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
 			logging.info("Version %s " % (packet.get_version()));
