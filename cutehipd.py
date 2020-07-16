@@ -1053,7 +1053,7 @@ def hip_loop():
 				src_str = Utils.ipv4_bytes_to_string(src);
 
 				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, shit, rhit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
+				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, src, dst);
 				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 					Utils.ipv6_bytes_to_hex_formatted(shit), sa_record);
 
@@ -1269,7 +1269,7 @@ def tun_if_loop():
 
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
 				logging.debug("Length of the padded data %d" % (len(padded_data)));
-				
+
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
 				logging.debug("Padded data");
