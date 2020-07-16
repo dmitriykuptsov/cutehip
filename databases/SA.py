@@ -26,12 +26,13 @@ import logging
 import crypto
 from crypto import factory
 
-SPI_COUNTER = 1;
+import utils
+from utils import misc;
 
 class SecurityAssociationRecord():
 	def __init__(self, aes_alg, hmac_alg, aes_key, hmac_key, src, dst):
 		self.sequnce  = 1;
-		self.spi      = SPI_COUNTER;
+		self.spi      = misc.Math.bytes_to_int(misc.Utils.generate_random(4));
 		self.aes_key  = aes_key;
 		self.hmac_key = hmac_key;
 		self.aes_alg  = factory.SymmetricCiphersFactory.get(aes_alg);
