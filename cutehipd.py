@@ -731,8 +731,8 @@ def hip_loop():
 				
 				if not PuzzleSolver.verify_puzzle(solution_param.get_random(), 
 					solution_param.get_solution(), 
-					hip_packet.get_receivers_hit(), 
 					hip_packet.get_senders_hit(), 
+					hip_packet.get_receivers_hit(), 
 					puzzle_param.get_k_value(), r_hash):
 					logging.debug("Puzzle was not solved....");
 					continue;
