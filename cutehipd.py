@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.CRITICAL,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
