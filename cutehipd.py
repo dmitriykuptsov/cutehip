@@ -175,6 +175,9 @@ def hip_loop():
 			logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 			logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				Utils.ipv6_bytes_to_hex_formatted(rhit));
+
 			if hip_packet.get_version() != HIP.HIP_VERSION:
 				logging.critical("Only HIP version 2 is supported");
 				continue;
