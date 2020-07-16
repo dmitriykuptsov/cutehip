@@ -827,6 +827,30 @@ def hip_loop():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 
+				# Compute signature here
+				buf = [];
+				if r1_counter_param:
+					buf += r1_counter_param.get_byte_buffer();
+
+				buf += solution_param.get_byte_buffer() + \
+						dh_param.get_byte_buffer() + \
+						cipher_param.get_byte_buffer() + \
+						hi_param.get_byte_buffer();
+
+				if echo_signed:
+					buf += echo_signed.get_byte_buffer();
+
+				buf += transport_param.get_byte_buffer() + \
+						mac_param.get_byte_buffer();
+				
+				original_length = hip_i2_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_i2_packet.set_length(int(packet_length / 8));
+				buf = hip_i2_packet.get_buffer() + buf;
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.critical("Invalid signature. Dropping the packet");
+
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				logging.info("R2 packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
