@@ -1087,7 +1087,7 @@ def ip_sec_loop():
 
 	while True:
 		try:
-			buf           = bytearray(ip_sec_socket.recv(MTU));
+			buf           = bytearray(ip_sec_socket.recv(MTU + 200));
 			ipv4_packet   = IPv4.IPv4Packet(buf);
 
 			data          = list(ipv4_packet.get_payload());
