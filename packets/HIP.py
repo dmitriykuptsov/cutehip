@@ -211,7 +211,7 @@ class SolutionParameter(HIPParameter):
 	def set_random(self, random):
 		 self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH] = random;
 	def get_solution(self):
-		return (self.buffer[self.HIP_SOLUTION_J_OFFSET:HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH]);
+		return (self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH]);
 	def set_solution(self, solution):
 		 self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH] = solution;
 
