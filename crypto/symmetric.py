@@ -35,6 +35,8 @@ class SymmetricCrypto():
 		pass
 
 class NullCipher(SymmetricCrypto):
+	BLOCK_SIZE = 0x0;
+	KEY_SIZE_BITS = 0x0;
 	def encrypt(self, key = None, iv = None, data = None):
 		return data;
 	def decrtypt(self, key = None, iv = None, data = None):

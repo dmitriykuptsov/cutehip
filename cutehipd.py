@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.CRITICAL,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -420,7 +420,6 @@ def hip_loop():
 						pubkey_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit), 
 							responders_public_key);
-
 					if isinstance(parameter, HIP.HITSuitListParameter):
 						logging.debug("HIT suit list");
 						hit_suit_param = parameter;
@@ -712,6 +711,8 @@ def hip_loop():
 				signature_param  = None;
 				echo_signed      = None;
 				parameters       = hip_packet.get_parameters();
+				iv_length        = None;
+				encrypted_param  = None;
 				for parameter in parameters:
 					if isinstance(parameter, HIP.R1CounterParameter):
 						logging.debug("R1 counter");
@@ -722,6 +723,9 @@ def hip_loop():
 					if isinstance(parameter, HIP.DHParameter):	
 						logging.debug("DH parameter");
 						dh_param = parameter;
+					if isinstance(parameter, HIP.EncryptedParameter):
+						logging.debug("Encrypted parameter");
+						encrypted_param = parameter;
 					if isinstance(parameter, HIP.HostIdParameter):
 						logging.debug("Host ID");
 						hi_param = parameter;
@@ -821,7 +825,26 @@ def hip_loop():
 				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
 
-				
+				if encrypted_param:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
+					cipher = SymmetricCiphersFactory.get(selected_cipher);
+					iv_length = cipher.BLOCK_SIZE;
+					iv = encrypted_param.get_iv(iv_length);
+					data = encrypted_param.get_encrypted_data(iv_length);
+					host_id_data = cipher.decrypt(aes_key, iv, data);
+					hi_param = HIP.HostIdParameter(param_data);
+					responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+						logging.critical("Invalid signature algorithm");
+						raise Exception("Invalid signature algorithm");
+					oga = HIT.get_responders_oga_id(rhit);
+					responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
+					if not Utils.hits_equal(shit, responders_hit):
+						logging.critical("Not our HIT");
+						raise Exception("Invalid HIT");
+					responders_public_key = RSAPublicKey.load_from_params(
+						responder_hi.get_exponent(), 
+						responder_hi.get_modulus());
 
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(shit);
@@ -1063,7 +1086,7 @@ def hip_loop():
 
 				# Transition to an Established state
 				hip_state.established();
-				logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
+				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
