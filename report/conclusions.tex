@@ -8,11 +8,13 @@ address. HIP protocol not only solves the problem of separation
 of roles of the IP addresses, but can also be a secure mobility
 solution. There are many applications of HIP in modern networks -
 from establishing a secure channel between stationary network
-entities, to secure mobile users.
+entities, to securing mobile users.
 
 We have created a minimal Python-based implementation of HIP and 
 experimented with it: (i) we have made several microbanchmarkings, and (ii)
 we completed several rounds of stress tests of the solution (
 basically, we have made several concurrent connections to HIP
-server and measured duration of HIP base exchange). In this work the 
-implementation of IPSec protocol was out of the scope. 
+server and measured duration of HIP base exchange). We have also 
+implemented Encapsulated Secure Payload (ESP) for IPSec and 
+measured overall performance by performing several rounds of 
+bandwidth measurements using \texttt{iperf} tool.

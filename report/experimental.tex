@@ -3,7 +3,7 @@
 
 In this section we will discuss the performance related issues of our 
 HIPv2 implementation. We begin the discussion with the set of 
-microbanchmarkings. Thus, we first evaluate the perormance of ECDH and DH
+microbanchmarkings. Thus, we first evaluate the performance of ECDH and DH
 algorithms, then we switch to performance of RSA, DSA, and ECDSA signature
 algorithms, we conclude the discussion with the performance of various HMAC 
 algorithms.
@@ -62,12 +62,15 @@ to reduced key sizes.
 
 We have ran the HIPv2 BEX for 20 times and measured the total packet processing time (we have combined packet 
 processing time for initiator and responder). In Figure~\ref{fig:packet_processing} we show the boxplots for 
-the packet processing durations. To run the tests we have used the following configuration: for signatures 
+the packet processing duration. To run the tests we have used the following configuration: for signatures 
 we have used RSA with $2048$ bits long modulus, SHA-256 for HMAC and hashing, ECDH with NIST521 curve, 
 AES-256 for encryption and $16$ bits for puzzle difficulty. We have noticed that processing R1 packet consumes considerable
-amount of time on responder. Since our implimentation was lacking pre-creation of R1 packets, such lengthy packet 
+amount of time on responder. Since our implementation was lacking pre-creation of R1 packets, such lengthy packet 
 processing time was expected. We have also measured the overall duration of the HIPv2 base exchange (BEX). 
-In Figure~\ref{fig:duration_bex} we demonstrate distribution of HIP BEX durations.
+In Figure~\ref{fig:duration_bex} we demonstrate distribution of HIP BEX durations. Clearly, implementing 
+cryptographic protocols in userspace using high-level languages, such as Python, is not the best choice: the performance
+of such implementations is really poor and it is better to implement the security solutions using lower 
+level languages, such as C or C++.
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/duration_bex.pdf}
