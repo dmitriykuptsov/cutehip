@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.CRITICAL,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -1359,10 +1359,10 @@ def tun_if_loop():
 				hip_state.i1_sent();
 
 				if Utils.is_hit_smaller(rhit, shit):
-					retransmission_storage.add(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					retransmission_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(shit), ipv4_packet)
 				else:
-					retransmission_storage.add(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					retransmission_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit), ipv4_packet);
 
 			elif hip_state.is_established():
