@@ -18,6 +18,8 @@
 from Crypto.Cipher import AES
 
 class SymmetricCrypto():
+	BLOCK_SIZE = 0x0;
+	KEY_SIZE_BITS = 0x0;
 	# PKCS7 padding is described in
 	# https://tools.ietf.org/html/rfc5652
 	def pad(self, plaintext, block_size):
