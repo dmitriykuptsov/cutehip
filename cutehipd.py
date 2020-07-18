@@ -213,7 +213,7 @@ def hip_loop():
 			if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
 				logging.info("I1 packet");
 
-				if hip_state.is_i1_sent() and not Utils.is_hit_smaller(rhit, shit):
+				if hip_state.is_i1_sent() and Utils.is_hit_smaller(rhit, shit):
 					logging.debug("Staying in I1-SENT state");
 					continue;
 
@@ -372,8 +372,19 @@ def hip_loop():
 
 				# 1 0 0
 				# 1 1 1
-				if not hip_state.is_i1_sent() and not hip_state.is_i2_sent():
-					logging.debug("Not in I1-SENT or I2-SENT state. Dropping packet...");
+				if (hip_state.is_unassociated() 
+					or hip_state.is_r2_sent() 
+					or hip_state.is_established()):
+					logging.debug("Dropping packet...");
+					continue;
+
+				oga = HIT.get_responders_oga_id(rhit);
+
+				if oga not in config.config["security"]["supported_hit_suits"]:
+					logging.critical("Unsupported HIT suit");
+					logging.critical("OGA %d"  % (oga));
+					logging.critical(config.config["security"]["supported_hit_suits"]);
+					# Send I1
 					continue;
 
 				puzzle_param     = None;
@@ -811,6 +822,7 @@ def hip_loop():
 				if hip_state.is_i2_sent():
 					if Utils.is_hit_smaller(rhit, shit):
 						logging.debug("Dropping I2 packet...");
+						continue;
 
 				if hip_state.is_i1_sent():
 					if Utils.is_hit_smaller(rhit, shit):
@@ -1024,7 +1036,7 @@ def hip_loop():
 				
 				# Transition to an Established state
 				logging.debug("Current system state is %s" % (str(hip_state)));
-				if hip_state.is_established() or hip_state.is_unassociated() or hip_state.i1_sent() or hip_state.i2_sent() or hip_state.r2_sent():
+				if hip_state.is_established() or hip_state.is_unassociated() or hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_r2_sent():
 					hip_state.r2_sent();
 					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
 					hip_socket.sendto(
@@ -1044,8 +1056,11 @@ def hip_loop():
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
-				if not hip_state.is_i2_sent():
-					logging.debug("Dropping the packet the system is not in I2-SENT state");
+				if (hip_state.is_unassociated() 
+					or hip_state.is_i1_sent() 
+					or hip_state.is_r2_sent() 
+					or hip_state.is_established()):
+					logging.debug("Dropping the packet");
 					continue;
 
 				st = time.time();
@@ -1133,13 +1148,31 @@ def hip_loop():
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
-				hip_state.established();
+				if hip_state.is_i1_sent() or hip_state.is_unassociated() or hip_state.is_i2_sent():
+					logging.debug("Dropping the packet");
+					continue;
+				# Process the packet
+				if hip_state.is_r2_sent():
+					hip_state.established();
+
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
 				logging.info("NOTIFY packet");
+				if hip_state.is_i1_sent() or hip_state.is_i2_sent():
+					logging.debug("Dropping the packet...")
+					continue;
+				# process the packet...
 			elif hip_packet.get_packet_type() == HIP.HIP_CLOSE_PACKET:
 				logging.info("CLOSE packet");
+				if hip_state.is_i1_sent():
+					logging.debug("Dropping the packet...");
+				# send close ack packet
+				if hip_state.is_r2_sent() or hip_state.is_established():
+					hip_state.closed();
 			elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
 				logging.info("CLOSE ACK packet");
+				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i1_sent() or hip_state.is_i2_sent():
+					logging.debug("Dropping packet");
+					continue;
 		except Exception as e:
 			# We need more inteligent handling of exceptions here
 			logging.critical("Exception occured. Dropping packet HIPv2.")
