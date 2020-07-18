@@ -64,10 +64,12 @@ class StateMachine():
 	def __init__(self):
 		self.states = dict();
 	def get(self, shit, rhit):
+
 		if not self.states.get(shit+rhit, None):
 			self.initialize(shit, rhit);
 		return self.states.get(shit+rhit, None);
 	def initialize(self, shit, rhit):
+
 		self.states[shit+rhit] = State();
 
 class Storage():
@@ -77,3 +79,5 @@ class Storage():
 		return self.storage.get(shit + rhit, None);
 	def save(self, shit, rhit, value):
 		self.storage[shit + rhit] = value;
+	def remove(self, shit, rhit):
+		del self.storage[shit + rhit]

@@ -323,6 +323,15 @@ class Utils():
 		else:
 			return shit_bytes + rhit_bytes;
 
+	@staticmethod
+	def is_hit_smaller(shit_bytes, rhit_bytes):
+		shit = Math.bytes_to_int(shit_bytes);
+		rhit = Math.bytes_to_int(rhit_bytes);
+		if shit < rhit:
+			return True;
+		else:
+			return False;
+
 	# https://tools.ietf.org/html/rfc5869
 	# Key derivation function
 	@staticmethod

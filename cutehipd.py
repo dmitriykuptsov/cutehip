@@ -142,6 +142,7 @@ hip_state_machine = HIPState.StateMachine();
 keymat_storage = HIPState.Storage();
 dh_storage = HIPState.Storage();
 pubkey_storage = HIPState.Storage();
+retransmission_storage = HIPState.Storage();
 
 def hip_loop():
 	"""
@@ -175,8 +176,15 @@ def hip_loop():
 			logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
 			logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
-			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-				Utils.ipv6_bytes_to_hex_formatted(shit));
+
+			#hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+			#	Utils.ipv6_bytes_to_hex_formatted(shit));
+			if Utils.is_hit_smaller(rhit, shit):
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(shit));
+			else:
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 			if hip_packet.get_version() != HIP.HIP_VERSION:
 				logging.critical("Only HIP version 2 is supported");
@@ -204,6 +212,10 @@ def hip_loop():
 
 			if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
 				logging.info("I1 packet");
+
+				if hip_state.is_i1_sent() and not Utils.is_hit_smaller(rhit, shit):
+					logging.debug("Staying in I1-SENT state");
+					continue;
 
 				st = time.time();
 				
@@ -354,8 +366,16 @@ def hip_loop():
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
+				# Stay in current state
 			elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
 				logging.info("R1 packet");
+
+				# 1 0 0
+				# 1 1 1
+				if not hip_state.is_i1_sent() and not hip_state.is_i2_sent():
+					logging.debug("Not in I1-SENT or I2-SENT state. Dropping packet...");
+					continue;
+
 				puzzle_param     = None;
 				r1_counter_param = None;
 				irandom          = None;
@@ -479,6 +499,8 @@ def hip_loop():
 				if (end_time - start_time) > 2**(puzzle_param.get_lifetime() - 32):
 					logging.critical("Maximum time to solve the puzzle exceeded. Dropping the packet...");
 					# Abandon the BEX
+					hip_state.unassociated();
+					continue;
 
 				buf = [];
 
@@ -696,7 +718,8 @@ def hip_loop():
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
-
+				if hip_state.is_i1_sent():
+					hip_state.i2_sent();
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
 				st = time.time();
@@ -779,9 +802,22 @@ def hip_loop():
 				
 				oga = HIT.get_responders_oga_id(rhit);
 
-				#if oga not in config.config["security"]["supported_hit_suits"]:
-				#	logging.critical("Unsupported HIT suit");
-				#	continue;
+				if oga not in config.config["security"]["supported_hit_suits"]:
+					logging.critical("Unsupported HIT suit");
+					continue;
+
+				if hip_state.is_i2_sent():
+					if Utils.is_hit_smaller(rhit, shit):
+						logging.debug("Dropping I2 packet...");
+
+				if hip_state.is_i1_sent():
+					if Utils.is_hit_smaller(rhit, shit):
+						retransmission_storage.remove(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+							Utils.ipv6_bytes_to_hex_formatted(shit))
+					else:
+						retransmission_storage.remove(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit))
+
 				jrandom = solution_param.get_solution();
 				irandom = solution_param.get_random();
 				if not PuzzleSolver.verify_puzzle(
@@ -983,10 +1019,14 @@ def hip_loop():
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
 				src_str = Utils.ipv4_bytes_to_string(src);
-				logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
-				hip_socket.sendto(
-					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+				
+				# Transition to an Established state
+				if hip_state.unassociated() or hip_state.i1_sent() or hip_state.i2_sent() or hip_state.r2_sent():
+					hip_state.r2_sent();
+					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
+					hip_socket.sendto(
+						bytearray(ipv4_packet.get_buffer()), 
+						(dst_str, 0));
 
 				logging.debug("Setting SA records...");
 
@@ -999,11 +1039,11 @@ def hip_loop():
 				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, shit);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
-				# Transition to an Established state
-				hip_state.r2_sent();
-
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
+				if not hip_stete.is_i2_sent():
+					logging.debug("Dropping the packet the system is not in I2-SENT state");
+
 				st = time.time();
 
 				logging.info("R2 packet");
@@ -1176,8 +1216,13 @@ def ip_sec_loop():
 			ipv6_packet.set_payload_length(len(unpadded_data));
 			ipv6_packet.set_payload(unpadded_data);
 
-			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-				Utils.ipv6_bytes_to_hex_formatted(rhit));
+			if Utils.is_hit_smaller(rhit, shit):
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(shit));
+			else:
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit));
+			
 
 			hip_state.established();
 
@@ -1210,8 +1255,14 @@ def tun_if_loop():
 			logging.info("Next header %s " % (packet.get_next_header()));
 			logging.info("Hop limit %s" % (packet.get_hop_limit()));
 			# Get the state
-			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-				Utils.ipv6_bytes_to_hex_formatted(rhit));
+			#hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+			#	Utils.ipv6_bytes_to_hex_formatted(rhit));
+			if Utils.is_hit_smaller(rhit, shit):
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(shit));
+			else:
+				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit));
 			if hip_state.is_unassociated():
 				logging.debug("Unassociate state reached");
 				logging.debug("Starting HIP BEX %f" % (time.time()));
@@ -1269,6 +1320,13 @@ def tun_if_loop():
 
 				# Transition to an I1-Sent state
 				hip_state.i1_sent();
+
+				if Utils.is_hit_smaller(rhit, shit):
+					retransmission_storage.add(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit), ipv4_packet)
+				else:
+					retransmission_storage.add(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), ipv4_packet);
 
 			elif hip_state.is_established():
 				logging.debug("Sending IPSEC packet...")
