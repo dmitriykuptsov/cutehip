@@ -59,6 +59,8 @@ class State():
 		return self.state == HIP_STATE_E_FAILED;
 	def failed(self):
 		self.state = HIP_STATE_E_FAILED;
+	def __str__(self):
+		return str(self.state);
 
 class StateMachine():
 	def __init__(self):
@@ -69,7 +71,6 @@ class StateMachine():
 			self.initialize(shit, rhit);
 		return self.states.get(shit+rhit, None);
 	def initialize(self, shit, rhit):
-
 		self.states[shit+rhit] = State();
 
 class Storage():

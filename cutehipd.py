@@ -1023,6 +1023,7 @@ def hip_loop():
 				src_str = Utils.ipv4_bytes_to_string(src);
 				
 				# Transition to an Established state
+				logging.debug("Current system state is %s" % (str(hip_state)));
 				if hip_state.unassociated() or hip_state.i1_sent() or hip_state.i2_sent() or hip_state.r2_sent():
 					hip_state.r2_sent();
 					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
