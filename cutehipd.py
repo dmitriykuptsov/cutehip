@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.CRITICAL,
+	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -832,7 +832,7 @@ def hip_loop():
 					iv = encrypted_param.get_iv(iv_length);
 					data = encrypted_param.get_encrypted_data(iv_length);
 					host_id_data = cipher.decrypt(aes_key, iv, data);
-					hi_param = HIP.HostIdParameter(param_data);
+					hi_param = HIP.HostIdParameter(host_id_data);
 					responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
 					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
 						logging.critical("Invalid signature algorithm");
@@ -1000,7 +1000,7 @@ def hip_loop():
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
 				# Transition to an Established state
-				hip_state.established();
+				hip_state.r2_sent();
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
@@ -1089,6 +1089,7 @@ def hip_loop():
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
+				hip_state.established();
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
 				logging.info("NOTIFY packet");
 			elif hip_packet.get_packet_type() == HIP.HIP_CLOSE_PACKET:
@@ -1174,6 +1175,11 @@ def ip_sec_loop():
 			ipv6_packet.set_hop_limit(1);
 			ipv6_packet.set_payload_length(len(unpadded_data));
 			ipv6_packet.set_payload(unpadded_data);
+
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+			hip_state.established();
 
 			logging.debug("Sending IPv6 packet to %s" % (Utils.ipv6_bytes_to_hex_formatted(shit)));
 			hip_tun.write(bytearray(ipv6_packet.get_buffer()));
