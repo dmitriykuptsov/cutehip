@@ -804,6 +804,8 @@ def hip_loop():
 
 				if oga not in config.config["security"]["supported_hit_suits"]:
 					logging.critical("Unsupported HIT suit");
+					logging.critical("OGA %d"  % (oga));
+					logging.critical(config.config["security"]["supported_hit_suits"]);
 					continue;
 
 				if hip_state.is_i2_sent():
