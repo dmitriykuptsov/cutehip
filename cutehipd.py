@@ -1044,7 +1044,7 @@ def hip_loop():
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
-				if not hip_stete.is_i2_sent():
+				if not hip_state.is_i2_sent():
 					logging.debug("Dropping the packet the system is not in I2-SENT state");
 
 				st = time.time();
