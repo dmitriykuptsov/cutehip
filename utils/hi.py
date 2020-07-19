@@ -67,6 +67,7 @@ class RSAHostID(HostID):
 			self.buffer[1] = (exponent_length >> 8) & 0xFF;
 			self.buffer[2] = (exponent_length) & 0xFF;
 			logging.debug(".......................exponent_length..............................")
+			logging.debug(exponent_length)
 			logging.debug(self.buffer[1])
 			logging.debug(self.buffer[2])
 			offset = 0x3;
