@@ -797,6 +797,9 @@ def hip_loop():
 						responders_public_key = RSAPublicKey.load_from_params(
 							responder_hi.get_exponent(), 
 							responder_hi.get_modulus());
+						pubkey_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit), 
+							responders_public_key);
 					if isinstance(parameter, HIP.TransportListParameter):
 						logging.debug("Transport parameter");
 						transport_param = parameter;
@@ -1272,8 +1275,8 @@ def hip_loop():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 
-				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-							Utils.ipv6_bytes_to_hex_formatted(shit));
+				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit));
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 
 				hip_update_packet = HIP.UpdatePacket();
