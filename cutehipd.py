@@ -1311,8 +1311,8 @@ def hip_loop():
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				hip_update_packet = HIP.UpdatePacket();
-				hip_update_packet.set_senders_hit(shit);
-				hip_update_packet.set_receivers_hit(rhit);
+				hip_update_packet.set_senders_hit(rhit);
+				hip_update_packet.set_receivers_hit(shit);
 				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_update_packet.set_version(HIP.HIP_VERSION);
 				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
