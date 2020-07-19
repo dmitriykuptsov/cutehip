@@ -1481,7 +1481,7 @@ def hip_loop():
 				hip_close_ack_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				echo_response_param = HIP.EchoResponseSignedParameter();
-				echo_response_param.add_opaque_data([echo_param.get_opaque_data()]);
+				echo_response_param.add_opaque_data(echo_param.get_opaque_data());
 				hip_close_ack_packet.add_parameter(echo_response_param);
 
 				mac_param = HIP.MACParameter();
