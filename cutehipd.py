@@ -333,6 +333,8 @@ def hip_loop():
 				hip_r1_packet.add_parameter(transport_param);
 				hip_r1_packet.add_parameter(signature_param);
 
+				logging.debug(signature_param.get_byte_buffer());
+				
 				# Swap the addresses
 				temp = src;
 				src = dst;
