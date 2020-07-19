@@ -1448,7 +1448,7 @@ def hip_loop():
 
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 
-				hip_close_packet = HIP.CloseAckPacket();
+				hip_close_packet = HIP.ClosePacket();
 				hip_close_packet.set_senders_hit(shit);
 				hip_close_packet.set_receivers_hit(rhit);
 				hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
@@ -1466,12 +1466,9 @@ def hip_loop():
 
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
+					continue;
 				else:
 					logging.debug("Signature is correct");
-
-				if ack_param:
-					logging.debug("This is a response to a UPDATE. Skipping pong...");
-					continue;
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, shit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
