@@ -1671,7 +1671,7 @@ while main_loop:
 		variables = state_variables.get_by_key(key);
 		if variables.state == HIPState.HIP_STATE_ESTABLISHED:
 			if time.time() >= variables.timeout:
-				#variables.timeout = time.time() + config["general"]["update_timeout_s"];
+				variables.timeout = time.time() + config.config["general"]["update_timeout_s"];
 				if Utils.is_hit_smaller(variables.rhit, variables.shit):
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(variables.shit));
@@ -1739,6 +1739,45 @@ while main_loop:
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
+		elif variables.state == HIPState.HIP_STATE_I1_SENT:
+			if time.time() >= variables.timeout:
+				variables.timeout = time.time() + config.config["general"]["i1_timeout_s"];
+				dh_groups_param = HIP.DHGroupListParameter();
+				dh_groups_param.add_groups(config.config["security"]["supported_DH_groups"]);
+
+				# Create I1 packet
+				hip_i1_packet = HIP.I1Packet();
+				hip_i1_packet.set_senders_hit(variables.shit);
+				hip_i1_packet.set_receivers_hit(variables.rhit);
+				hip_i1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_i1_packet.set_version(HIP.HIP_VERSION);
+				hip_i1_packet.add_parameter(dh_groups_param);
+
+				# Compute the checksum of HIP packet
+				checksum = Utils.hip_ipv4_checksum(
+					variables.src, 
+					variables.dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_i1_packet.get_length() * 8 + 8, 
+					hip_i1_packet.get_buffer());
+				hip_i1_packet.set_checksum(checksum);
+
+				dst_str = Utils.ipv4_bytes_to_string(variables.dst);
+				src_str = Utils.ipv4_bytes_to_string(variables.src);
+
+				# Construct the IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(variables.dst);
+				ipv4_packet.set_source_address(variables.src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+				ipv4_packet.set_payload(hip_i1_packet.get_buffer());
+
+				# Send HIP I1 packet to destination
+				logging.debug("Sending I1 packet to %s" % (dst_str));
+				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0))
 
 def exit_handler():
 	routing.Routing.del_hip_default_route();
