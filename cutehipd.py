@@ -143,7 +143,6 @@ keymat_storage = HIPState.Storage();
 dh_storage = HIPState.Storage();
 cipher_storage = HIPState.Storage();
 pubkey_storage = HIPState.Storage();
-retransmission_storage = HIPState.Storage();
 state_variables = HIPState.Storage();
 
 
@@ -221,9 +220,15 @@ def hip_loop():
 					logging.debug("Staying in I1-SENT state");
 					continue;
 
-				state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
-					Utils.ipv6_bytes_to_hex_formatted(shit),
-					HIPState.StateVariables(hip_state.get_state(), rhit, shit, dst, src))
+				if Utils.is_hit_smaller(rhit, shit):
+					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit),
+						HIPState.StateVariables(hip_state.get_state(), shit, rhit, dst, src))
+				else:
+					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit),
+						HIPState.StateVariables(hip_state.get_state(), shit, rhit, dst, src))
+				
 				
 
 				st = time.time();
@@ -849,14 +854,6 @@ def hip_loop():
 						logging.debug("Dropping I2 packet...");
 						continue;
 
-				if hip_state.is_i1_sent():
-					if Utils.is_hit_smaller(rhit, shit):
-						retransmission_storage.remove(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-							Utils.ipv6_bytes_to_hex_formatted(shit))
-					else:
-						retransmission_storage.remove(Utils.ipv6_bytes_to_hex_formatted(shit), 
-							Utils.ipv6_bytes_to_hex_formatted(rhit))
-
 				jrandom = solution_param.get_solution();
 				irandom = solution_param.get_random();
 				if not PuzzleSolver.verify_puzzle(
@@ -1191,8 +1188,14 @@ def hip_loop():
 
 				# Transition to an Established state
 				hip_state.established();
-				sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
-					Utils.ipv6_bytes_to_hex_formatted(shit))
+				if Utils.is_hit_smaller(rhit, shit):
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+				#sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+				#	Utils.ipv6_bytes_to_hex_formatted(shit))
 				sv.state = HIPState.HIP_STATE_ESTABLISHED;
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
@@ -1215,7 +1218,17 @@ def hip_loop():
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				hmac_alg  = HIT.get_responders_oga_id(rhit);
+				if Utils.is_hit_smaller(rhit, shit):
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				if sv.is_responder:
+					hmac_alg  = HIT.get_responders_oga_id(rhit);
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(shit);
 
 				if Utils.is_hit_smaller(rhit, shit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -1391,7 +1404,17 @@ def hip_loop():
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				hmac_alg  = HIT.get_responders_oga_id(rhit);
+				if Utils.is_hit_smaller(rhit, shit):
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				if sv.is_responder:
+					hmac_alg  = HIT.get_responders_oga_id(rhit);
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(shit);
 
 				if Utils.is_hit_smaller(rhit, shit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -1720,12 +1743,21 @@ def tun_if_loop():
 				# Transition to an I1-Sent state
 				hip_state.i1_sent();
 
-				state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
-					Utils.ipv6_bytes_to_hex_formatted(rhit),
-					HIPState.StateVariables(hip_state.get_state(), shit, rhit, src, dst));
-
-				sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
-					Utils.ipv6_bytes_to_hex_formatted(rhit));
+				if Utils.is_hit_smaller(rhit, shit):
+					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit),
+						HIPState.StateVariables(hip_state.get_state(), shit, rhit, src, dst));
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+						Utils.ipv6_bytes_to_hex_formatted(shit))
+				else:
+					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit),
+						HIPState.StateVariables(hip_state.get_state(), shit, rhit, src, dst));
+					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
+						Utils.ipv6_bytes_to_hex_formatted(rhit))
+				#sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+				#	Utils.ipv6_bytes_to_hex_formatted(shit))
+				
 				sv.is_responder = False;
 
 			elif hip_state.is_established():
@@ -1832,10 +1864,7 @@ def exit_handler():
 			cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.shit), 
 				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-		if sv.is_responder:
-			hmac_alg  = HIT.get_responders_oga_id(sv.shit);
-		else:
-			hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+		hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 
 		(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.shit, sv.rhit);
 		hmac = HMACFactory.get(hmac_alg, hmac_key);
@@ -1913,10 +1942,9 @@ while main_loop:
 				else:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.shit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
-				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.shit);
-				else:
-					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);	
+				
+				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);	
+
 				if Utils.is_hit_smaller(sv.rhit, sv.shit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.shit));
