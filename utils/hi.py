@@ -56,6 +56,8 @@ class RSAHostID(HostID):
 	def __init__(self, exponent = None, modulus = None):
 		exponent_bytes = Math.int_to_bytes(exponent);
 		modulus_bytes = Math.int_to_bytes(modulus);
+		logging.debug("Modulus length......");
+		logging.debug(len(modulus));
 		exponent_length = len(exponent_bytes);
 		self.exponent_length_field_length = 0x1;
 		if len(exponent_bytes) > 255:
@@ -66,10 +68,6 @@ class RSAHostID(HostID):
 		if exponent > 255:
 			self.buffer[1] = (exponent_length >> 8) & 0xFF;
 			self.buffer[2] = (exponent_length) & 0xFF;
-			logging.debug(".......................exponent_length..............................")
-			logging.debug(exponent_length)
-			logging.debug(self.buffer[1])
-			logging.debug(self.buffer[2])
 			offset = 0x3;
 		else:
 			self.buffer[0] = len(exponent_bytes);
