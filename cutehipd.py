@@ -144,6 +144,7 @@ dh_storage = HIPState.Storage();
 cipher_storage = HIPState.Storage();
 pubkey_storage = HIPState.Storage();
 retransmission_storage = HIPState.Storage();
+state_variables = HIPState.Storage();
 
 
 def hip_loop():
@@ -219,6 +220,11 @@ def hip_loop():
 				if hip_state.is_i1_sent() and Utils.is_hit_smaller(rhit, shit):
 					logging.debug("Staying in I1-SENT state");
 					continue;
+
+				state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
+					Utils.ipv6_bytes_to_hex_formatted(shit),
+					HIPState.StateVariables(hip_state.get_state(), rhit, shit, dst, src))
+				
 
 				st = time.time();
 				
@@ -1182,6 +1188,9 @@ def hip_loop():
 
 				# Transition to an Established state
 				hip_state.established();
+				variables = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+					Utils.ipv6_bytes_to_hex_formatted(shit))
+				variables.state = HIPState.HIP_STATE_ESTABLISHED;
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
@@ -1561,12 +1570,9 @@ def tun_if_loop():
 				# Transition to an I1-Sent state
 				hip_state.i1_sent();
 
-				if Utils.is_hit_smaller(rhit, shit):
-					retransmission_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-						Utils.ipv6_bytes_to_hex_formatted(shit), ipv4_packet)
-				else:
-					retransmission_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
-						Utils.ipv6_bytes_to_hex_formatted(rhit), ipv4_packet);
+				state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
+					Utils.ipv6_bytes_to_hex_formatted(rhit),
+					HIPState.StateVariables(hip_state.get_state(), shit, rhit, src, dst));
 
 			elif hip_state.is_established():
 				logging.debug("Sending IPSEC packet...")
@@ -1655,9 +1661,81 @@ tun_if_th_loop.start();
 main_loop = True;
 
 while main_loop:
-	#print("Periodic tasks")
+	logging.debug("Periodic tasks")
 	time.sleep(1);
+	for key in state_variables.keys():
+		logging.debug("Periodic task for %s" % (key));
+		variables = state_variables.get_by_key(key);
+		if variables.state == HIPState.HIP_STATE_ESTABLISHED:
+			if time.time() >= variables.timeout:
+				#variables.timeout = time.time() + config["general"]["update_timeout_s"];
+				if Utils.is_hit_smaller(variables.rhit, variables.shit):
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.shit), 
+						Utils.ipv6_bytes_to_hex_formatted(variables.rhit));
+				hmac_alg  = HIT.get_responders_oga_id(variables.rhit);
+				if Utils.is_hit_smaller(variables.rhit, variables.shit):
+					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(variables.shit));
+				else:
+					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(variables.shit), 
+						Utils.ipv6_bytes_to_hex_formatted(variables.rhit));
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, variables.shit, variables.rhit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
+				hip_update_packet = HIP.UpdatePacket();
+				hip_update_packet.set_senders_hit(variables.shit);
+				hip_update_packet.set_receivers_hit(variables.rhit);
+				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_update_packet.set_version(HIP.HIP_VERSION);
+				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				variables.update_seq += 1;
+				seq_param = HIP.SequenceParameter();
+				seq_param.set_id(variables.update_seq);
+				hip_update_packet.add_parameter(seq_param);
+
+				mac_param = HIP.MAC2Parameter();
+				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
+				hip_update_packet.add_parameter(mac_param);
+
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature = signature_alg.sign(bytearray(hip_update_packet.get_buffer()));
+
+				signature_param = HIP.SignatureParameter();
+				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+				signature_param.set_signature(signature);
+
+				hip_update_packet.add_parameter(signature_param);
+
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(variables.dst);
+				ipv4_packet.set_source_address(variables.src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
+				# Calculate the checksum
+				checksum = Utils.hip_ipv4_checksum(
+					variables.src, 
+					variables.dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_update_packet.get_length() * 8 + 8, 
+					hip_update_packet.get_buffer());
+				hip_update_packet.set_checksum(checksum);
+				ipv4_packet.set_payload(hip_update_packet.get_buffer());
+				# Send the packet
+				dst_str = Utils.ipv4_bytes_to_string(variables.dst);
+				src_str = Utils.ipv4_bytes_to_string(variables.src);
+				
+				logging.debug("Sending UPDATE PACKET packet %s" % (dst_str));
+				hip_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(dst_str, 0));
 def exit_handler():
 	routing.Routing.del_hip_default_route();
 	main_loop = False;

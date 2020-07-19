@@ -17,10 +17,10 @@ config = {
 		"diffie_hellamn_group": 0x8,                           # ECDH NIST 384 group
 		"hip_cipher": 0x4,                                     # AES-256 CBC 0x4, AES-128 CBC 0x2, NULL 0x1
 		"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
-		"supported_ciphers": [0x1, 0x2, 0x4],                  # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
-		"supported_hit_suits": [0x10, 0x20, 0x30],             # SHA256 (0x1), SHA384 (0x2), SHA1 (0x3)
+		"supported_ciphers": [0x4, 0x2, 0x1],                  # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
+		"supported_hit_suits": [0x1, 0x2, 0x3],                # SHA256 (0x1), SHA384 (0x2), SHA1 (0x3)
 		"supported_transports": [0x0FFF],                      # IPSec
-		"supported_signatures": [0x3, 0x5, 0x7, 0x9],          # DSA (0x3), RSA (0x5), ECDSA (0x7), ECDSA_LOW (0x9)
+		"supported_signatures": [0x5, 0x3, 0x7, 0x9],          # DSA (0x3), RSA (0x5), ECDSA (0x7), ECDSA_LOW (0x9)
 	},
 	"resolver": {
 		"hosts_file": "./config/hosts",
@@ -31,7 +31,8 @@ config = {
 	},
 	"general": {
 		"i1_timer_s": 5,
-		"i1_retries": 3 
+		"i1_retries": 3,
+		"update_timeout_s": 10
 	}
 }
 
