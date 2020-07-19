@@ -196,6 +196,8 @@ def hip_loop():
 			# Check wether the destination address is our own HIT
 			if not Utils.hits_equal(rhit, own_hit) and not Utils.hits_equal(rhit, [0] * 16):
 				logging.critical("Not our HIT");
+				logging.critical(list(rhit));
+				logging.critical(list(own_hit));
 				continue;
 
 			# https://tools.ietf.org/html/rfc7401#section-5
@@ -223,11 +225,11 @@ def hip_loop():
 				if Utils.is_hit_smaller(rhit, shit):
 					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
 						Utils.ipv6_bytes_to_hex_formatted(shit),
-						HIPState.StateVariables(hip_state.get_state(), shit, rhit, dst, src))
+						HIPState.StateVariables(hip_state.get_state(), rhit, shit, dst, src))
 				else:
 					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit),
-						HIPState.StateVariables(hip_state.get_state(), shit, rhit, dst, src))
+						HIPState.StateVariables(hip_state.get_state(), rhit, shit, dst, src))
 
 				st = time.time();
 				
