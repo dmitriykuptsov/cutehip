@@ -1191,9 +1191,9 @@ def hip_loop():
 
 				# Transition to an Established state
 				hip_state.established();
-				variables = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
+				sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
 					Utils.ipv6_bytes_to_hex_formatted(shit))
-				variables.state = HIPState.HIP_STATE_ESTABLISHED;
+				sv.state = HIPState.HIP_STATE_ESTABLISHED;
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
@@ -1214,8 +1214,6 @@ def hip_loop():
 				else:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
-				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				hmac_alg  = HIT.get_responders_oga_id(rhit);
 
@@ -1361,7 +1359,7 @@ def hip_loop():
 				dst_str = Utils.ipv4_bytes_to_string(dst);
 				src_str = Utils.ipv4_bytes_to_string(src);
 				
-				logging.debug("Sending ACK packet %s" % (dst_str));
+				logging.debug("Sending UPDATE ACK packet %s" % (dst_str));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -1380,6 +1378,159 @@ def hip_loop():
 				if hip_state.is_i1_sent():
 					logging.debug("Dropping the packet...");
 				# send close ack packet
+				parameters       = hip_packet.get_parameters();
+
+				echo_param       = None;
+				signature_param  = None;
+				mac_param        = None;
+				
+				if Utils.is_hit_smaller(rhit, shit):
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				hmac_alg  = HIT.get_responders_oga_id(rhit);
+
+				if Utils.is_hit_smaller(rhit, shit):
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, shit, rhit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
+
+				for parameter in parameters:
+					if isinstance(parameter, HIP.EchoRequestSignedParameter):
+						logging.debug("Echo request signed parameter");
+						echo_param = parameter;
+					if isinstance(parameter, HIP.MACParameter):	
+						logging.debug("MAC parameter");
+						mac_param = parameter;
+					if isinstance(parameter, HIP.SignatureParameter):
+						logging.debug("Signature parameter");
+						signature_param = parameter;
+
+				if not mac_param:
+					logging.debug("Missing MAC parameter");
+					continue;
+
+				if not signature_param:
+					logging.debug("Missing signature parameter");
+					continue;
+				
+				hip_close_packet = HIP.ClosePacket();
+				hip_close_packet.set_senders_hit(shit);
+				hip_close_packet.set_receivers_hit(rhit);
+				hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_close_packet.set_version(HIP.HIP_VERSION);
+				hip_close_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				# Compute HMAC here
+				buf = [];
+				if echo_param:
+					buf += echo_param.get_byte_buffer();				
+
+				original_length = hip_close_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_close_packet.set_length(int(packet_length / 8));
+				buf = hip_close_packet.get_buffer() + buf;
+
+				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
+					logging.critical("Invalid HMAC. Dropping the packet");
+					continue;
+
+				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+
+				hip_close_packet = HIP.CloseAckPacket();
+				hip_close_packet.set_senders_hit(shit);
+				hip_close_packet.set_receivers_hit(rhit);
+				hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_close_packet.set_version(HIP.HIP_VERSION);
+				hip_close_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				buf = [];
+				buf += echo_signed.get_byte_buffer();
+				buf += mac_param.get_byte_buffer();
+
+				original_length = hip_close_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_close_packet.set_length(int(packet_length / 8));
+				buf = hip_close_packet.get_buffer() + buf;
+
+				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.critical("Invalid signature. Dropping the packet");
+				else:
+					logging.debug("Signature is correct");
+
+				if ack_param:
+					logging.debug("This is a response to a UPDATE. Skipping pong...");
+					continue;
+
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, shit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
+
+				hip_close_ack_packet = HIP.CloseAckPacket();
+				hip_close_ack_packet.set_senders_hit(rhit);
+				hip_close_ack_packet.set_receivers_hit(shit);
+				hip_close_ack_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_close_ack_packet.set_version(HIP.HIP_VERSION);
+				hip_close_ack_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				echo_response_param = HIP.EchoResponseSignedParameter();
+				echo_response_param.add_opaque_data([echo_param.get_opaque_data()]);
+				hip_close_ack_packet.add_parameter(echo_response_param);
+
+				mac_param = HIP.MACParameter();
+				mac_param.set_hmac(hmac.digest(bytearray(hip_close_ack_packet.get_buffer())));
+				hip_close_ack_packet.add_parameter(mac_param);
+
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature = signature_alg.sign(bytearray(hip_close_ack_packet.get_buffer()));
+
+				signature_param = HIP.SignatureParameter();
+				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+				signature_param.set_signature(signature);
+
+				hip_close_ack_packet.add_parameter(signature_param);
+
+				# Swap the addresses
+				temp = src;
+				src = dst;
+				dst = temp;
+
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
+				# Calculate the checksum
+				checksum = Utils.hip_ipv4_checksum(
+					src, 
+					dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_close_ack_packet.get_length() * 8 + 8, 
+					hip_close_ack_packet.get_buffer());
+				hip_close_ack_packet.set_checksum(checksum);
+				ipv4_packet.set_payload(hip_close_ack_packet.get_buffer());
+				# Send the packet
+				dst_str = Utils.ipv4_bytes_to_string(dst);
+				src_str = Utils.ipv4_bytes_to_string(src);
+				
+				logging.debug("Sending CLOSE ACK packet %s" % (dst_str));
+				hip_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(dst_str, 0));
 				if hip_state.is_r2_sent() or hip_state.is_established():
 					hip_state.closed();
 			elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
@@ -1704,11 +1855,11 @@ def exit_handler():
 		hip_close_packet.add_parameter(echo_param);
 
 		mac_param = HIP.MACParameter();
-		mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
+		mac_param.set_hmac(hmac.digest(bytearray(hip_close_packet.get_buffer())));
 		hip_close_packet.add_parameter(mac_param);
 
 		signature_alg = RSASHA256Signature(privkey.get_key_info());
-		signature = signature_alg.sign(bytearray(hip_update_packet.get_buffer()));
+		signature = signature_alg.sign(bytearray(hip_close_packet.get_buffer()));
 
 		signature_param = HIP.SignatureParameter();
 		signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
@@ -1756,7 +1907,7 @@ while main_loop:
 	for key in state_variables.keys():
 		logging.debug("Periodic task for %s" % (key));
 		sv = state_variables.get_by_key(key);
-		if sv.state == HIPState.HIP_STATE_ESTABLISHED:
+		if sv.state == HIPState.HIP_STATE_ESTABLISHED and not sv.is_responder:
 			if time.time() >= sv.timeout:
 				sv.timeout = time.time() + config.config["general"]["update_timeout_s"];
 				if Utils.is_hit_smaller(sv.rhit, sv.shit):
