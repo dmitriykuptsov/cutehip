@@ -103,3 +103,4 @@ class StateVariables():
 		self.timer = time.time();
 		self.timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
 		self.update_seq = 0;
+		self.is_responder = True;

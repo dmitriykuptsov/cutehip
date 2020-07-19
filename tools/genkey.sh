@@ -23,6 +23,7 @@ cd $path/../;
 command=$1;
 algo=$2;
 curve=$3;
+modulus=$3;
 
 if [ "$command" = "" ]
 then
@@ -52,7 +53,7 @@ then
 
 	if [ "$algo" = "RSA" ]
 	then
-		openssl genrsa -out private.pem 2048
+		openssl genrsa -out private.pem $modulus
 		openssl rsa -in private.pem -outform PEM -pubout -out public.pem
 		#openssl rsa -text -in private.pem
 		mv public.pem private.pem ./config/
@@ -76,6 +77,6 @@ then
 	echo "bash genkey.sh [command] [params]";
 	echo "  help - print this help"
 	echo "  curves - print available curves"
-	echo "  gen [RSA|ECDSA] [-|curve]"
+	echo "  gen [RSA|ECDSA] [modulus|curve]"
 fi
 

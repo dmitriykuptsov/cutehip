@@ -231,7 +231,7 @@ class DHGroupListParameter(HIPParameter):
 	def add_groups(self, groups):
 		self.set_length(len(groups));
 		self.buffer += groups;
-		padding = 8 - len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_groups(self):
 		groups = [];
@@ -283,7 +283,7 @@ class DHParameter(HIPParameter):
 		self.set_length(length);
 		self.set_public_value_length(len(public_value));
 		self.buffer += public_value;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_public_value(self):
 		public_value_length = self.get_public_value_length();
@@ -312,7 +312,7 @@ class CipherParameter(HIPParameter):
 			cipher_id[0] = (cipher >> 8) & 0xFF;
 			cipher_id[1] = cipher & 0xFF;
 			self.buffer += cipher_id;
-		padding = (8 - len(self.buffer)) % 8;
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_ciphers(self):
 		ciphers = [];
@@ -426,7 +426,7 @@ class HITSuitListParameter(HIPParameter):
 			raise Exception("Suits were set already");
 		self.set_length(len(suits));
 		self.buffer += suits;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_suits(self):
 		suits = [];
@@ -458,7 +458,7 @@ class TransportListParameter(HIPParameter):
 			transport_format_id[0] = (transport_format >> 8) & 0xFF;
 			transport_format_id[1] = transport_format & 0xFF;
 			self.buffer += transport_format_id;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 	def get_transport_formats(self):
@@ -494,7 +494,7 @@ class MACParameter(HIPParameter):
 		self.set_length(len(hmac));
 		length = len(hmac);
 		self.buffer[HIP_MAC_OFFSET:HIP_MAC_OFFSET + length] = hmac;
-		padding = (8 - (len(self.buffer)) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 HIP_MAC_2_TYPE    = 0xF081;
@@ -517,7 +517,7 @@ class MAC2Parameter(HIPParameter):
 		self.set_length(len(hmac));
 		length = len(hmac);
 		self.buffer[HIP_MAC_2_OFFSET:HIP_MAC_2_OFFSET + length] = hmac;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 HIP_SIG_TYPE             = 0xF101;
@@ -553,7 +553,7 @@ class SignatureParameter(HIPParameter):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 HIP_SIG_2_TYPE           = 0xF0C1;
@@ -590,7 +590,7 @@ class Signature2Parameter(HIPParameter):
 		self.set_length(len(sig) + HIP_SIG_ALG_TYPE_LENGTH);
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 HIP_SEQ_TYPE             = 0x181;
@@ -708,7 +708,7 @@ class EncryptedParameter(HIPParameter):
 		length = self.get_length();
 		length += len(enc_data);
 		self.set_length(length);
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_encrypted_data(self, iv_length):
 		if len(self.buffer) <= (
@@ -781,7 +781,7 @@ class NotificationParameter(HIPParameter):
 		self.buffer += [0] * (len(data) + padding);
 		self.buffer[offset:offset + len(data)] = data;
 		self.set_length(length + len(data));
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 
 
@@ -802,7 +802,7 @@ class EchoRequestSignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -824,7 +824,7 @@ class EchoRequestUnsignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -847,7 +847,7 @@ class EchoResponseSignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -870,7 +870,7 @@ class EchoResponseUnsignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = (8 - len(self.buffer) % 8);
+		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
