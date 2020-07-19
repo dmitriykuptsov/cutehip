@@ -1666,7 +1666,7 @@ while main_loop:
 	for key in state_variables.keys():
 		logging.debug("Periodic task for %s" % (key));
 		variables = state_variables.get_by_key(key);
-		if variables.state == HIPState.HIP_STATE_ESTABLISHED:
+		"""if variables.state == HIPState.HIP_STATE_ESTABLISHED:
 			if time.time() >= variables.timeout:
 				#variables.timeout = time.time() + config["general"]["update_timeout_s"];
 				if Utils.is_hit_smaller(variables.rhit, variables.shit):
@@ -1736,6 +1736,7 @@ while main_loop:
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
+		"""
 def exit_handler():
 	routing.Routing.del_hip_default_route();
 	main_loop = False;
