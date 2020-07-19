@@ -596,7 +596,7 @@ class Signature2Parameter(HIPParameter):
 HIP_SEQ_TYPE             = 0x181;
 HIP_UPDATE_ID_OFFSET     = 0x4;
 
-HIP_UPDATE_ID_LENGTH     = 0x2;
+HIP_UPDATE_ID_LENGTH     = 0x4;
 
 class SequenceParameter(HIPParameter):
 	def __init__(self, buffer = None):
@@ -634,10 +634,10 @@ class AckParameter(HIPParameter):
 			self.set_type(HIP_ACK_TYPE);
 			self.set_length(0);
 	def set_ids(self, ids):
-		self.set_length(len(ids) * 4);
+		self.set_length(len(ids) * HIP_UPDATE_ID_LENGTH);
 		offset = HIP_UPDATE_ID_OFFSET;
 		for id in ids:
-			self.buffer += [0] * 4;
+			self.buffer += [0] * HIP_UPDATE_ID_LENGTH;
 			self.buffer[offset] = (id << 24) & 0xFF;
 			self.buffer[offset + 1] = (id << 16) & 0xFF;
 			self.buffer[offset + 2] = (id << 8) & 0xFF;

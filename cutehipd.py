@@ -1217,10 +1217,10 @@ def hip_loop():
 				hmac_alg  = HIT.get_responders_oga_id(rhit);
 
 				if Utils.is_hit_smaller(rhit, shit):
-					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(shit));
 				else:
-					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, shit, rhit);
@@ -1666,21 +1666,21 @@ while main_loop:
 	for key in state_variables.keys():
 		logging.debug("Periodic task for %s" % (key));
 		variables = state_variables.get_by_key(key);
-		"""if variables.state == HIPState.HIP_STATE_ESTABLISHED:
+		if variables.state == HIPState.HIP_STATE_ESTABLISHED:
 			if time.time() >= variables.timeout:
 				#variables.timeout = time.time() + config["general"]["update_timeout_s"];
 				if Utils.is_hit_smaller(variables.rhit, variables.shit):
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
-						Utils.ipv6_bytes_to_hex_formatted(shit));
+						Utils.ipv6_bytes_to_hex_formatted(variables.shit));
 				else:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.shit), 
 						Utils.ipv6_bytes_to_hex_formatted(variables.rhit));
 				hmac_alg  = HIT.get_responders_oga_id(variables.rhit);
 				if Utils.is_hit_smaller(variables.rhit, variables.shit):
-					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(variables.shit));
 				else:
-					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(variables.shit), 
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(variables.shit), 
 						Utils.ipv6_bytes_to_hex_formatted(variables.rhit));
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, variables.shit, variables.rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
@@ -1736,7 +1736,7 @@ while main_loop:
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
-		"""
+
 def exit_handler():
 	routing.Routing.del_hip_default_route();
 	main_loop = False;
