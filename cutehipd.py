@@ -74,7 +74,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.CRITICAL,
+	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -300,7 +300,6 @@ def hip_loop():
 				# HIP signature parameter
 				signature_param = HIP.Signature2Parameter();
 				#
-
 				# Compute signature here
 				buf = puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
@@ -359,7 +358,7 @@ def hip_loop():
 					hip_r1_packet.get_length() * 8 + 8, 
 					hip_r1_packet.get_buffer());
 				hip_r1_packet.set_checksum(checksum);
-				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
+				ipv4_packet.set_payload(bytearray(hip_r1_packet.get_buffer()));
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
 				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
@@ -1188,7 +1187,7 @@ def ip_sec_loop():
 
 	while True:
 		try:
-			buf           = bytearray(ip_sec_socket.recv(MTU + 200));
+			buf           = bytearray(ip_sec_socket.recv(2*MTU));
 			ipv4_packet   = IPv4.IPv4Packet(buf);
 
 			data          = list(ipv4_packet.get_payload());
