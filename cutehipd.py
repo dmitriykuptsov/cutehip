@@ -300,6 +300,7 @@ def hip_loop():
 				# HIP signature parameter
 				signature_param = HIP.Signature2Parameter();
 				#
+
 				# Compute signature here
 				buf = puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
@@ -332,8 +333,6 @@ def hip_loop():
 				hip_r1_packet.add_parameter(dh_groups_param);
 				hip_r1_packet.add_parameter(transport_param);
 				hip_r1_packet.add_parameter(signature_param);
-
-				logging.debug(hip_r1_packet.get_buffer());
 
 				# Swap the addresses
 				temp = src;
