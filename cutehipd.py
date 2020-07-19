@@ -141,8 +141,10 @@ logging.debug("Configuring state machine and storage");
 hip_state_machine = HIPState.StateMachine();
 keymat_storage = HIPState.Storage();
 dh_storage = HIPState.Storage();
+cipher_storage = HIPState.Storage();
 pubkey_storage = HIPState.Storage();
 retransmission_storage = HIPState.Storage();
+
 
 def hip_loop():
 	"""
@@ -588,11 +590,24 @@ def hip_loop():
 					# Transition to unassociated state
 					raise Exception("Unsupported cipher");
 
+				if Utils.is_hit_smaller(rhit, shit):
+					cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit), selected_cipher);
+				else:
+					cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), selected_cipher);
+				#cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit), selected_cipher);
 				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
-				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+				if Utils.is_hit_smaller(rhit, shit):
+					keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit), keymat);
+				else:
+					keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+				
 
 				logging.debug("Processing R1 packet %f" % (time.time() - st));
 
@@ -873,8 +888,23 @@ def hip_loop():
 				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
-				keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+				if Utils.is_hit_smaller(rhit, shit):
+					keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit), keymat);
+				else:
+					keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+				#keymat_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit), keymat);
+
+				if Utils.is_hit_smaller(rhit, shit):
+					cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit), selected_cipher);
+				else:
+					cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), selected_cipher);
+				#cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit), selected_cipher);
 
 				if encrypted_param:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, shit, rhit);
@@ -1067,8 +1097,14 @@ def hip_loop():
 				st = time.time();
 
 				logging.info("R2 packet");
-				keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit));
+				if Utils.is_hit_smaller(rhit, shit):
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, shit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				parameters       = hip_packet.get_parameters();
@@ -1152,6 +1188,172 @@ def hip_loop():
 				if hip_state.is_i1_sent() or hip_state.is_unassociated() or hip_state.is_i2_sent():
 					logging.debug("Dropping the packet");
 					continue;
+
+				parameters       = hip_packet.get_parameters();
+
+				ack_param        = None;
+				seq_param        = None;
+				signature_param  = None;
+				mac_param        = None;
+				
+				if Utils.is_hit_smaller(rhit, shit):
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				hmac_alg  = HIT.get_responders_oga_id(rhit);
+
+				if Utils.is_hit_smaller(rhit, shit):
+					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(shit));
+				else:
+					cipher_alg = cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, shit, rhit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
+
+				for parameter in parameters:
+					if isinstance(parameter, HIP.AckParameter):
+						logging.debug("Acknowledgement parameter");
+						ack_param = parameter;
+					if isinstance(parameter, HIP.SequenceParameter):
+						logging.debug("Sequence parameter");
+						seq_param = parameter;
+					if isinstance(parameter, HIP.MACParameter):	
+						logging.debug("MAC parameter");
+						mac_param = parameter;
+					if isinstance(parameter, HIP.SignatureParameter):
+						logging.debug("Signature parameter");
+						signature_param = parameter;
+
+				if not mac_param:
+					logging.debug("Missing MAC parameter");
+					continue;
+
+				if not signature_param:
+					logging.debug("Missing signature parameter");
+					continue;
+				
+				hip_update_packet = HIP.UpdatePacket();
+				hip_update_packet.set_senders_hit(shit);
+				hip_update_packet.set_receivers_hit(rhit);
+				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_update_packet.set_version(HIP.HIP_VERSION);
+				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				# Compute HMAC here
+				buf = [];
+				if ack_param:
+					buf += ack_param.get_byte_buffer();
+				if seq_param:
+					buf += seq_param.get_byte_buffer();
+				
+
+				original_length = hip_update_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_update_packet.set_length(int(packet_length / 8));
+				buf = hip_update_packet.get_buffer() + buf;
+
+				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
+					logging.critical("Invalid HMAC. Dropping the packet");
+					continue;
+
+				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
+							Utils.ipv6_bytes_to_hex_formatted(rhit));
+				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+
+				hip_update_packet = HIP.UpdatePacket();
+				hip_update_packet.set_senders_hit(shit);
+				hip_update_packet.set_receivers_hit(rhit);
+				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_update_packet.set_version(HIP.HIP_VERSION);
+				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				buf = [];
+				if ack_param:
+					buf += ack_param.get_byte_buffer();
+				if seq_param:
+					buf += seq_param.get_byte_buffer();
+				buf += mac_param.get_byte_buffer();
+
+				original_length = hip_update_packet.get_length();
+				packet_length = original_length * 8 + len(buf);
+				hip_update_packet.set_length(int(packet_length / 8));
+				buf = hip_update_packet.get_buffer() + buf;
+
+				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.critical("Invalid signature. Dropping the packet");
+				else:
+					logging.debug("Signature is correct");
+
+				if ack_param:
+					logging.debug("This is a response to a UPDATE. Skipping pong...");
+					continue;
+
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, shit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
+
+				hip_update_packet = HIP.UpdatePacket();
+				hip_update_packet.set_senders_hit(shit);
+				hip_update_packet.set_receivers_hit(rhit);
+				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_update_packet.set_version(HIP.HIP_VERSION);
+				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				ack_param = HIP.AckParameter();
+				ack_param.set_ids([seq_param.get_id()]);
+				hip_update_packet.add_parameter(ack_param);
+
+				mac_param = HIP.MAC2Parameter();
+				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
+				hip_update_packet.add_parameter(mac_param);
+
+				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				signature = signature_alg.sign(bytearray(hip_update_packet.get_buffer()));
+
+				signature_param = HIP.SignatureParameter();
+				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
+				signature_param.set_signature(signature);
+
+				hip_update_packet.add_parameter(signature_param);
+
+				# Swap the addresses
+				temp = src;
+				src = dst;
+				dst = temp;
+
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+
+				# Calculate the checksum
+				checksum = Utils.hip_ipv4_checksum(
+					src, 
+					dst, 
+					HIP.HIP_PROTOCOL, 
+					hip_update_packet.get_length() * 8 + 8, 
+					hip_update_packet.get_buffer());
+				hip_update_packet.set_checksum(checksum);
+				ipv4_packet.set_payload(hip_update_packet.get_buffer());
+				# Send the packet
+				dst_str = Utils.ipv4_bytes_to_string(dst);
+				src_str = Utils.ipv4_bytes_to_string(src);
+				
+				logging.debug("Sending ACK packet %s" % (dst_str));
+				hip_socket.sendto(
+					bytearray(ipv4_packet.get_buffer()), 
+					(dst_str, 0));
+
 				# Process the packet
 				if hip_state.is_r2_sent():
 					hip_state.established();
