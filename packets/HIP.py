@@ -1067,8 +1067,8 @@ class R1Packet(HIPPacket):
 		self.set_length(int((HIP_HEADER_LENGTH - 8) / 8));
 	def add_parameter(self, param):
 		length = self.get_length() * 8;
+		self.buffer += param.get_byte_buffer();
 		length += len(param.get_byte_buffer());
-		logging.debug("Packet length is ..... %d" % (length));
 		self.set_length(int(length / 8));
 
 class I2Packet(HIPPacket):
