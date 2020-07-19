@@ -826,7 +826,7 @@ class EchoRequestUnsignedParameter(HIPParameter):
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
-	def get_opaque_data(self, data):
+	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_REQUEST_UNSIGNED_OFFSET:HIP_ECHO_REQUEST_UNSIGNED_OFFSET + length]
 
@@ -849,7 +849,7 @@ class EchoResponseSignedParameter(HIPParameter):
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
-	def get_opaque_data(self, data):
+	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_RESPONSE_SIGNED_OFFSET:HIP_ECHO_RESPONSE_SIGNED_OFFSET + length]
 
