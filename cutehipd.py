@@ -1073,6 +1073,7 @@ def hip_loop():
 				
 				# Transition to an Established state
 				logging.debug("Current system state is %s" % (str(hip_state)));
+				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 				if hip_state.is_established() or hip_state.is_unassociated() or hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_r2_sent():
 					hip_state.r2_sent();
 					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
@@ -1311,6 +1312,7 @@ def hip_loop():
 
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
+					continue;
 				else:
 					logging.debug("Signature is correct");
 
@@ -1933,7 +1935,7 @@ while main_loop:
 	for key in state_variables.keys():
 		logging.debug("Periodic task for %s" % (key));
 		sv = state_variables.get_by_key(key);
-		if sv.state == HIPState.HIP_STATE_ESTABLISHED and not sv.is_responder:
+		if sv.state == HIPState.HIP_STATE_ESTABLISHED:
 			if time.time() >= sv.timeout:
 				sv.timeout = time.time() + config.config["general"]["update_timeout_s"];
 				if Utils.is_hit_smaller(sv.rhit, sv.shit):
