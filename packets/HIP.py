@@ -618,7 +618,7 @@ class SequenceParameter(HIPParameter):
 		self.buffer[HIP_UPDATE_ID_OFFSET] = (id >> 24) & 0xFF;
 		self.buffer[HIP_UPDATE_ID_OFFSET + 1] = (id >> 16) & 0xFF;
 		self.buffer[HIP_UPDATE_ID_OFFSET + 2] = (id >> 8) & 0xFF;
-		self.buffer[HIP_UPDATE_ID_OFFSET + 2] = id & 0xFF;7
+		self.buffer[HIP_UPDATE_ID_OFFSET + 2] = id & 0xFF;
 
 HIP_ACK_TYPE             = 0x1C1;
 HIP_UPDATE_ID_OFFSET     = 0x4;
