@@ -153,7 +153,8 @@ def hip_loop():
 
 	while True:
 		try:
-			buf = bytearray(hip_socket.recv(MTU));
+			# IP fragmentation is done automatically so we can read large enough packets
+			buf = bytearray(hip_socket.recv(4*MTU));
 			ipv4_packet = IPv4.IPv4Packet(buf);
 
 			src = ipv4_packet.get_source_address();
