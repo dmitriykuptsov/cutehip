@@ -1272,8 +1272,8 @@ def hip_loop():
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 
-				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
-							Utils.ipv6_bytes_to_hex_formatted(rhit));
+				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+							Utils.ipv6_bytes_to_hex_formatted(shit));
 				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 
 				hip_update_packet = HIP.UpdatePacket();
@@ -1318,7 +1318,7 @@ def hip_loop():
 				ack_param.set_ids([seq_param.get_id()]);
 				hip_update_packet.add_parameter(ack_param);
 
-				mac_param = HIP.MAC2Parameter();
+				mac_param = HIP.MACParameter();
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
@@ -1697,7 +1697,7 @@ while main_loop:
 				seq_param.set_id(variables.update_seq);
 				hip_update_packet.add_parameter(seq_param);
 
-				mac_param = HIP.MAC2Parameter();
+				mac_param = HIP.MACParameter();
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
