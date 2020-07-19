@@ -333,8 +333,8 @@ def hip_loop():
 				hip_r1_packet.add_parameter(transport_param);
 				hip_r1_packet.add_parameter(signature_param);
 
-				logging.debug(hi_param.get_byte_buffer());
-				
+				logging.debug(hip_r1_packet.get_buffer());
+
 				# Swap the addresses
 				temp = src;
 				src = dst;
@@ -360,7 +360,7 @@ def hip_loop():
 					hip_r1_packet.get_length() * 8 + 8, 
 					hip_r1_packet.get_buffer());
 				hip_r1_packet.set_checksum(checksum);
-				ipv4_packet.set_payload(bytearray(hip_r1_packet.get_buffer()));
+				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
 				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
