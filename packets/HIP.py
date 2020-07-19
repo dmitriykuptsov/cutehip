@@ -708,7 +708,7 @@ class EncryptedParameter(HIPParameter):
 		length = self.get_length();
 		length += len(enc_data);
 		self.set_length(length);
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_encrypted_data(self, iv_length):
 		if len(self.buffer) <= (
@@ -776,7 +776,7 @@ class NotificationParameter(HIPParameter):
 		length = self.get_length();
 		if length > HIP_NOTIFICATION_RESERVED_LENGTH + HIP_NOTIFY_DATA_TYPE_LENGTH:
 			raise Exception("Notification data was already set");
-		padding = len(data) % 4;
+		padding = 4 - len(data) % 4;
 		offset = HIP_NOTIFICATION_DATA_OFFSET;
 		self.buffer += [0] * (len(data) + padding);
 		self.buffer[offset:offset + len(data)] = data;
@@ -802,7 +802,7 @@ class EchoRequestSignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -824,7 +824,7 @@ class EchoRequestUnsignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -847,7 +847,7 @@ class EchoResponseSignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
@@ -870,7 +870,7 @@ class EchoResponseUnsignedParameter(HIPParameter):
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
-		padding = len(self.buffer) % 8;
+		padding = (8 - len(self.buffer) % 8);
 		self.buffer += [0] * padding;
 	def get_opaque_data(self, data):
 		length = self.get_length();
