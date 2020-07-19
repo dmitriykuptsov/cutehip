@@ -1407,6 +1407,7 @@ def hip_loop():
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
 						logging.debug("Echo request signed parameter");
 						echo_param = parameter;
+						logging.debug(echo_param.get_byte_buffer());
 					if isinstance(parameter, HIP.MACParameter):	
 						logging.debug("MAC parameter");
 						mac_param = parameter;
@@ -1431,8 +1432,7 @@ def hip_loop():
 
 				# Compute HMAC here
 				buf = [];
-				if echo_param:
-					buf += echo_param.get_byte_buffer();				
+				buf += echo_param.get_byte_buffer();				
 
 				original_length = hip_close_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
