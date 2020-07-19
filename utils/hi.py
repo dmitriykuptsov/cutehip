@@ -57,7 +57,7 @@ class RSAHostID(HostID):
 		exponent_bytes = Math.int_to_bytes(exponent);
 		modulus_bytes = Math.int_to_bytes(modulus);
 		logging.debug("Modulus length......");
-		logging.debug(len(modulus));
+		logging.debug(len(modulus_bytes));
 		exponent_length = len(exponent_bytes);
 		self.exponent_length_field_length = 0x1;
 		if len(exponent_bytes) > 255:
