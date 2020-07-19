@@ -228,8 +228,6 @@ def hip_loop():
 					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(shit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit),
 						HIPState.StateVariables(hip_state.get_state(), shit, rhit, dst, src))
-				
-				
 
 				st = time.time();
 				
@@ -756,7 +754,7 @@ def hip_loop():
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
-				if hip_state.is_i1_sent():
+				if hip_state.is_i1_sent() or hip_state.is_closing() or hip_state.is_closed():
 					hip_state.i2_sent();
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
 				logging.info("I2 packet");
@@ -1073,8 +1071,14 @@ def hip_loop():
 				
 				# Transition to an Established state
 				logging.debug("Current system state is %s" % (str(hip_state)));
-				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-				if hip_state.is_established() or hip_state.is_unassociated() or hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_r2_sent():
+				
+				if (hip_state.is_established() 
+					or hip_state.is_unassociated() 
+					or hip_state.is_i1_sent() 
+					or hip_state.is_i2_sent() 
+					or hip_state.is_r2_sent()
+					or hip_state.is_closing()
+					or hip_state.is_closed()):
 					hip_state.r2_sent();
 					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
 					hip_socket.sendto(
@@ -1097,7 +1101,9 @@ def hip_loop():
 				if (hip_state.is_unassociated() 
 					or hip_state.is_i1_sent() 
 					or hip_state.is_r2_sent() 
-					or hip_state.is_established()):
+					or hip_state.is_established()
+					or hip_state.is_closing()
+					or hip_state.is_closed()):
 					logging.debug("Dropping the packet");
 					continue;
 
@@ -1201,7 +1207,11 @@ def hip_loop():
 				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(shit)));
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
-				if hip_state.is_i1_sent() or hip_state.is_unassociated() or hip_state.is_i2_sent():
+				if (hip_state.is_i1_sent() 
+					or hip_state.is_unassociated() 
+					or hip_state.is_i2_sent() 
+					or hip_state.is_closing()
+					or hip_state.is_closed()):
 					logging.debug("Dropping the packet");
 					continue;
 				# Process the packet
@@ -1553,13 +1563,16 @@ def hip_loop():
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
-				if hip_state.is_r2_sent() or hip_state.is_established():
+				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i2_sent() or hip_state.is_closing():
 					hip_state.closed();
 			elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
 				logging.info("CLOSE ACK packet");
 				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i1_sent() or hip_state.is_i2_sent():
 					logging.debug("Dropping packet");
 					continue;
+				if hip_state.is_closing() or hip_state.is_closed():
+					logging.debug("Moving to unassociated state...");
+					hip_state.unassociated();
 		except Exception as e:
 			# We need more inteligent handling of exceptions here
 			logging.critical("Exception occured. Dropping packet HIPv2.")
@@ -1687,7 +1700,7 @@ def tun_if_loop():
 			else:
 				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 					Utils.ipv6_bytes_to_hex_formatted(rhit));
-			if hip_state.is_unassociated():
+			if hip_state.is_unassociated() or hip_state.is_closing() or hip_state.is_closed():
 				logging.debug("Unassociate state reached");
 				logging.debug("Starting HIP BEX %f" % (time.time()));
 				logging.info("Resolving %s to IPv4 address" % Utils.ipv6_bytes_to_hex_formatted(rhit));
