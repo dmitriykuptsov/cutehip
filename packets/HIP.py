@@ -642,9 +642,7 @@ class AckParameter(HIPParameter):
 			self.buffer[offset + 1] = (id << 16) & 0xFF;
 			self.buffer[offset + 2] = (id << 8) & 0xFF;
 			self.buffer[offset + 3] = (id & 0xFF);
-			offset += 4;
-		padding = (8 - len(self.buffer) % 8);
-		self.buffer += [0] * padding;
+			offset += HIP_UPDATE_ID_LENGTH;
 	def get_ids(self):
 		length = self.get_length();
 		has_more_update_ids = (length > 0);
