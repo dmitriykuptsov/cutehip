@@ -51,7 +51,7 @@ class ECDSASHA256Signature(Signature):
 		h = SHA256.new(data)
 		verifier = DSS.new(self.key, 'fips-186-3')
 		try:
-			verifier.verify(h, sig)
+			verifier.verify(h, bytes(sig))
 			return True
 		except:
 			return False
@@ -61,18 +61,15 @@ class ECDSASHA384Signature(Signature):
 		self.key = key;
 	def sign(self, data):
 		h = SHA384.new(data)
-		#signer = DSS.new(self.key, 'fips-186-3')
-		signer = DSS.new(self.key, 'deterministic-rfc6979')
+		signer = DSS.new(self.key, 'fips-186-3')
 		return signer.sign(h);
 	def verify(self, sig, data):
 		h = SHA384.new(data)
-		#verifier = DSS.new(self.key, 'fips-186-3')
-		verifier = DSS.new(self.key, 'deterministic-rfc6979')
+		verifier = DSS.new(self.key, 'fips-186-3')
 		try:
-			verifier.verify(h, sig)
+			verifier.verify(h, bytes(sig))
 			return True
 		except ValueError as e:
-			print(e)
 			return False
 
 class ECDSASHA1Signature(Signature):
@@ -86,7 +83,7 @@ class ECDSASHA1Signature(Signature):
 		h = SHA1.new(data)
 		verifier = DSS.new(self.key, 'fips-186-3')
 		try:
-			verifier.verify(h, sig)
+			verifier.verify(h, bytes(sig))
 			return True
 		except ValueError as e:
 			return False
