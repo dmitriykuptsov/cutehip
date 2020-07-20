@@ -371,7 +371,7 @@ def hip_loop():
 				# Add parameters to R1 packet (order is important)
 				hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 				# List of mandatory parameters in R1 packet...
-				puzzle_param.set_random(irandom);
+				puzzle_param.set_random(irandom, r_hash.LENGTH);
 				puzzle_param.set_opaque(list(Utils.generate_random(2)));
 				hip_r1_packet.add_parameter(puzzle_param);
 				hip_r1_packet.add_parameter(dh_param);
