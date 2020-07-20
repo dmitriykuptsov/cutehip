@@ -289,8 +289,8 @@ def hip_loop():
 				offered_dh_groups = dh_groups_param_initiator.get_groups();
 				supported_dh_groups = config.config["security"]["supported_DH_groups"];
 				selected_dh_group = None;
-				for group in supported_dh_groups:
-					if group in offered_dh_groups:
+				for group in offered_dh_groups:
+					if group in supported_dh_groups:
 						dh_groups_param.add_groups([group]);
 						selected_dh_group = group;
 						break;
@@ -657,8 +657,8 @@ def hip_loop():
 				supported_ciphers = config.config["security"]["supported_ciphers"];
 				selected_cipher = None;
 
-				for cipher in supported_ciphers:
-					if cipher in offered_ciphers:
+				for cipher in offered_ciphers:
+					if cipher in supported_ciphers:
 						selected_cipher = cipher;
 						break;
 
@@ -1003,8 +1003,8 @@ def hip_loop():
 				supported_ciphers = config.config["security"]["supported_ciphers"];
 				selected_cipher = None;
 
-				for cipher in supported_ciphers:
-					if cipher in offered_ciphers:
+				for cipher in offered_ciphers:
+					if cipher in supported_ciphers:
 						selected_cipher = cipher;
 						break;
 

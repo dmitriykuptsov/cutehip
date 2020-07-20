@@ -35,9 +35,15 @@ or (to create ECDSA key pair)
 $ bash tools/genkey.sh gen ECDSA secp384r1
 ```
 
-ECDSALow is not supported due to used cryptographic library limitations
+ECDSALow is not supported due to used cryptographic library limitations.
 
-Once the keys are generated, run the responder:
+The next step is to change the configuration. If RSA is used, set sig_alg to 0x5, and hash 
+algorithm (hash_alg) to 0x1. If ECDSA is used for signatures, set sig_alg 0x7, and hash
+algorithm (hash_alg) to 0x2. Also make sure you set the correct order of the cipher algorithm
+and Diffie-Hellman algorithm (the first one in the list will be used during the BEX). Also 
+the first cipher will be used for encrypting/decrypting ESP payload.
+
+Once the keys are generated and configuration file is modified, run the responder:
 
 ```
 $ sudo python3 cutehipd
