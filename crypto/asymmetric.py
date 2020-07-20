@@ -273,7 +273,12 @@ class ECDSAPublicKey():
 		"""
 		Construct public key from the components
 		"""
-		return ECDSAPublicKey(key = ECC.construct(curve = curve, point_x = x, point_y = y));
+		if curve == ECDSAPublicKey.NIST_P_256:
+			return ECDSAPublicKey(key = ECC.construct(curve = 'NIST P-256', point_x = x, point_y = y));
+		elif curve == ECDSAPublicKey.NIST_P_384:
+			return ECDSAPublicKey(key = ECC.construct(curve = 'NIST P-384', point_x = x, point_y = y));
+		else:
+			raise Exception("Unsupported curve");
 
 
 	def get_curve_id(self):
@@ -404,7 +409,10 @@ class ECDSALowPublicKey():
 		"""
 		Construct public key from the components
 		"""
-		return ECDSALowPublicKey(key = ECC.construct(curve = curve, point_x = x, point_y = y));
+		if curve == ECDSALowPublicKey.SECP160R1:
+			return ECDSAPublicKey(key = ECC.construct(curve = 'SECP160R1', point_x = x, point_y = y));
+		else:
+			raise Exception("Unsupported curve");
 
 	def get_curve_id(self):
 		return self.curve_id;
