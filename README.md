@@ -22,7 +22,7 @@ $ pip3 install pycryptodome
 Then generate the keys on both initiator and responder as follows
 
 ```
-$ bash tools/genkey.sh gen RSA
+$ bash tools/genkey.sh gen RSA 4096
 ```
 Run the responder:
 
