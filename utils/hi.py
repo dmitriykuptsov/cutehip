@@ -163,10 +163,12 @@ class ECDSAHostID(HostID):
 		return self.curve_id[0] << 8 | self.curve_id[1];
 
 	def get_x(self):
-		return self.x;
+		#return self.x;
+		return Math.bytes_to_int(x);
 
 	def get_y(self):
-		return self.y;
+		#return self.y;
+		return Math.bytes_to_int(y);
 
 	def get_algorithm(self):
 		return self.HI_ECDSA;
@@ -211,10 +213,12 @@ class ECDSALowHostID(HostID):
 		return self.curve_id[0] << 8 | self.curve_id[1];
 
 	def get_x(self):
-		return self.x;
+		#return self.x;
+		return Math.bytes_to_int(x);
 
 	def get_y(self):
-		return self.y;
+		#return self.y;
+		return Math.bytes_to_int(y);
 
 	def get_algorithm(self):
 		return self.HI_ECDSA_LOW;
