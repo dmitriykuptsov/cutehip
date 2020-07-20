@@ -20,12 +20,14 @@ import sys
 import os
 sys.path.append(os.getcwd());
 
+import logging
+
 import crypto
 from binascii import unhexlify
 from binascii import hexlify
 from crypto import digest
 
-HIP_HIT_PREFIX        = bytearray(unhexlify("20012000"));
+
 HIP_HIT_CONTEX_ID     = bytearray(unhexlify('F0EFF02FBFF43D0FE7930C3C6E6174EA'))
 TRUNCATED_HASH_LENGTH = 0x0C;
 OGA_OFFSET            = 0x03;
@@ -101,6 +103,7 @@ class HIT():
 		Hash       :=  Hash_function( Hash Input )
 		ORCHID     :=  Prefix | OGA ID | Encode_96( Hash )
 		"""
+		HIP_HIT_PREFIX = bytearray(unhexlify("20012000"));
 		HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] = HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] | (oga_id & 0xF);
 		encoded_hit = HIT.encode_96(rhash.digest(HIP_HIT_CONTEX_ID + hi))
 		return HIP_HIT_PREFIX + encoded_hit;

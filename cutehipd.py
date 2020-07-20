@@ -491,6 +491,8 @@ def hip_loop():
 						logging.debug(list(responder_hi.to_byte_array()));
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						logging.debug(list(responders_hit))
+						logging.debug(list(shit))
+						logging.debug(list(own_hit))
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Invalid HIT");
 							raise Exception("Invalid HIT");
