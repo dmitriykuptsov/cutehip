@@ -12,7 +12,7 @@ understand how well Python copes with these computation intensive tasks.
 
 # Usage
 
-Currently only RSA algorithm for Host Identity is supported. To test the implementation one
+Currently RSA and ECDSA (HI) algorithms for Host Identity are supported. To test the implementation one
 need to first install the needed libraries.
 
 ```
@@ -24,13 +24,21 @@ Then generate the keys on both initiator and responder as follows
 ```
 $ bash tools/genkey.sh gen RSA 4096
 ```
-Run the responder:
+
+or (to create ECDSA key pair)
+```
+$ bash tools/genkey.sh gen ECDSA secp384r1
+```
+
+ECDSALow is not supported due to used cryptographic library limitations
+
+Once the keys are generated, run the responder:
 
 ```
 $ sudo python3 cutehipd
 ```
 
-Check the HIT of the responder
+Check the HIT of the responder (first you need to SSH on the responder and only then execute the below command):
 
 ```
 $ ifconfig hip0
@@ -50,3 +58,5 @@ Test the connection
 ```
 $ ssh pi@<HIT>
 ```
+
+You should get secrutity association installed once HIP BEX completes.

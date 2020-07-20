@@ -876,7 +876,6 @@ def hip_loop():
 							raise Exception("Invalid signature algorithm");
 						oga = HIT.get_responders_oga_id(shit);
 						logging.debug("OGA ID %d " % (oga));
-
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						logging.debug(list(rhit));
 						logging.debug(list(shit));
@@ -2208,7 +2207,6 @@ while main_loop:
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 		elif sv.state == HIPState.HIP_STATE_I1_SENT:
-			continue;
 			if time.time() >= sv.timeout:
 				sv.timeout = time.time() + config.config["general"]["i1_timeout_s"];
 				dh_groups_param = HIP.DHGroupListParameter();
