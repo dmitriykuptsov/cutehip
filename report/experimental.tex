@@ -70,7 +70,7 @@ processing time was expected. We have also measured the overall duration of the 
 In Figure~\ref{fig:duration_bex} we demonstrate distribution of HIP BEX durations. Clearly, implementing 
 cryptographic protocols in userspace using high-level languages, such as Python, is not the best choice: the performance
 of such implementations is really poor and it is better to implement the security solutions using lower 
-level languages, such as C or C++.
+level languages, such as C or C++. 
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/duration_bex.pdf}
@@ -87,3 +87,9 @@ throughput slightly $15$ times less, than throughput, which we have achieved for
 	\caption{Obtained throughput for TCP over IPSec and plain TCP connections}
 	\label{fig:throughput}
 \end{figure}
+
+While experimenting with the HIPv2 protocol we have noticed one limitation:
+if RSA keys larger than 4096 bits long are used together with the ECDH NIST 521
+curve, the size of the packet becomes unacceptably large and protocol fails (HIPv2
+packet size cannot be larger than 2008 bytes). Therefore we have only experimented 
+with RSA keys of sizees: $512$, $1024$, $2048$ and $4096$ bits. 
