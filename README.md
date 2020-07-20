@@ -19,6 +19,11 @@ need to first install the needed libraries.
 $ pip3 install pycryptodome
 ```
 
+```
+$ git clone https://github.com/dmitriykuptsov/cutehip.git
+$ cd cutehip
+```
+
 Then generate the keys on both initiator and responder as follows
 
 ```
@@ -43,6 +48,8 @@ Check the HIT of the responder (first you need to SSH on the responder and only 
 ```
 $ ifconfig hip0
 ```
+
+Then repeat the operation on intiator.
 
 Update the hosts file (on initiator)
 ```
