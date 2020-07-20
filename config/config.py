@@ -14,9 +14,9 @@ config = {
 		# to compute the HMAC, as well as to construct HIT
 		"puzzle_difficulty": 0x10,                             # 16 bits
 		"puzzle_lifetime_exponent": 37,                        # 32 seconds
-		# Currently only DH can be used ONLY with ECDSA because
+		# Currently DH can be used ONLY with ECDSA because
 		# fragmentation does not work
-		"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
+		"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521 (0x9), ECDHNIST384 (0x8), ECDHNIST256 (0x7), DH5 (0x3), DH15 (0x4), ECDHSECP160R1 (0xa)
 		"supported_ciphers": [0x4, 0x2, 0x1],                  # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
 		"supported_hit_suits": [0x10, 0x20, 0x30],             # SHA256 (0x1), SHA384 (0x2), SHA1 (0x3)
 		"supported_transports": [0x0FFF],                      # IPSec
