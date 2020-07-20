@@ -34,6 +34,7 @@ if [ "$command" = "gen" ]
 then
 
 	supported_algorithms="RSA ECDSA";
+	supported_key_lengths="512 1024 2048 4096";
 	found=0;
 	for i in $supported_algorithms;
 	do
@@ -77,6 +78,7 @@ then
 	echo "bash genkey.sh [command] [params]";
 	echo "  help - print this help"
 	echo "  curves - print available curves"
+	echo "  modulus - specify the RSA modulus (512 1024 2048 4096)"
 	echo "  gen [RSA|ECDSA] [modulus|curve]"
 fi
 
