@@ -34,6 +34,8 @@ import threading
 import logging
 # Timing
 import time
+# Math functions
+from math import ceil, floor
 # System
 import sys
 # Exit handler
@@ -783,7 +785,10 @@ def hip_loop():
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);
 
+				total_param_length = 0;
+
 				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
 				if r1_counter_param:
 					hip_i2_packet.add_parameter(r1_counter_param);
 				hip_i2_packet.add_parameter(solution_param);
@@ -803,15 +808,6 @@ def hip_loop():
 				src = dst;
 				dst = temp;
 
-				# Create IPv4 packet
-				ipv4_packet = IPv4.IPv4Packet();
-				ipv4_packet.set_version(IPv4.IPV4_VERSION);
-				ipv4_packet.set_destination_address(dst);
-				ipv4_packet.set_source_address(src);
-				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
-				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
-				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
-
 				# Calculate the checksum
 				checksum = Utils.hip_ipv4_checksum(
 					src, 
@@ -820,10 +816,37 @@ def hip_loop():
 					hip_i2_packet.get_length() * 8 + 8, 
 					hip_i2_packet.get_buffer());
 				hip_i2_packet.set_checksum(checksum);
-				ipv4_packet.set_payload(hip_i2_packet.get_buffer());
-				# Send the packet
+
+				buf = hip_i2_packet.get_buffer();
+				
+				total_length = len(buf);
+				fragment_len = HIP.HIP_FRAGMENT_LENGTH;
+				num_of_fragments = int(ceil(total_length / fragment_len))
+				offset = 0;
+				#for i in range(0, num_of_fragments):
+				# Create IPv4 packet
+				ipv4_packet = IPv4.IPv4Packet();
+				ipv4_packet.set_version(IPv4.IPV4_VERSION);
+				ipv4_packet.set_destination_address(dst);
+				ipv4_packet.set_source_address(src);
+				ipv4_packet.set_ttl(IPv4.IPV4_DEFAULT_TTL);
+				ipv4_packet.set_protocol(HIP.HIP_PROTOCOL);
+				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
+				
+				# Fragment the packet
+				#ipv4_packet.set_fragment_offset(offset);
+				#if num_of_fragments > 1 and num_of_fragments - 1 != i:
+				#	# Set flag more fragments to follow
+				#		ipv4_packet.set_flags(0x1)	
+				#	ipv4_packet.set_payload(buf[offset:offset + fragment_len]);
+				#	offset += fragment_len;
+				#	# Send the packet
+				ipv4_packet.set_payload(buf);
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending I2 packet to %s %f" % (dst_str, (time.time() - st)));
+					
+				logging.debug(list(ipv4_packet.get_buffer()));
+
+				logging.debug("Sending I2 packet to %s %d" % (dst_str, len(ipv4_packet.get_buffer())));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -874,8 +897,12 @@ def hip_loop():
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
 						else:
 							raise Exception("Invalid signature algorithm");
-						oga = HIT.get_responders_oga_id(rhit);
+						oga = HIT.get_responders_oga_id(shit);
+						logging.debug("OGA ID %d " % (oga));
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
+						logging.debug(list(rhit));
+						logging.debug(list(shit));
+						logging.debug(list(responders_hit));
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Invalid HIT");
 							raise Exception("Invalid HIT");
@@ -2203,7 +2230,6 @@ while main_loop:
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 		elif sv.state == HIPState.HIP_STATE_I1_SENT:
-			continue;
 			if time.time() >= sv.timeout:
 				sv.timeout = time.time() + config.config["general"]["i1_timeout_s"];
 				dh_groups_param = HIP.DHGroupListParameter();

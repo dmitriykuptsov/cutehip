@@ -14,9 +14,4 @@ D.~Stinson.
 \newblock {\em Cryptography: Theory and Practice, Second Edition}.
 \newblock CRC/C\&H, 2nd edition, 2002.
 
-\bibitem{dummy}
-M.~who.
-\newblock {Some article}.
-\newblock pages x--y, 2019.
-
 \end{thebibliography}

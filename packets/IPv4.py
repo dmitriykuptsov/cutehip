@@ -67,13 +67,13 @@ class IPv4Packet():
 		self.buffer[IPV4_IDENTIFICATION_OFFSET] = (identification >> 0x8) & 0xFF;
 		self.buffer[IPV4_IDENTIFICATION_OFFSET + 1] = (identification & 0xFF);
 	def get_flags(self):
-		return (self.buffer[IPV4_FLAGS_OFFSET] >> 0x6);
+		return (self.buffer[IPV4_FLAGS_OFFSET] >> 0x5);
 	def set_flags(self, flags):
-		self.buffer[IPV4_FLAGS_OFFSET] = self.buffer[IPV4_FLAGS_OFFSET] | (flags << 0x6);
+		self.buffer[IPV4_FLAGS_OFFSET] = self.buffer[IPV4_FLAGS_OFFSET] | (flags << 0x5);
 	def get_fragment_offset(self):
-		return ((self.buffer[IPV4_FRAGMENT_OFFSET] << 0x8) & 0x3F) | self.buffer[IPV4_FRAGMENT_OFFSET + 1];
+		return ((self.buffer[IPV4_FRAGMENT_OFFSET] << 0x8) & 0x1F) | self.buffer[IPV4_FRAGMENT_OFFSET + 1];
 	def set_fragment_offset(self, offset):
-		self.buffer[IPV4_FRAGMENT_OFFSET] = self.buffer[IPV4_FRAGMENT_OFFSET] | ((offset >> 0x8) & 0x3F);
+		self.buffer[IPV4_FRAGMENT_OFFSET] = self.buffer[IPV4_FRAGMENT_OFFSET] | ((offset >> 0x8) & 0x1F);
 		self.buffer[IPV4_FRAGMENT_OFFSET + 1] = (offset & 0xFF);
 	def get_ttl(self):
 		return self.buffer[IPV4_TTL_OFFSET];

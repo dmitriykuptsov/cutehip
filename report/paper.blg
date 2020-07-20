@@ -1,49 +1,48 @@
-This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
-Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: paper.aux
 The style file: abbrv.bst
 Database file #1: mybib.bib
 Warning--to sort, need author or key in ssh
-Warning--empty booktitle in dummy
-You've used 4 entries,
+You've used 3 entries,
             2118 wiz_defined-function locations,
-            516 strings with 4002 characters,
-and the built_in function-call counts, 930 in all, are:
-= -- 86
-> -- 22
-< -- 1
-+ -- 10
-- -- 6
-* -- 38
-:= -- 145
-add.period$ -- 10
-call.type$ -- 4
-change.case$ -- 15
+            511 strings with 3965 characters,
+and the built_in function-call counts, 599 in all, are:
+= -- 53
+> -- 15
+< -- 0
++ -- 7
+- -- 4
+* -- 23
+:= -- 97
+add.period$ -- 7
+call.type$ -- 3
+change.case$ -- 11
 chr.to.int$ -- 0
-cite$ -- 6
-duplicate$ -- 44
-empty$ -- 101
-format.name$ -- 6
-if$ -- 208
+cite$ -- 4
+duplicate$ -- 26
+empty$ -- 68
+format.name$ -- 4
+if$ -- 132
 int.to.chr$ -- 0
-int.to.str$ -- 4
-missing$ -- 3
-newline$ -- 21
-num.names$ -- 6
-pop$ -- 32
+int.to.str$ -- 3
+missing$ -- 2
+newline$ -- 16
+num.names$ -- 4
+pop$ -- 24
 preamble$ -- 1
-purify$ -- 11
+purify$ -- 8
 quote$ -- 0
-skip$ -- 36
+skip$ -- 22
 stack$ -- 0
-substring$ -- 36
-swap$ -- 9
-text.length$ -- 1
+substring$ -- 15
+swap$ -- 3
+text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 14
-warning$ -- 2
-while$ -- 9
-width$ -- 5
-write$ -- 38
-(There were 2 warnings)
+type$ -- 10
+warning$ -- 1
+while$ -- 4
+width$ -- 4
+write$ -- 28
+(There was 1 warning)

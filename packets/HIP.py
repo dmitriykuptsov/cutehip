@@ -44,6 +44,8 @@ HIP_TLV_LENGTH                   = 0x4;
 
 HIP_DEFAULT_PACKET_LENGTH        = 0x4;
 
+HIP_FRAGMENT_LENGTH              = 0x578;
+
 class HIPParameter():
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
@@ -1014,9 +1016,7 @@ class HIPPacket():
 		while has_more_parameters:
 			param_type = (self.buffer[offset] << 8) | self.buffer[offset + 1]; 
 			param_length = (self.buffer[offset + 2] << 8) | self.buffer[offset + 3];
-			logging.debug("NEXT PARAM %d " % (param_type));
 			total_param_length = 11 + param_length - (param_length + 3) % 8;
-			logging.debug("TOTAL PARAM LENGTH %d " % (total_param_length));
 			param_data = self.buffer[offset:offset + total_param_length];
 			if param_type == HIP_R1_COUNTER_TYPE:
 				parameters.append(R1CounterParameter(param_data));
