@@ -2106,7 +2106,7 @@ while main_loop:
 	#logging.debug("Periodic tasks")
 	time.sleep(1);
 	for key in state_variables.keys():
-		logging.debug("Periodic task for %s" % (key));
+		#logging.debug("Periodic task for %s" % (key));
 		sv = state_variables.get_by_key(key);
 		if sv.state == HIPState.HIP_STATE_ESTABLISHED:
 			if time.time() >= sv.timeout:

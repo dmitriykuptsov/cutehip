@@ -391,6 +391,7 @@ class HostIdParameter(HIPParameter):
 		hi_length = self.get_hi_length();
 		if hi_length > 0:
 			raise Exception("HI was already set");
+		logging.debug(list(hi.to_byte_array()));
 		self.buffer[HIP_HI_OFFSET:HIP_HI_OFFSET + hi.get_length()] = hi.to_byte_array();
 		self.set_hi_length(hi.get_length());
 		self.set_algorithm(hi.get_algorithm());
