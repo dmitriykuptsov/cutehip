@@ -133,7 +133,7 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	logging.debug(list(hi.to_byte_array()));
 	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug("Responder's OGA ID %d" % (HIT.SHA384_OGA));
-	logging.debug(list(responder_hi.to_byte_array()));
+	logging.debug(list(hi.to_byte_array()));
 	logging.debug(list(own_hit))
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3:
