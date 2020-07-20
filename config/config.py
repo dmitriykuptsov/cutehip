@@ -18,7 +18,8 @@ config = {
 		# does not work
 		#"supported_DH_groups": [0x9, 0x8, 0x7, 0x3, 0x4, 0xa], # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
 		"supported_DH_groups": [0x3],                          # ECDHNIST521, ECDHNIST384, ECDHNIST256, DH5, DH15, ECDHSECP160R1
-		"supported_ciphers": [0x2, 0x1],                  # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
+		#"supported_ciphers": [0x4, 0x2, 0x1],                  # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
+		"supported_ciphers": [0x1],                            # NULL (0x1), AES128CBC (0x2), AES256CBC (0x4)
 		"supported_hit_suits": [0x10, 0x20, 0x30],             # SHA256 (0x1), SHA384 (0x2), SHA1 (0x3)
 		"supported_transports": [0x0FFF],                      # IPSec
 		"supported_signatures": [0x5, 0x3, 0x7, 0x9],          # DSA (0x3), RSA (0x5), ECDSA (0x7), ECDSA_LOW (0x9)

@@ -1836,6 +1836,10 @@ def ip_sec_loop():
 			logging.debug(padded_data);
 
 			decrypted_data = cipher.decrypt(cipher_key, bytearray(iv), bytearray(padded_data));
+
+			logging.debug("Decrypted padded data");
+			logging.debug(decrypted_data);
+
 			unpadded_data  = IPSec.IPSecUtils.unpad(cipher.BLOCK_SIZE, decrypted_data);
 			next_header    = IPSec.IPSecUtils.get_next_header(decrypted_data);
 			
