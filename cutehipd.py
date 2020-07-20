@@ -356,6 +356,17 @@ def hip_loop():
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);
 
+				logging.debug("---------------------------- Verifying the signature ---------------------------");
+				if isinstance(privkey, ECDSAPrivateKey):
+					logging.debug("---------------------------- Verifying the signature ---------------------------");
+					logging.debug(list(buf));
+					logging.debug(list(signature));
+					responders_public_key = ECDSAPublicKey.load_from_params(hi.get_curve_id(), hi.get_x(), hi.get_y());
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+					if signature_alg.verify(signature, bytearray(buf)):
+						logging.debug("The signature is valid....")
+				
+
 				# Add parameters to R1 packet (order is important)
 				hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 				# List of mandatory parameters in R1 packet...
