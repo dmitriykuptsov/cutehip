@@ -291,6 +291,9 @@ class ECDSAPublicKey():
 	
 
 class ECDSAPrivateKey():
+	NIST_P_256 = 0x1;
+	NIST_P_384 = 0x2;
+	
 	@staticmethod
 	def load_pem(filename):
 		"""
