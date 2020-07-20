@@ -147,8 +147,8 @@ class ECDSAHostID(HostID):
 			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH];
 			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH:];
 		elif curve_id == ECDSAHostID.NIST_P_384_CURVE_ID:
-			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID];
-			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID:];
+			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_LENGTH];
+			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_LENGTH:];
 		else:
 			raise Exception("Unsupported curve");
 		return ECDSAHostID(curve_id, Math.bytes_to_int(x), Math.bytes_to_int(y));

@@ -473,6 +473,7 @@ def hip_loop():
 							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x7: #ECDSA
 							logging.debug(".......HI is of ECDSAHostID type......")
+							logging.debug(list(hi_param.get_host_id()));
 							responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
