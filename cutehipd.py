@@ -355,18 +355,7 @@ def hip_loop():
 				#logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
-				signature_param.set_signature(signature);
-
-				logging.debug("---------------------------- Verifying the signature ---------------------------");
-				if isinstance(privkey, ECDSAPrivateKey):
-					logging.debug("---------------------------- Verifying the signature ---------------------------");
-					logging.debug(list(buf));
-					logging.debug(list(signature));
-					responders_public_key = ECDSAPublicKey.load_from_params(hi.get_curve_id(), hi.get_x(), hi.get_y());
-					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
-					if signature_alg.verify(signature, bytearray(buf)):
-						logging.debug("The signature is valid....")
-				
+				signature_param.set_signature(signature);				
 
 				# Add parameters to R1 packet (order is important)
 				hip_r1_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
@@ -628,7 +617,7 @@ def hip_loop():
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
 				#logging.debug(privkey.get_key_info());
-				
+
 				logging.debug(list(buf));
 				logging.debug(list(signature_param.get_signature()));
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
@@ -1599,6 +1588,8 @@ def hip_loop():
 				else:
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				logging.debug("Cipher algorithm %d " % (cipher_alg))
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, shit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
