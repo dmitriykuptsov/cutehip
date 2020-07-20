@@ -41,7 +41,7 @@ class NullCipher(SymmetricCrypto):
 	KEY_SIZE_BITS = 0x0;
 	def encrypt(self, key = None, iv = None, data = None):
 		return data;
-	def decrtypt(self, key = None, iv = None, data = None):
+	def decrypt(self, key = None, iv = None, data = None):
 		return data;
 
 class AESCipher(SymmetricCrypto):
