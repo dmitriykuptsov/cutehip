@@ -269,7 +269,7 @@ def hip_loop():
 				puzzle_param = HIP.PuzzleParameter(buffer = None, rhash_length = r_hash.LENGTH);
 				puzzle_param.set_k_value(config.config["security"]["puzzle_difficulty"]);
 				puzzle_param.set_lifetime(config.config["security"]["puzzle_lifetime_exponent"]);
-				puzzle_param.set_random([0] * r_hash.LENGTH);
+				puzzle_param.set_random([0] * r_hash.LENGTH, rhash_length = r_hash.LENGTH);
 				puzzle_param.set_opaque(list([0, 0]));
 				
 				# HIP DH groups parameter
@@ -459,7 +459,8 @@ def hip_loop():
 				hip_r1_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_r1_packet.set_version(HIP.HIP_VERSION);
 
-				r_hash = HIT.get_responders_hash_algorithm(rhit);
+				r_hash = HIT.get_responders_hash_algorithm(shit);
+				logging.debug(r_hash);
 
 				for parameter in parameters:
 					if isinstance(parameter, HIP.DHGroupListParameter):
@@ -473,7 +474,7 @@ def hip_loop():
 						puzzle_param = parameter;
 						irandom = puzzle_param.get_random();
 						opaque = puzzle_param.get_opaque();
-						puzzle_param.set_random([0] * r_hash.LENGTH);
+						puzzle_param.set_random([0] * r_hash.LENGTH, r_hash.LENGTH);
 						puzzle_param.set_opaque(list([0, 0]));
 					if isinstance(parameter, HIP.DHParameter):	
 						logging.debug("DH parameter");
@@ -596,6 +597,8 @@ def hip_loop():
 				if r1_counter_param:
 					buf += r1_counter_param.get_byte_buffer();
 
+				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+				logging.debug(list(puzzle_param.get_byte_buffer()));
 				if not echo_signed:
 					buf += puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
@@ -627,6 +630,8 @@ def hip_loop():
 				elif isinstance(responders_public_key, ECDSALowPublicKey):
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
+				logging.debug(list(buf));
+				logging.debug(list(signature_param.get_signature()));
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
@@ -707,8 +712,8 @@ def hip_loop():
 				solution_param = HIP.SolutionParameter(buffer = None, rhash_length = r_hash.LENGTH);
 				solution_param.set_k_value(puzzle_param.get_k_value());
 				solution_param.set_opaque(opaque);
-				solution_param.set_random(irandom);
-				solution_param.set_solution(jrandom);
+				solution_param.set_random(irandom, r_hash.LENGTH);
+				solution_param.set_solution(jrandom, r_hash.LENGTH);
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
@@ -956,8 +961,8 @@ def hip_loop():
 						logging.debug("Dropping I2 packet...");
 						continue;
 
-				jrandom = solution_param.get_solution();
-				irandom = solution_param.get_random();
+				jrandom = solution_param.get_solution(r_hash.LENGTH);
+				irandom = solution_param.get_random(r_hash.LENGTH);
 				if not PuzzleSolver.verify_puzzle(
 					irandom, 
 					jrandom, 
@@ -2208,6 +2213,7 @@ while main_loop:
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
 		elif sv.state == HIPState.HIP_STATE_I1_SENT:
+			continue;
 			if time.time() >= sv.timeout:
 				sv.timeout = time.time() + config.config["general"]["i1_timeout_s"];
 				dh_groups_param = HIP.DHGroupListParameter();
