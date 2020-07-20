@@ -153,10 +153,14 @@ class PuzzleParameter(HIPParameter):
 		return self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 2];
 	def set_opaque(self, opaque):
 		self.buffer[HIP_PUZZLE_OPAQUE_OFFSET:HIP_PUZZLE_OPAQUE_OFFSET + 2] = opaque;
-	def get_random(self):
+	def get_random(self, rhash_length = 0x20):
+		self.HIP_PUZZLE_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_PUZZLE_LENGTH = 4 + rhash_length;
 		return (self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:
 				HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH]);
-	def set_random(self, random):
+	def set_random(self, random, rhash_length):
+		self.HIP_PUZZLE_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_PUZZLE_LENGTH = 4 + rhash_length;
 		self.buffer[HIP_PUZZLE_RANDOM_I_OFFSET:HIP_PUZZLE_RANDOM_I_OFFSET + self.HIP_PUZZLE_RANDOM_I_LENGTH] = random;
 
 HIP_SOLUTION_TYPE                              = 321;
@@ -206,13 +210,25 @@ class SolutionParameter(HIPParameter):
 		return self.buffer[HIP_SOLITION_OPAQUE_OFFSET:HIP_SOLITION_OPAQUE_OFFSET + 2];
 	def set_opaque(self, opaque):
 		self.buffer[HIP_SOLITION_OPAQUE_OFFSET:HIP_SOLITION_OPAQUE_OFFSET + 2] = opaque;
-	def get_random(self):
+	def get_random(self, rhash_length = 0x20):
+		self.HIP_SOLUTION_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_SOLUTION_J_OFFSET = HIP_SOLUTION_RANDOM_I_OFFSET + rhash_length;
+		self.HIP_SOLUTION_J_LENGTH = rhash_length;
+		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
 		return (self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH]);
-	def set_random(self, random):
-		 self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH] = random;
-	def get_solution(self):
+	def set_random(self, random, rhash_length = 0x20):
+		self.HIP_SOLUTION_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_SOLUTION_J_OFFSET = HIP_SOLUTION_RANDOM_I_OFFSET + rhash_length;
+		self.HIP_SOLUTION_J_LENGTH = rhash_length;
+		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
+		self.buffer[HIP_SOLUTION_RANDOM_I_OFFSET:HIP_SOLUTION_RANDOM_I_OFFSET + self.HIP_SOLUTION_RANDOM_I_LENGTH] = random;
+	def get_solution(self, rhash_length = 0x20):
+		self.HIP_SOLUTION_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_SOLUTION_J_OFFSET = HIP_SOLUTION_RANDOM_I_OFFSET + rhash_length;
+		self.HIP_SOLUTION_J_LENGTH = rhash_length;
+		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
 		return (self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH]);
-	def set_solution(self, solution):
+	def set_solution(self, solution, rhash_length = 0x20):
 		 self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH] = solution;
 
 HIP_DH_GROUP_LIST_TYPE              = 0x1FF;
@@ -983,7 +999,7 @@ class HIPPacket():
 		return self.buffer[HIP_RECIEVERS_HIT_OFFSET:HIP_RECIEVERS_HIT_OFFSET + HIP_RECIEVERS_HIT_LENGTH];
 	def set_receivers_hit(self, hit):
 		self.buffer[HIP_RECIEVERS_HIT_OFFSET:HIP_RECIEVERS_HIT_OFFSET + HIP_RECIEVERS_HIT_LENGTH] = hit;
-	def get_parameters(self):
+	def get_parameters(self, rhash_length):
 		parameters = [];
 		offset = HIP_PARAMETERS_OFFSET;
 		has_more_parameters = False;
@@ -1001,7 +1017,7 @@ class HIPPacket():
 			if param_type == HIP_R1_COUNTER_TYPE:
 				parameters.append(R1CounterParameter(param_data));
 			elif param_type == HIP_PUZZLE_TYPE:
-				parameters.append(PuzzleParameter(param_data));
+				parameters.append(PuzzleParameter(param_data, rhash_length));
 			elif param_type == HIP_SOLUTION_TYPE:
 				parameters.append(SolutionParameter(param_data));
 			elif param_type == HIP_DH_GROUP_LIST_TYPE:
