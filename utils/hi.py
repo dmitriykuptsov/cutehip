@@ -164,11 +164,11 @@ class ECDSAHostID(HostID):
 
 	def get_x(self):
 		#return self.x;
-		return Math.bytes_to_int(x);
+		return Math.bytes_to_int(self.x);
 
 	def get_y(self):
 		#return self.y;
-		return Math.bytes_to_int(y);
+		return Math.bytes_to_int(self.y);
 
 	def get_algorithm(self):
 		return self.HI_ECDSA;
@@ -214,11 +214,11 @@ class ECDSALowHostID(HostID):
 
 	def get_x(self):
 		#return self.x;
-		return Math.bytes_to_int(x);
+		return Math.bytes_to_int(self.x);
 
 	def get_y(self):
 		#return self.y;
-		return Math.bytes_to_int(y);
+		return Math.bytes_to_int(self.y);
 
 	def get_algorithm(self):
 		return self.HI_ECDSA_LOW;
