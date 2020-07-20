@@ -484,7 +484,7 @@ def hip_loop():
 						#	logging.critical("Invalid signature algorithm");
 						#	continue;
 						oga = HIT.get_responders_oga_id(shit);
-
+						logging.debug("Responder's OGA ID %d" % (oga));
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Invalid HIT");
