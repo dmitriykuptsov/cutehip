@@ -128,6 +128,7 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 		raise Exception("Invalid hash algorithm. Must be 0x2")
 	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+	logging.debug(pubkey.get_key_info());
 	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug(list(hi.to_byte_array()));
@@ -621,6 +622,8 @@ def hip_loop():
 					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				elif isinstance(responders_public_key, ECDSAPublicKey):
 					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+					logging.debug(responders_public_key.get_key_info());
+
 				elif isinstance(responders_public_key, ECDSALowPublicKey):
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
