@@ -37,7 +37,7 @@ class SymmetricCrypto():
 		pass
 
 class NullCipher(SymmetricCrypto):
-	BLOCK_SIZE = 0x0;
+	BLOCK_SIZE = 0x10;
 	KEY_SIZE_BITS = 0x0;
 	def encrypt(self, key = None, iv = None, data = None):
 		return data;
@@ -46,7 +46,7 @@ class NullCipher(SymmetricCrypto):
 
 class AESCipher(SymmetricCrypto):
 
-	KEY_SIZE_BITS = 0x16;
+	KEY_SIZE_BITS = 0x10;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
 
