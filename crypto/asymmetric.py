@@ -250,17 +250,17 @@ class ECDSAPublicKey():
 		if buffer:
 			self.key = ECC.import_key(buffer);
 			if self.key.curve == 'NIST P-256':
-				self.curve_id = self.NIST_P_256;
+				self.curve_id = ECDSAPublicKey.NIST_P_256;
 			elif self.key.curve == 'NIST P-384':
-				self.curve_id = self.NIST_P_384;
+				self.curve_id = ECDSAPublicKey.NIST_P_384;
 			else:
 				raise Exception("Unsupported curve");
 		elif key:
 			self.key = key;
 			if self.key.curve == 'NIST P-256':
-				self.curve_id = self.NIST_P_256;
+				self.curve_id = ECDSAPublicKey.NIST_P_256;
 			elif self.key.curve == 'NIST P-384':
-				self.curve_id = self.NIST_P_384;
+				self.curve_id = ECDSAPublicKey.NIST_P_384;
 			else:
 				raise Exception("Unsupported curve");
 
@@ -325,17 +325,17 @@ class ECDSAPrivateKey():
 		if buffer:
 			self.key = ECC.import_key(buffer);
 			if self.key.curve == 'NIST P-256':
-				self.curve_id = self.NIST_P_256;
+				self.curve_id = ECDSAPrivateKey.NIST_P_256;
 			elif self.key.curve == 'NIST P-384':
-				self.curve_id = self.NIST_P_384;
+				self.curve_id = ECDSAPrivateKey.NIST_P_384;
 			else:
 				raise Exception("Unsupported curve");
 		elif key:
 			self.key = key;
 			if self.key.curve == 'NIST P-256':
-				self.curve_id = self.NIST_P_256;
+				self.curve_id = ECDSAPrivateKey.NIST_P_256;
 			elif self.key.curve == 'NIST P-384':
-				self.curve_id = self.NIST_P_384;
+				self.curve_id = ECDSAPrivateKey.NIST_P_384;
 			else:
 				raise Exception("Unsupported curve");
 
@@ -382,13 +382,13 @@ class ECDSALowPublicKey():
 		if buffer:
 			self.key = ECC.import_key(buffer);
 			if self.key.curve == 'SECP160R1':
-				self.curve_id = self.SECP160R1;
+				self.curve_id = ECDSALowPublicKey.SECP160R1;
 			else:
 				raise Exception("Unsupported curve");
 		elif key:
 			self.key = key;
 			if self.key.curve == 'SECP160R1':
-				self.curve_id = self.SECP160R1;
+				self.curve_id = ECDSALowPublicKey.SECP160R1;
 			else:
 				raise Exception("Unsupported curve");
 
@@ -450,13 +450,13 @@ class ECDSALowPrivateKey():
 		if buffer:
 			self.key = ECC.import_key(buffer);
 			if self.key.curve == 'SECP160R1':
-				self.curve_id = self.SECP160R1;
+				self.curve_id = ECDSALowPrivateKey.SECP160R1;
 			else:
 				raise Exception("Unsupported curve");
 		elif key:
 			self.key = key;
 			if self.key.curve == 'SECP160R1':
-				self.curve_id = self.SECP160R1;
+				self.curve_id = ECDSALowPrivateKey.SECP160R1;
 			else:
 				raise Exception("Unsupported curve");
 	@staticmethod

@@ -56,8 +56,6 @@ class RSAHostID(HostID):
 	def __init__(self, exponent = None, modulus = None):
 		exponent_bytes = Math.int_to_bytes(exponent);
 		modulus_bytes = Math.int_to_bytes(modulus);
-		logging.debug("Modulus length......");
-		logging.debug(len(modulus_bytes));
 		exponent_length = len(exponent_bytes);
 		self.exponent_length_field_length = 0x1;
 		if len(exponent_bytes) > 255:
@@ -128,14 +126,14 @@ class ECDSAHostID(HostID):
 	def __init__(self, curve_id, x, y):
 		self.x = Math.int_to_bytes(x);
 		self.y = Math.int_to_bytes(y);
-		if curve_id == self.NIST_P_256_CURVE_ID:
+		if curve_id == ECDSAHostID.NIST_P_256_CURVE_ID:
 			#if self.NIST_P_256_LENGTH - len(self.x) > 0:
-			self.x = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.x)))) + self.x;
-			self.y = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.y)))) + self.y;
-		elif curve_id == self.NIST_P_384_CURVE_ID:
+			self.x = bytearray(([0] * (ECDSAHostID.NIST_P_256_LENGTH - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (ECDSAHostID.NIST_P_256_LENGTH - len(self.y)))) + self.y;
+		elif curve_id == ECDSAHostID.NIST_P_384_CURVE_ID:
 			#if self.NIST_P_384_LENGTH - len(self.x) > 0:
-			self.x = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.x)))) + self.x;
-			self.y = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.y)))) + self.y;
+			self.x = bytearray(([0] * (ECDSAHostID.NIST_P_384_LENGTH - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (ECDSAHostID.NIST_P_384_LENGTH - len(self.y)))) + self.y;
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
@@ -180,10 +178,10 @@ class ECDSALowHostID(HostID):
 	def __init__(self, curve_id, x, y):
 		self.x = Math.int_to_bytes(x);
 		self.y = Math.int_to_bytes(y);
-		if curve_id == self.SECP160R1_CURVE_ID:
+		if curve_id == ECDSALowHostID.SECP160R1_CURVE_ID:
 			#if self.SECP160R1_LENGTH - len(self.x) > 0:
-			self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
-			self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+			self.x = bytearray(([0] * (ECDSALowHostID.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (ECDSALowHostID.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
