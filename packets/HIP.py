@@ -34,8 +34,6 @@ HIP_TLV_LENGTH_LENGTH            = 0x2;
 HIP_TLV_TYPE_LENGTH              = 0x2;
 HIP_TLV_CRITICAL_BIT_LENGHT      = 0x1;
 
-R_HASH_VALUE_LENGTH              = 0x100;
-
 HIP_PROTOCOL                     = 0x8B;
 HIP_IPPROTO_NONE                 = 0x3B;
 
@@ -229,7 +227,11 @@ class SolutionParameter(HIPParameter):
 		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
 		return (self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH]);
 	def set_solution(self, solution, rhash_length = 0x20):
-		 self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH] = solution;
+		self.HIP_SOLUTION_RANDOM_I_LENGTH = rhash_length;
+		self.HIP_SOLUTION_J_OFFSET = HIP_SOLUTION_RANDOM_I_OFFSET + rhash_length;
+		self.HIP_SOLUTION_J_LENGTH = rhash_length;
+		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
+		self.buffer[self.HIP_SOLUTION_J_OFFSET:self.HIP_SOLUTION_J_OFFSET + self.HIP_SOLUTION_J_LENGTH] = solution;
 
 HIP_DH_GROUP_LIST_TYPE              = 0x1FF;
 HIP_DH_GROUP_LIST_OFFSET            = 0x4;
@@ -1012,7 +1014,9 @@ class HIPPacket():
 		while has_more_parameters:
 			param_type = (self.buffer[offset] << 8) | self.buffer[offset + 1]; 
 			param_length = (self.buffer[offset + 2] << 8) | self.buffer[offset + 3];
+			logging.debug("NEXT PARAM %d " % (param_type));
 			total_param_length = 11 + param_length - (param_length + 3) % 8;
+			logging.debug("TOTAL PARAM LENGTH %d " % (total_param_length));
 			param_data = self.buffer[offset:offset + total_param_length];
 			if param_type == HIP_R1_COUNTER_TYPE:
 				parameters.append(R1CounterParameter(param_data));

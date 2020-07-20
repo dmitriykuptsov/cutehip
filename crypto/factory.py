@@ -54,7 +54,7 @@ class DHFactory():
 class SymmetricCiphersFactory():
 	@staticmethod
 	def get_supported_ciphers():
-		return [0x2];
+		return [0x2, 0x4, 0x1];
 
 	@staticmethod
 	def get(cipher):

@@ -461,7 +461,7 @@ def hip_loop():
 					if isinstance(parameter, HIP.PuzzleParameter):
 						logging.debug("Puzzle parameter");
 						puzzle_param = parameter;
-						irandom = puzzle_param.get_random();
+						irandom = puzzle_param.get_random(rhash_length = r_hash.LENGTH);
 						opaque = puzzle_param.get_opaque();
 						puzzle_param.set_random([0] * r_hash.LENGTH, r_hash.LENGTH);
 						puzzle_param.set_opaque(list([0, 0]));
@@ -618,8 +618,6 @@ def hip_loop():
 
 				#logging.debug(privkey.get_key_info());
 
-				logging.debug(list(buf));
-				logging.debug(list(signature_param.get_signature()));
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
@@ -778,6 +776,7 @@ def hip_loop():
 					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
 				elif isinstance(privkey, ECDSALowPrivateKey):
 					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
+
 				signature = signature_alg.sign(bytearray(buf));
 
 				signature_param = HIP.SignatureParameter();
@@ -828,6 +827,7 @@ def hip_loop():
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
+
 				if hip_state.is_i1_sent() or hip_state.is_closing() or hip_state.is_closed():
 					hip_state.i2_sent();
 			elif hip_packet.get_packet_type() == HIP.HIP_I2_PACKET:
