@@ -999,7 +999,7 @@ class HIPPacket():
 		return self.buffer[HIP_RECIEVERS_HIT_OFFSET:HIP_RECIEVERS_HIT_OFFSET + HIP_RECIEVERS_HIT_LENGTH];
 	def set_receivers_hit(self, hit):
 		self.buffer[HIP_RECIEVERS_HIT_OFFSET:HIP_RECIEVERS_HIT_OFFSET + HIP_RECIEVERS_HIT_LENGTH] = hit;
-	def get_parameters(self, rhash_length):
+	def get_parameters(self):
 		parameters = [];
 		offset = HIP_PARAMETERS_OFFSET;
 		has_more_parameters = False;
