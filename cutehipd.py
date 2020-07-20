@@ -132,6 +132,9 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug(list(hi.to_byte_array()));
 	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
+	logging.debug("Responder's OGA ID %d" % (HIT.SHA384_OGA));
+	logging.debug(list(responder_hi.to_byte_array()));
+	logging.debug(list(own_hit))
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3:
 		raise Exception("Invalid hash algorithm. Must be 0x3")
@@ -485,7 +488,9 @@ def hip_loop():
 						#	continue;
 						oga = HIT.get_responders_oga_id(shit);
 						logging.debug("Responder's OGA ID %d" % (oga));
+						logging.debug(list(responder_hi.to_byte_array()));
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
+						logging.debug(list(responders_hit))
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Invalid HIT");
 							raise Exception("Invalid HIT");
