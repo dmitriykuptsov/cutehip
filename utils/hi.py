@@ -129,13 +129,13 @@ class ECDSAHostID(HostID):
 		self.x = Math.int_to_bytes(x);
 		self.y = Math.int_to_bytes(y);
 		if curve_id == self.NIST_P_256_CURVE_ID:
-			if self.NIST_P_256_LENGTH - len(self.x) > 0:
-				self.x = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.x)))) + self.x;
-				self.y = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.y)))) + self.y;
+			#if self.NIST_P_256_LENGTH - len(self.x) > 0:
+			self.x = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (self.NIST_P_256_LENGTH - len(self.y)))) + self.y;
 		elif curve_id == self.NIST_P_384_CURVE_ID:
-			if self.NIST_P_384_LENGTH - len(self.x) > 0:
-				self.x = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.x)))) + self.x;
-				self.y = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.y)))) + self.y;
+			#if self.NIST_P_384_LENGTH - len(self.x) > 0:
+			self.x = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (self.NIST_P_384_LENGTH - len(self.y)))) + self.y;
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
@@ -181,9 +181,9 @@ class ECDSALowHostID(HostID):
 		self.x = Math.int_to_bytes(x);
 		self.y = Math.int_to_bytes(y);
 		if curve_id == self.SECP160R1_CURVE_ID:
-			if self.SECP160R1_LENGTH - len(self.x) > 0:
-				self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
-				self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+			#if self.SECP160R1_LENGTH - len(self.x) > 0:
+			self.x = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (self.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);

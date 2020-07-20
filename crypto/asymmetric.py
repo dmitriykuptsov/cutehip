@@ -246,18 +246,35 @@ class ECDSAPublicKey():
 		buffer = b64decode(b64_contents);
 		return ECDSAPublicKey(buffer);
 
-	def __init__(self, buffer = None):
-		self.key = ECC.import_key(buffer);
-		if self.key.curve == 'NIST P-256':
-			self.curve_id = self.NIST_P_256;
-		elif self.key.curve == 'NIST P-384':
-			self.curve_id = self.NIST_P_384;
-		else:
-			raise Exception("Unsupported curve");
+	def __init__(self, buffer = None, key = None):
+		if buffer:
+			self.key = ECC.import_key(buffer);
+			if self.key.curve == 'NIST P-256':
+				self.curve_id = self.NIST_P_256;
+			elif self.key.curve == 'NIST P-384':
+				self.curve_id = self.NIST_P_384;
+			else:
+				raise Exception("Unsupported curve");
+		elif key:
+			self.key = key;
+			if self.key.curve == 'NIST P-256':
+				self.curve_id = self.NIST_P_256;
+			elif self.key.curve == 'NIST P-384':
+				self.curve_id = self.NIST_P_384;
+			else:
+				raise Exception("Unsupported curve");
 
 	@staticmethod
 	def load_buffer(buffer):
-		return ECDSAPublicKey(buffer);
+		return ECDSAPublicKey(buffer = buffer);
+
+	@staticmethod
+	def load_from_params(curve = None, x = None, y = None):
+		"""
+		Construct public key from the components
+		"""
+		return ECDSAPublicKey(key = ECC.construct(curve = curve, point_x = x, point_y = y));
+
 
 	def get_curve_id(self):
 		return self.curve_id;
@@ -297,8 +314,30 @@ class ECDSAPrivateKey():
 	def load_buffer(buffer):
 		return ECDSAPrivateKey(buffer);
 
-	def __init__(self, buffer):
-		self.key = ECC.import_key(buffer)
+	@staticmethod
+	def load_from_params(curve = None, d = None, x = None, y = None):
+		"""
+		Construct public key from the components
+		"""
+		return ECDSAPrivateKey(key = ECC.construct(curve = curve, d = d, point_x = x, point_y = y));
+
+	def __init__(self, buffer = None, key = None):
+		if buffer:
+			self.key = ECC.import_key(buffer);
+			if self.key.curve == 'NIST P-256':
+				self.curve_id = self.NIST_P_256;
+			elif self.key.curve == 'NIST P-384':
+				self.curve_id = self.NIST_P_384;
+			else:
+				raise Exception("Unsupported curve");
+		elif key:
+			self.key = key;
+			if self.key.curve == 'NIST P-256':
+				self.curve_id = self.NIST_P_256;
+			elif self.key.curve == 'NIST P-384':
+				self.curve_id = self.NIST_P_384;
+			else:
+				raise Exception("Unsupported curve");
 
 	def get_key_info():
 		return self.key
@@ -336,15 +375,33 @@ class ECDSALowPublicKey():
 		return ECDSALowPublicKey(buffer);
 
 	def __init__(self, buffer = None):
-		self.key = ECC.import_key(buffer);
-		if self.key.curve == 'SECP160R1':
-			self.curve_id = self.SECP160R1;
-		else:
+		
 			raise Exception("Unsupported curve");
+
+	def __init__(self, buffer = None, key = None):
+		if buffer:
+			self.key = ECC.import_key(buffer);
+			if self.key.curve == 'SECP160R1':
+				self.curve_id = self.SECP160R1;
+			else:
+				raise Exception("Unsupported curve");
+		elif key:
+			self.key = key;
+			if self.key.curve == 'SECP160R1':
+				self.curve_id = self.SECP160R1;
+			else:
+				raise Exception("Unsupported curve");
 
 	@staticmethod
 	def load_buffer(buffer):
-		return ECDSAPublicKey(buffer);
+		return ECDSALowPublicKey(buffer = buffer);
+
+	@staticmethod
+	def load_from_params(curve = None, x = None, y = None):
+		"""
+		Construct public key from the components
+		"""
+		return ECDSALowPublicKey(key = ECC.construct(curve = curve, point_x = x, point_y = y));
 
 	def get_curve_id(self):
 		return self.curve_id;
@@ -361,6 +418,8 @@ class ECDSALowPublicKey():
 	
 
 class ECDSALowPrivateKey():
+	SECP160R1 = 0x1;
+
 	@staticmethod
 	def load_pem(filename):
 		"""
@@ -378,14 +437,31 @@ class ECDSALowPrivateKey():
 		except Exception as e:
 			raise Exception("Failed to read PEM file: " + str(e));
 		buffer = b64decode(b64_contents);
-		return ECDSAPrivateKey(buffer);
+		return ECDSALowPrivateKey(buffer);
 
 	@staticmethod
-	def load_buffer(buffer):
-		return ECDSAPrivateKey(buffer);
+	def load_from_params(curve = None, d = None, x = None, y = None):
+		"""
+		Construct public key from the components
+		"""
+		return ECDSALowPrivateKey(key = ECC.construct(curve = curve, d = d, point_x = x, point_y = y));
 
-	def __init__(self, buffer):
-		self.key = ECC.import_key(buffer)
+	def __init__(self, buffer = None, key = None):
+		if buffer:
+			self.key = ECC.import_key(buffer);
+			if self.key.curve == 'SECP160R1':
+				self.curve_id = self.SECP160R1;
+			else:
+				raise Exception("Unsupported curve");
+		elif key:
+			self.key = key;
+			if self.key.curve == 'SECP160R1':
+				self.curve_id = self.SECP160R1;
+			else:
+				raise Exception("Unsupported curve");
+	@staticmethod
+	def load_buffer(buffer):
+		return ECDSALowPrivateKey(buffer);
 
 	def get_key_info():
 		return self.key

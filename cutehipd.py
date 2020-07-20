@@ -51,7 +51,7 @@ from config import config
 # HIT
 import utils
 from utils.hit import HIT
-from utils.hi import RSAHostID, ECDSAHostID
+from utils.hi import RSAHostID, ECDSAHostID, ECDSALowHostID
 from utils.di import DIFactory
 # Utilities
 from utils.misc import Utils, Math
@@ -115,17 +115,23 @@ privkey = None;
 hi = None;
 
 if config.config["security"]["sig_alg"] == 0x5: # RSA
+	if config.config["security"]["hash_alg"] != 0x1:
+		raise Exception("Invalid hash algorithm. Must be 0x1")
 	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
-#elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
-#	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
-#	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
-#	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
-#elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
-#	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
-#	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
-#	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
+	if config.config["security"]["hash_alg"] != 0x2:
+		raise Exception("Invalid hash algorithm. Must be 0x2")
+	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
+	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
+	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
+	if config.config["security"]["hash_alg"] != 0x3:
+		raise Exception("Invalid hash algorithm. Must be 0x3")
+	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
+	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
+	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 else:
 	raise Exception("Unsupported Host ID algorithm")
 
@@ -327,7 +333,13 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = hip_r1_packet.get_buffer() + buf;
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
 
 				#logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
@@ -450,18 +462,41 @@ def hip_loop():
 						logging.debug("Host ID");
 						hi_param = parameter;
 						# Check the algorithm and construct the HI based on the proposed algorithm
-						responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
-						if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
-							logging.critical("Invalid signature algorithm");
-							continue;
+						if hi_param.get_algorithm() == 0x5: #RSA
+							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						elif hi_param.get_algorithm() == 0x7: #ECDSA
+							responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
+						elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
+							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
+						else:
+							raise Exception("Invalid signature algorithm");
+						#responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						#if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+						#	logging.critical("Invalid signature algorithm");
+						#	continue;
 						oga = HIT.get_responders_oga_id(rhit);
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Not our HIT");
 							raise Exception("Invalid HIT");
-						responders_public_key = RSAPublicKey.load_from_params(
-							responder_hi.get_exponent(), 
-							responder_hi.get_modulus());
+						
+						if isinstance(responder_hi, RSAHostID): #RSA
+							responders_public_key = RSAPublicKey.load_from_params(
+								responder_hi.get_exponent(), 
+								responder_hi.get_modulus());
+						elif isinstance(responder_hi, ECDSAHostID): #ECDSA
+							responders_public_key = ECDSAPublicKey.load_from_params(
+								responder_hi.get_curve_id(), 
+								responder_hi.get_x(),
+								responder_hi.get_y());
+						elif isinstance(responder_hi, ECDSALowHostID): #ECDSA LOW
+							responders_public_key = ECDSALowPublicKey.load_from_params(
+								responder_hi.get_curve_id(), 
+								responder_hi.get_x(),
+								responder_hi.get_y());
+						else:
+							raise Exception("Invalid signature algorithm");
+						
 						pubkey_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit), 
 							responders_public_key);
@@ -553,7 +588,14 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
-				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if isinstance(responders_public_key, RSAPublicKey):
+					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSAPublicKey):
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSALowPublicKey):
+					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
+
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
@@ -705,7 +747,13 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				#signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
 
 				signature_param = HIP.SignatureParameter();
@@ -790,18 +838,41 @@ def hip_loop():
 					if isinstance(parameter, HIP.HostIdParameter):
 						logging.debug("Host ID");
 						hi_param = parameter;
-						responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
-						if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
-							logging.critical("Invalid signature algorithm");
-							continue;
+						#responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						#if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+						#	logging.critical("Invalid signature algorithm");
+						#	continue;
+						if hi_param.get_algorithm() == 0x5: #RSA
+							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+						elif hi_param.get_algorithm() == 0x7: #ECDSA
+							responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
+						elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
+							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
+						else:
+							raise Exception("Invalid signature algorithm");
 						oga = HIT.get_responders_oga_id(rhit);
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Not our HIT");
 							raise Exception("Invalid HIT");
-						responders_public_key = RSAPublicKey.load_from_params(
-							responder_hi.get_exponent(), 
-							responder_hi.get_modulus());
+
+						if isinstance(responder_hi, RSAHostID): #RSA
+							responders_public_key = RSAPublicKey.load_from_params(
+								responder_hi.get_exponent(), 
+								responder_hi.get_modulus());
+						elif isinstance(responder_hi, ECDSAHostID): #ECDSA
+							responders_public_key = ECDSAPublicKey.load_from_params(
+								responder_hi.get_curve_id(), 
+								responder_hi.get_x(),
+								responder_hi.get_y());
+						elif isinstance(responder_hi, ECDSALowHostID): #ECDSA LOW
+							responders_public_key = ECDSALowPublicKey.load_from_params(
+								responder_hi.get_curve_id(), 
+								responder_hi.get_x(),
+								responder_hi.get_y());
+						else:
+							raise Exception("Invalid signature algorithm");
+
 						pubkey_storage.save(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit), 
 							responders_public_key);
@@ -920,18 +991,40 @@ def hip_loop():
 					data = encrypted_param.get_encrypted_data(iv_length);
 					host_id_data = cipher.decrypt(aes_key, iv, data);
 					hi_param = HIP.HostIdParameter(host_id_data);
-					responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
-					if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
-						logging.critical("Invalid signature algorithm");
+					#responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+					#if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
+					#	logging.critical("Invalid signature algorithm");
+					#	raise Exception("Invalid signature algorithm");
+					if hi_param.get_algorithm() == 0x5: #RSA
+						responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
+					elif hi_param.get_algorithm() == 0x7: #ECDSA
+						responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
+					elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
+						responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
+					else:
 						raise Exception("Invalid signature algorithm");
 					oga = HIT.get_responders_oga_id(rhit);
 					responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 					if not Utils.hits_equal(shit, responders_hit):
 						logging.critical("Not our HIT");
 						raise Exception("Invalid HIT");
-					responders_public_key = RSAPublicKey.load_from_params(
-						responder_hi.get_exponent(), 
-						responder_hi.get_modulus());
+					
+					if isinstance(responder_hi, RSAHostID): #RSA
+						responders_public_key = RSAPublicKey.load_from_params(
+							responder_hi.get_exponent(), 
+							responder_hi.get_modulus());
+					elif isinstance(responder_hi, ECDSAHostID): #ECDSA
+						responders_public_key = ECDSAPublicKey.load_from_params(
+							responder_hi.get_curve_id(), 
+							responder_hi.get_x(),
+							responder_hi.get_y());
+					elif isinstance(responder_hi, ECDSALowHostID): #ECDSA LOW
+						responders_public_key = ECDSALowPublicKey.load_from_params(
+							responder_hi.get_curve_id(), 
+							responder_hi.get_x(),
+							responder_hi.get_y());
+					else:
+						raise Exception("Invalid signature algorithm");
 
 				hip_i2_packet = HIP.I2Packet();
 				hip_i2_packet.set_senders_hit(shit);
@@ -996,7 +1089,14 @@ def hip_loop():
 				hip_i2_packet.set_length(int(packet_length / 8));
 				buf = hip_i2_packet.get_buffer() + buf;
 
-				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if isinstance(responders_public_key, RSAPublicKey):
+					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSAPublicKey):
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSALowPublicKey):
+					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
+
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
 				else:
@@ -1033,7 +1133,14 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_r2_packet.set_length(int(packet_length / 8));
 				buf = hip_r2_packet.get_buffer() + buf;
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				#signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
+
 				signature = signature_alg.sign(bytearray(buf));
 
 				signature_param = HIP.Signature2Parameter();
@@ -1173,7 +1280,15 @@ def hip_loop():
 
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
-				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+
+				if isinstance(responders_public_key, RSAPublicKey):
+					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSAPublicKey):
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSALowPublicKey):
+					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
+				
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature. Dropping the packet");
 				else:
@@ -1301,7 +1416,13 @@ def hip_loop():
 
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
-				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if isinstance(responders_public_key, RSAPublicKey):
+					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSAPublicKey):
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSALowPublicKey):
+					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
 				hip_update_packet = HIP.UpdatePacket();
 				hip_update_packet.set_senders_hit(shit);
@@ -1350,7 +1471,14 @@ def hip_loop():
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				#signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
+
 				signature = signature_alg.sign(bytearray(hip_update_packet.get_buffer()));
 
 				signature_param = HIP.SignatureParameter();
@@ -1483,7 +1611,13 @@ def hip_loop():
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(shit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				if isinstance(responders_public_key, RSAPublicKey):
+					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSAPublicKey):
+					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
+				elif isinstance(responders_public_key, ECDSALowPublicKey):
+					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
 				hip_close_packet = HIP.ClosePacket();
 				hip_close_packet.set_senders_hit(shit);
@@ -1525,7 +1659,14 @@ def hip_loop():
 				mac_param.set_hmac(hmac.digest(bytearray(hip_close_ack_packet.get_buffer())));
 				hip_close_ack_packet.add_parameter(mac_param);
 
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				#signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
+
 				signature = signature_alg.sign(bytearray(hip_close_ack_packet.get_buffer()));
 
 				signature_param = HIP.SignatureParameter();
@@ -1901,7 +2042,14 @@ def exit_handler():
 		mac_param.set_hmac(hmac.digest(bytearray(hip_close_packet.get_buffer())));
 		hip_close_packet.add_parameter(mac_param);
 
-		signature_alg = RSASHA256Signature(privkey.get_key_info());
+		#signature_alg = RSASHA256Signature(privkey.get_key_info());
+		if isinstance(privkey, RSAPrivateKey):
+			signature_alg = RSASHA256Signature(privkey.get_key_info());
+		elif isinstance(privkey, ECDSAPrivateKey):
+			signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+		elif isinstance(privkey, ECDSALowPrivateKey):
+			signature_alg = ECDSASHA1Signature(privkey.get_key_info());
+		
 		signature = signature_alg.sign(bytearray(hip_close_packet.get_buffer()));
 
 		signature_param = HIP.SignatureParameter();
@@ -1987,7 +2135,13 @@ while main_loop:
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
-				signature_alg = RSASHA256Signature(privkey.get_key_info());
+				#signature_alg = RSASHA256Signature(privkey.get_key_info());
+				if isinstance(privkey, RSAPrivateKey):
+					signature_alg = RSASHA256Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSAPrivateKey):
+					signature_alg = ECDSASHA384Signature(privkey.get_key_info());
+				elif isinstance(privkey, ECDSALowPrivateKey):
+					signature_alg = ECDSASHA1Signature(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(hip_update_packet.get_buffer()));
 
 				signature_param = HIP.SignatureParameter();
