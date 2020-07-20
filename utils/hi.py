@@ -144,11 +144,11 @@ class ECDSAHostID(HostID):
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
 		if curve_id == ECDSAHostID.NIST_P_256_CURVE_ID:
-			x = buffer[CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH];
-			y = buffer[CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH:];
+			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH];
+			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH:];
 		elif curve_id == ECDSAHostID.NIST_P_384_CURVE_ID:
-			x = buffer[CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID];
-			y = buffer[CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID:];
+			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID];
+			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_CURVE_ID:];
 		else:
 			raise Exception("Unsupported curve");
 		return ECDSAHostID(curve_id, Math.bytes_to_int(x), Math.bytes_to_int(y));
@@ -192,10 +192,10 @@ class ECDSALowHostID(HostID):
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
 		if curve_id == ECDSALowHostID.NIST_P_256_CURVE_ID:
-			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_256_LENGTH];
+			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_256_LENGTH];
 			y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_256_LENGTH:];
 		elif curve_id == ECDSALowHostID.NIST_P_384_CURVE_ID:
-			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_384_CURVE_ID];
+			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_384_CURVE_ID];
 			y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.NIST_P_384_CURVE_ID:];
 		else:
 			raise Exception("Unsupported curve");
