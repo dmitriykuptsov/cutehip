@@ -130,6 +130,7 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
+	logging.debug(list(hi.to_byte_array()));
 	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3:
@@ -2102,7 +2103,7 @@ atexit.register(exit_handler);
 main_loop = True;
 
 while main_loop:
-	logging.debug("Periodic tasks")
+	#logging.debug("Periodic tasks")
 	time.sleep(1);
 	for key in state_variables.keys():
 		logging.debug("Periodic task for %s" % (key));
