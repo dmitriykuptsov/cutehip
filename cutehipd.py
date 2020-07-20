@@ -874,7 +874,7 @@ def hip_loop():
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
 						else:
 							raise Exception("Invalid signature algorithm");
-						oga = HIT.get_responders_oga_id(rhit);
+						oga = HIT.get_responders_oga_id(shit);
 						logging.debug("OGA ID %d " % (oga));
 
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
