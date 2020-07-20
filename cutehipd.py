@@ -2148,6 +2148,7 @@ main_loop = True;
 while main_loop:
 	#logging.debug("Periodic tasks")
 	time.sleep(1);
+	continue;
 	for key in state_variables.keys():
 		#logging.debug("Periodic task for %s" % (key));
 		sv = state_variables.get_by_key(key);
