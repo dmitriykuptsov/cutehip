@@ -411,7 +411,7 @@ def hip_loop():
 					logging.debug("Dropping packet...");
 					continue;
 
-				oga = HIT.get_responders_oga_id(rhit);
+				oga = HIT.get_responders_oga_id(shit);
 
 				if (oga << 4) not in config.config["security"]["supported_hit_suits"]:
 					logging.critical("Unsupported HIT suit");
@@ -483,12 +483,11 @@ def hip_loop():
 						#if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
 						#	logging.critical("Invalid signature algorithm");
 						#	continue;
-						oga = HIT.get_responders_oga_id(rhit);
-						logging.debug(list(responder_hi.to_byte_array()))
-						logging.debug(oga);
+						oga = HIT.get_responders_oga_id(shit);
+
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
-							logging.critical("Not our HIT");
+							logging.critical("Invalid HIT");
 							raise Exception("Invalid HIT");
 						
 						if isinstance(responder_hi, RSAHostID): #RSA
@@ -638,7 +637,7 @@ def hip_loop():
 
 				info = Utils.sort_hits(shit, rhit);
 				salt = irandom + jrandom;
-				hmac_alg  = HIT.get_responders_oga_id(rhit);
+				hmac_alg  = HIT.get_responders_oga_id(shit);
 
 				offered_ciphers = cipher_param.get_ciphers();
 				supported_ciphers = config.config["security"]["supported_ciphers"];
@@ -864,7 +863,7 @@ def hip_loop():
 						oga = HIT.get_responders_oga_id(rhit);
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
-							logging.critical("Not our HIT");
+							logging.critical("Invalid HIT");
 							raise Exception("Invalid HIT");
 
 						if isinstance(responder_hi, RSAHostID): #RSA
