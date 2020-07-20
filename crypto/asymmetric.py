@@ -279,7 +279,7 @@ class ECDSAPublicKey():
 	def get_curve_id(self):
 		return self.curve_id;
 
-	def get_key_info():
+	def get_key_info(self):
 		return self.key
 
 	def get_x(self):
@@ -293,7 +293,7 @@ class ECDSAPublicKey():
 class ECDSAPrivateKey():
 	NIST_P_256 = 0x1;
 	NIST_P_384 = 0x2;
-	
+
 	@staticmethod
 	def load_pem(filename):
 		"""
@@ -342,7 +342,7 @@ class ECDSAPrivateKey():
 			else:
 				raise Exception("Unsupported curve");
 
-	def get_key_info():
+	def get_key_info(self):
 		return self.key
 
 	def get_d(self):
@@ -409,7 +409,7 @@ class ECDSALowPublicKey():
 	def get_curve_id(self):
 		return self.curve_id;
 
-	def get_key_info():
+	def get_key_info(self):
 		return self.key
 
 	def get_x(self):
@@ -466,7 +466,7 @@ class ECDSALowPrivateKey():
 	def load_buffer(buffer):
 		return ECDSALowPrivateKey(buffer);
 
-	def get_key_info():
+	def get_key_info(self):
 		return self.key
 
 	def get_d(self):
