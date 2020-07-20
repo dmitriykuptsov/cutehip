@@ -110,34 +110,40 @@ logging.debug(di);
 
 logging.info("Loading public key and constructing HIT")
 
-pubkey = None;
-privkey = None;
-hi = None;
-
+pubkey       = None;
+privkey      = None;
+hi           = None;
+ipv6_address = None;
+own_hit      = None;
 if config.config["security"]["sig_alg"] == 0x5: # RSA
 	if config.config["security"]["hash_alg"] != 0x1:
 		raise Exception("Invalid hash algorithm. Must be 0x1")
 	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = RSAHostID(pubkey.get_public_exponent(), pubkey.get_modulus());
+	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA256_OGA);
+	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA256_OGA);
 elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	if config.config["security"]["hash_alg"] != 0x2:
 		raise Exception("Invalid hash algorithm. Must be 0x2")
 	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
+	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3:
 		raise Exception("Invalid hash algorithm. Must be 0x3")
 	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
 	hi = ECDSALowHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
+	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA1_OGA);
+	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA1_OGA);
 else:
 	raise Exception("Unsupported Host ID algorithm")
 
 logging.debug("Configuring TUN interface");
-ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA256_OGA);
-own_hit = HIT.get(hi.to_byte_array(), HIT.SHA256_OGA);
+
 logging.info("Configuring TUN device");
 hip_tun = tun.Tun(address=ipv6_address, mtu=MTU);
 logging.info("Configuring IPv6 routes");
@@ -465,6 +471,7 @@ def hip_loop():
 						if hi_param.get_algorithm() == 0x5: #RSA
 							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x7: #ECDSA
+							logging.debug(".......HI is of ECDSAHostID type......")
 							responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
@@ -475,6 +482,8 @@ def hip_loop():
 						#	logging.critical("Invalid signature algorithm");
 						#	continue;
 						oga = HIT.get_responders_oga_id(rhit);
+						logging.debug(list(responder_hi.to_byte_array()))
+						logging.debug(oga);
 						responders_hit = HIT.get(responder_hi.to_byte_array(), oga);
 						if not Utils.hits_equal(shit, responders_hit):
 							logging.critical("Not our HIT");
