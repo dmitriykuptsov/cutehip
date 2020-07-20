@@ -1604,6 +1604,9 @@ def hip_loop():
 					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(shit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
+				if not sv:
+					logging.debug("Not state exists. Skipping the packet...")
+					continue;
 				if sv.is_responder:
 					hmac_alg  = HIT.get_responders_oga_id(rhit);
 				else:
