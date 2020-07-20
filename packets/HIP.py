@@ -1017,7 +1017,7 @@ class HIPPacket():
 			if param_type == HIP_R1_COUNTER_TYPE:
 				parameters.append(R1CounterParameter(param_data));
 			elif param_type == HIP_PUZZLE_TYPE:
-				parameters.append(PuzzleParameter(param_data, rhash_length));
+				parameters.append(PuzzleParameter(param_data));
 			elif param_type == HIP_SOLUTION_TYPE:
 				parameters.append(SolutionParameter(param_data));
 			elif param_type == HIP_DH_GROUP_LIST_TYPE:

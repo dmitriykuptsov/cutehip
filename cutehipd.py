@@ -597,8 +597,6 @@ def hip_loop():
 				if r1_counter_param:
 					buf += r1_counter_param.get_byte_buffer();
 
-				logging.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-				logging.debug(list(puzzle_param.get_byte_buffer()));
 				if not echo_signed:
 					buf += puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
@@ -626,9 +624,33 @@ def hip_loop():
 				elif isinstance(responders_public_key, ECDSAPublicKey):
 					signature_alg = ECDSASHA384Signature(responders_public_key.get_key_info());
 					logging.debug(responders_public_key.get_key_info());
-
 				elif isinstance(responders_public_key, ECDSALowPublicKey):
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
+
+				#logging.debug(privkey.get_key_info());
+				
+				logging.debug("---------------------------- Verifying the signature ---------------------------");
+				
+				pk = ECDSAPrivateKey.load_pem("./tests/private.pem");
+				pk2 = ECDSAPublicKey.load_pem("./tests/public.pem");
+				s = ECDSASHA384Signature(pk.get_key_info());
+				signature = s.sign(bytearray(buf));
+				logging.debug("---------------------------- Verifying the signature ---------------------------");
+				logging.debug(list(buf));
+				logging.debug(list(signature));
+				logging.debug(list(signature_param.get_signature()));
+				#responders_public_key = ECDSAPublicKey.load_from_params(hi.get_curve_id(), hi.get_x(), hi.get_y());
+				s = ECDSASHA384Signature(pk2.get_key_info());
+				if s.verify(signature, bytearray(buf)):
+					logging.debug("The signature is valid....")
+				else:
+					logging.debug("The signature is invalid....")
+
+				if s.verify(signature_param.get_signature(), bytearray(buf)):
+					logging.debug("The signature is valid....")
+				else:
+					logging.debug("The signature is invalid....")
+
 
 				logging.debug(list(buf));
 				logging.debug(list(signature_param.get_signature()));
