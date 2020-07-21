@@ -1235,11 +1235,14 @@ def hip_loop():
 				hip_r2_packet.set_version(HIP.HIP_VERSION);
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
-				responders_keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
+				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
 				responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
 
+				if initiators_keymat_index != keymat_index:
+					raise Exception("Keymat index should match....")
+
 				esp_info_param = HIP.ESPInfoParameter();
-				esp_info_param.set_keymat_index(responders_keymat_index);
+				esp_info_param.set_keymat_index(keymat_index);
 				esp_info_param.set_new_spi(responders_spi);
 
 				hip_r2_packet.add_parameter(esp_info_param);
@@ -1334,7 +1337,7 @@ def hip_loop():
 
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
-					responders_keymat_index, 
+					keymat_index, 
 					hmac.ALG_ID, 
 					cipher.ALG_ID, 
 					ihit, rhit);
@@ -1345,7 +1348,7 @@ def hip_loop():
 
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
-					initiators_keymat_index, 
+					keymat_index, 
 					hmac.ALG_ID, 
 					cipher.ALG_ID, 
 					rhit, ihit);
@@ -1387,8 +1390,7 @@ def hip_loop():
 
 				initiators_spi          = None;
 				responders_spi          = None;
-				responders_keymat_index = None;
-				initiators_keymat_index = None;
+				keymat_index            = None;
 
 				for parameter in parameters:
 					if isinstance(parameter, HIP.ESPInfoParameter):
@@ -1460,7 +1462,7 @@ def hip_loop():
 					logging.debug("Signature is correct");
 
 				responders_spi = esp_info_param.get_new_spi();
-				responders_keymat_index = esp_info_param.get_keymat_index();
+				keymat_index = esp_info_param.get_keymat_index();
 
 				logging.debug("Processing R2 packet %f" % (time.time() - st));
 				logging.debug("Ending HIP BEX %f" % (time.time()));
@@ -1486,7 +1488,7 @@ def hip_loop():
 				logging.debug(cipher.ALG_ID);
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
-					initiators_keymat_index, 
+					keymat_index, 
 					hmac.ALG_ID, 
 					cipher.ALG_ID, 
 					ihit, rhit);
@@ -1497,7 +1499,7 @@ def hip_loop():
 
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
-					responders_keymat_index, 
+					keymat_index, 
 					hmac.ALG_ID, 
 					cipher.ALG_ID, 
 					rhit, ihit);
