@@ -956,7 +956,7 @@ class ESPInfoParameter(HIPParameter):
 				HIP_ESP_INFO_OLD_SPI_LENGTH +
 				HIP_ESP_INFO_NEW_SPI_LENGTH
 				);
-			self.set_type(HIP_ESP_TRANSFORM_TYPE);
+			self.set_type(HIP_ESP_INFO_TYPE);
 			self.set_length(
 				HIP_ESP_INFO_RESERVED_LENGTH +
 				HIP_ESP_INFO_KEYMAT_INDEX_LENGTH +
