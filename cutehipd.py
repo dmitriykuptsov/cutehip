@@ -1268,6 +1268,8 @@ def hip_loop():
 				signature_param.set_signature(signature);
 
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+
+				hip_r2_packet.add_parameter(esp_info_param);
 				hip_r2_packet.add_parameter(mac_param);
 				hip_r2_packet.add_parameter(signature_param);
 				
@@ -1366,6 +1368,10 @@ def hip_loop():
 						logging.debug("MAC2 parameter");	
 						hmac_param = parameter;
 				
+				if not esp_info_param:
+					logging.critical("Missing ESP info parameter");
+					continue;
+
 				if not hmac_param:
 					logging.critical("Missing HMAC parameter");
 					continue;
