@@ -305,7 +305,7 @@ class Utils():
 			keymat[offset + cipher.KEY_SIZE_BITS: offset + cipher.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
-	def get_keys_esp(keymat, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
+	def get_keys_esp(keymat, keymat_index, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
 		
 		ihit = Math.bytes_to_int(ihit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
@@ -313,9 +313,10 @@ class Utils():
 		hmac = HMACFactory.get(hmac_alg, None);
 		cipher  = SymmetricCiphersFactory.get(cipher_alg);
 		
-		offset = 2*(hmac.LENGTH + cipher.KEY_SIZE_BITS);
+		#offset = 2*(hmac.LENGTH + cipher.KEY_SIZE_BITS);
+		offset = keymat_index;
 
-		if ihit < rhit:
+		if ihit > rhit:
 			offset += (hmac.LENGTH + cipher.KEY_SIZE_BITS);
 		return (keymat[offset: offset + cipher.KEY_SIZE_BITS], \
 			keymat[offset + cipher.KEY_SIZE_BITS: offset + cipher.KEY_SIZE_BITS + hmac.LENGTH]);

@@ -48,6 +48,8 @@ class ECDHFactory():
 			raise Exception("Not implemented");
 
 class ECDH(DH):
+	ALG_ID = 0x0;
+	
 	def __init__(self):
 		pass
 	
@@ -99,6 +101,7 @@ class ECDH(DH):
 
 """
 class ECDHSECP160R1(ECDH):
+	ALG_ID = 0xa;
 	def __init__(self):
 		self.private_key_size = int(160/8);
 		self.modulus = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFF;
@@ -145,6 +148,7 @@ class ECDHSECP160R1(ECDH):
 # https://tools.ietf.org/html/rfc5903#section-3
 
 class ECDHNIST256(ECDH):
+	ALG_ID = 0x7;
 	def __init__(self):
 		self.private_key_size = int(256/8);
 		self.modulus = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff;
@@ -190,6 +194,7 @@ class ECDHNIST256(ECDH):
 		return misc.ECPoint(x, y);
 
 class ECDHNIST384(ECDH):
+	ALG_ID = 0x8;
 	def __init__(self):
 		self.private_key_size = int(384/8);
 		self.modulus = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000ffffffff;
@@ -235,6 +240,7 @@ class ECDHNIST384(ECDH):
 		return misc.ECPoint(x, y);
 
 class ECDHNIST521(ECDH):
+	ALG_ID = 0x9;
 	def __init__(self):
 		self.private_key_size = int(528/8);
 		self.modulus = 0x000001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
@@ -280,6 +286,7 @@ class ECDHNIST521(ECDH):
 		return misc.ECPoint(x, y);
 
 class ECDHBrainpool256(ECDH):
+	ALG_ID = 0x0;
 	def __init__(self):
 		self.private_key_size = int(256/8);
 		self.modulus = 0xA9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377;

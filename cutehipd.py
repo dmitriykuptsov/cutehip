@@ -62,7 +62,7 @@ from utils.puzzles import PuzzleSolver
 # Crypto
 from crypto import factory
 from crypto.asymmetric import RSAPublicKey, RSAPrivateKey, ECDSAPublicKey, ECDSAPrivateKey, RSASHA256Signature, ECDSASHA384Signature, ECDSASHA1Signature
-from crypto.factory import HMACFactory, SymmetricCiphersFactory
+from crypto.factory import HMACFactory, SymmetricCiphersFactory, ESPTransformFactory
 # Tun interface
 from network import tun
 # Routing
@@ -742,8 +742,10 @@ def hip_loop():
 				esp_tranform_param = HIP.ESPTransformParameter();
 				esp_tranform_param.add_suits([selected_esp_transform]);
 
+				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
+
 				esp_info_param = HIP.ESPInfoParameter();
-				esp_info_param.set_keymat_index(Utils.compute_hip_keymat_length(hmac_alg, selected_cipher));
+				esp_info_param.set_keymat_index(keymat_index);
 				esp_info_param.set_new_spi(Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH)));
 
 				# Keying material generation
@@ -914,6 +916,10 @@ def hip_loop():
 				parameters         = hip_packet.get_parameters();
 				iv_length          = None;
 				encrypted_param    = None;
+
+				initiators_spi     = None;
+				initiators_keymat_index = None;
+
 				for parameter in parameters:
 					if isinstance(parameter, HIP.ESPInfoParameter):
 						logging.debug("ESP info parameter")
@@ -1073,6 +1079,9 @@ def hip_loop():
 
 				selected_esp_transform = esp_tranform_param.get_suits()[0];
 
+				initiators_spi = esp_info_param.get_new_spi();
+				initiators_keymat_index = esp_info_param.get_keymat_index();
+
 				keymat_length_in_octets = Utils.compute_keymat_length(hmac_alg, selected_cipher);
 				keymat = Utils.kdf(hmac_alg, salt, Math.int_to_bytes(shared_secret), info, keymat_length_in_octets);
 
@@ -1226,9 +1235,12 @@ def hip_loop():
 				hip_r2_packet.set_version(HIP.HIP_VERSION);
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
+				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
+				responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
+
 				esp_info_param = HIP.ESPInfoParameter();
-				esp_info_param.set_keymat_index(Utils.compute_hip_keymat_length(hmac_alg, selected_cipher));
-				esp_info_param.set_new_spi(Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH)));
+				esp_info_param.set_keymat_index(keymat_index);
+				esp_info_param.set_new_spi(responders_spi);
 
 				hip_r2_packet.add_parameter(esp_info_param);
 
@@ -1318,13 +1330,29 @@ def hip_loop():
 
 				logging.debug("Setting SA records...");
 
-				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, ihit, rhit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, src, dst);
+				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
+
+				(cipher_key, hmac_key) = Utils.get_keys_esp(
+					keymat, 
+					responders_keymat_index, 
+					hmac.ALG_ID, 
+					cipher.ALG_ID, 
+					ihit, rhit);
+				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, src, dst);
+				sa_record.set_spi(responders_spi);
 				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 					Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
 
-				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				(cipher_key, hmac_key) = Utils.get_keys_esp(
+					keymat, 
+					initiators_keymat_index, 
+					hmac.ALG_ID, 
+					cipher.ALG_ID, 
+					rhit, ihit);
+				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
+				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, rhit, ihit);
+				sa_record.set_spi(initiators_spi);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
@@ -1356,6 +1384,11 @@ def hip_loop():
 				esp_info_param  = None;
 				hmac_param      = None;
 				signature_param = None;
+
+				initiators_spi          = None;
+				responders_spi          = None;
+				responders_keymat_index = None;
+				initiators_keymat_index = None;
 
 				for parameter in parameters:
 					if isinstance(parameter, HIP.ESPInfoParameter):
@@ -1425,6 +1458,10 @@ def hip_loop():
 					logging.critical("Invalid signature. Dropping the packet");
 				else:
 					logging.debug("Signature is correct");
+
+				responders_spi = esp_info_param.get_new_spi();
+				responders_keymat_index = esp_info_param.get_keymat_index();
+
 				logging.debug("Processing R2 packet %f" % (time.time() - st));
 				logging.debug("Ending HIP BEX %f" % (time.time()));
 
@@ -1433,13 +1470,39 @@ def hip_loop():
 
 				logging.debug("Setting SA records... %s - %s" % (src_str, dst_str));
 
-				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, ihit, rhit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
-				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-					Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
+				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, ihit, rhit);
+				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
+				#sa_record.set_spi(esp_info_param.get_spi());
+				#ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
 
-				(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
-				sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
+				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				#ip_sec_sa.add_record(src_str, dst_str, sa_record);
+
+				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
+
+				(cipher_key, hmac_key) = Utils.get_keys_esp(
+					keymat, 
+					initiators_keymat_index, 
+					hmac.ALG_ID, 
+					cipher.ALG_ID, 
+					ihit, rhit);
+				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, dst, src);
+				sa_record.set_spi(responders_spi);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
+
+				(cipher_key, hmac_key) = Utils.get_keys_esp(
+					keymat, 
+					responders_keymat_index, 
+					hmac.ALG_ID, 
+					cipher.ALG_ID, 
+					rhit, ihit);
+				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
+				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, rhit, ihit);
+				sa_record.set_spi(responders_spi);
 				ip_sec_sa.add_record(src_str, dst_str, sa_record);
 
 				# Transition to an Established state

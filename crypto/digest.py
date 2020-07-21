@@ -19,49 +19,56 @@ from Crypto.Hash import HMAC, SHA256, SHA224, SHA384, SHA1
 
 class HMACDigest():
 	LENGTH = 0x0;
+	ALG_ID = 0x0;
+	
 	def __init__(self, key):
 		self.key = key;
-	def digest(data):
+	def digest(data, key):
 		raise Exception("Not implemented");
 
 class SHA256HMAC(HMACDigest):
 	LENGTH = 0x20;
+	ALG_ID = 0x1;
+	
 	def __init__(self, key):
 		self.key = key;
-	def digest(self, data):
+	def digest(self, data, key):
+		if key:
+			self.key = key;
 		self.hmac = HMAC.new(self.key, digestmod=SHA256)
-		self.hmac.update(data);
-		return self.hmac.digest();
-
-class SHA224HMAC(HMACDigest):
-	LENGTH = 0x1C;
-	def __init__(self, key):
-		self.key = key;
-	def digest(self, data):
-		self.hmac = HMAC.new(self.key, digestmod=SHA224)
 		self.hmac.update(data);
 		return self.hmac.digest();
 
 class SHA384HMAC(HMACDigest):
 	LENGTH = 0x30;
+	ALG_ID = 0x2;
+	
 	def __init__(self, key):
 		self.key = key;
-	def digest(self, data):
+	def digest(self, data, key):
+		if key:
+			self.key = key;
 		self.hmac = HMAC.new(self.key, digestmod=SHA384)
 		self.hmac.update(data);
 		return self.hmac.digest();
 
 class SHA1HMAC(HMACDigest):
 	LENGTH = 0x14;
+	ALG_ID = 0x3;
+	
 	def __init__(self, key):
 		self.key = key;
-	def digest(self, data):
+	def digest(self, data, key):
+		if key:
+			self.key = key;
 		self.hmac = HMAC.new(self.key, digestmod=SHA1)
 		self.hmac.update(data);
 		return self.hmac.digest();
 
 class Digest():
 	LENGTH = 0x0;
+	ALG_ID = 0x0;
+	
 	def __init__(self):
 		pass
 	def digest(self, data):
@@ -72,6 +79,8 @@ class Digest():
 
 class SHA256Digest(Digest):
 	LENGTH = 0x20;
+	ALG_ID = 0x1;
+	
 	def __init__(self):
 		pass
 	def digest(self, data):
@@ -81,19 +90,10 @@ class SHA256Digest(Digest):
 	def get_length(self):
 		return self.LENGTH;
 
-class SHA224Digest(Digest):
-	LENGTH = 0x1C;
-	def __init__(self):
-		pass
-	def digest(self, data):
-		self.sha224 = SHA224.new();
-		self.sha224.update(data);
-		return self.sha256.digest();
-	def get_length(self):
-		return self.LENGTH;
-
 class SHA384Digest(Digest):
 	LENGTH = 0x30;
+	ALG_ID = 0x2;
+	
 	def __init__(self):
 		pass
 	def digest(self, data):
@@ -105,6 +105,8 @@ class SHA384Digest(Digest):
 
 class SHA1Digest(Digest):
 	LENGTH = 0x14;
+	ALG_ID = 0x3;
+	
 	def __init__(self):
 		pass
 	def digest(self, data):

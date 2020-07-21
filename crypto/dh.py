@@ -197,6 +197,7 @@ from os import urandom
 SUPPORTED_DH_GROUPS = [0x3, 0x4];
 
 class DH():
+	ALG_ID = 0x0;
 	def __init__(self):
 		pass
 	def generate_private_key(self):
@@ -222,6 +223,7 @@ class DHFactory():
 			raise Exception("Not supported");
 
 class DH5():
+	ALG_ID = 0x3;
 	def __init__(self):
 		self.p = DH_GROUP_5_BINARY_PRIME;
 		self.g = DH_GROUP_5_GENERATOR;
@@ -272,7 +274,7 @@ class DH14():
 		return misc.Math.bytes_to_int(buffer);
 
 class DH15():
-
+	ALG_ID = 0x4;
 	def __init__(self):
 		self.p = DH_GROUP_15_BINARY_PRIME;
 		self.g = DH_GROUP_15_GENERATOR;

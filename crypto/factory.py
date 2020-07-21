@@ -88,3 +88,15 @@ class TransportFactory():
 	@staticmethod
 	def get_supported_transports():
 		return [IPSec.IPSEC_TRANSPORT_FORMAT];
+
+class ESPTransformFactory():
+	@staticmethod
+	def get(transform, ):
+		if transform == 0x7: # NULL cipher with SHA256 HMAC
+			return (NullCipher(), SHA256HMAC());
+		elif transform == 0x8: # AES128CBC with SHA256 HMAC
+			return (AES128CBCCipher(), SHA256HMAC());
+		elif transform == 0x8: # AES256CBC with SHA256 HMAC
+			return (AES256CBCCipher(), SHA256HMAC());
+		else:
+			raise Exception("Not implemented");

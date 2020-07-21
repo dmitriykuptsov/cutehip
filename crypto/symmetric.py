@@ -39,6 +39,7 @@ class SymmetricCrypto():
 class NullCipher(SymmetricCrypto):
 	BLOCK_SIZE = 0x10;
 	KEY_SIZE_BITS = 0x0;
+	ALG_ID = 0x0;
 	def encrypt(self, key = None, iv = None, data = None):
 		return data;
 	def decrypt(self, key = None, iv = None, data = None):
@@ -49,6 +50,7 @@ class AESCipher(SymmetricCrypto):
 	KEY_SIZE_BITS = 0x10;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
+	ALG_ID = 0x2;
 
 	"""
 	Advanced Encryption Standard
@@ -75,7 +77,8 @@ class AES128CBCCipher(SymmetricCrypto):
 	KEY_SIZE_BITS = 0x10;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
-
+	ALG_ID = 0x2;
+	
 	"""
 	Advanced Encryption Standard
 	"""
@@ -101,7 +104,8 @@ class AES256CBCCipher(SymmetricCrypto):
 	KEY_SIZE_BITS = 0x20;
 	MODE_CBC = AES.MODE_CBC;
 	BLOCK_SIZE = AES.block_size;
-
+	ALG_ID = 0x4;
+	
 	"""
 	Advanced Encryption Standard
 	"""

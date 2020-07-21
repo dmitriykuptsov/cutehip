@@ -32,6 +32,7 @@ from base64 import b64decode
 from base64 import b64encode
 
 class Signature():
+	ALG_ID = 0x0;
 	def __init__(self, key):
 		pass
 	def sign(self, data):
@@ -40,6 +41,7 @@ class Signature():
 		raise Exception("Not implemented");
 
 class ECDSASHA256Signature(Signature):
+	ALG_ID = 0x0;
 	def __init__(self, key):
 		self.key = key;
 	def sign(self, data):
@@ -57,6 +59,7 @@ class ECDSASHA256Signature(Signature):
 			return False
 
 class ECDSASHA384Signature(Signature):
+	ALG_ID = 0x7;
 	def __init__(self, key):
 		self.key = key;
 	def sign(self, data):
@@ -73,6 +76,7 @@ class ECDSASHA384Signature(Signature):
 			return False
 
 class ECDSASHA1Signature(Signature):
+	ALG_ID = 0x9;
 	def __init__(self, key):
 		self.key = key;
 	def sign(self, data):
@@ -89,6 +93,7 @@ class ECDSASHA1Signature(Signature):
 			return False
 
 class RSASHA256Signature(Signature):
+	ALG_ID = 0x5;
 	def __init__(self, key):
 		self.key = key;
 	def sign(self, data):
