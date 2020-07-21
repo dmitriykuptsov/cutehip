@@ -1,8 +1,17 @@
 # About
 
-This is the replacement for the Java-based implementation of Host Indentity Protocol (HIP) version 2
+This is the replacement for the Java-based implementation of Host Indentity Protocol (HIP) version 2.
+
 
 # Introduction
+
+Host Identity Protocol, or HIP, is layer 3.5 solution,
+which was initially designed to split the dual role of the IP address
+- locator and identifier. Using HIP protocol one can solve not
+only mobility problems, but also establish authenticated secure
+channel. This repository contains the implementation of HIP and 
+IPSec protocols using Python.
+
 At the moment the development is ongoing. Linux was selected as a target system and all the 
 development currently done for this operating system.
 
