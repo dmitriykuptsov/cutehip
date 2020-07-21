@@ -899,7 +899,7 @@ class EchoResponseUnsignedParameter(HIPParameter):
 
 
 HIP_ESP_TRANSFORM_TYPE              = 0xFFF;
-HIP_SUITS_LIST_OFFSET               = 0x2;
+HIP_SUITS_LIST_OFFSET               = 0x4;
 HIP_SUITS_RESERVED_LENGTH           = 0x2;
 
 class ESPTransformParameter(HIPParameter):
@@ -926,7 +926,7 @@ class ESPTransformParameter(HIPParameter):
 		suits = [];
 		length = self.get_length();
 		has_more_suits = True;
-		counter = 0;
+		counter = 2;
 		while has_more_suits:
 			suits.append((self.buffer[HIP_SUITS_LIST_OFFSET + counter] << 8) | 
 				self.buffer[HIP_SUITS_LIST_OFFSET + counter + 1]);
