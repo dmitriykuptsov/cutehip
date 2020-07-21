@@ -1239,7 +1239,7 @@ def hip_loop():
 				responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
 
 				esp_info_param = HIP.ESPInfoParameter();
-				esp_info_param.set_keymat_index(keymat_index);
+				esp_info_param.set_keymat_index(responders_keymat_index);
 				esp_info_param.set_new_spi(responders_spi);
 
 				hip_r2_packet.add_parameter(esp_info_param);
