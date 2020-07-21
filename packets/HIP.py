@@ -914,7 +914,7 @@ class ESPTransformParameter(HIPParameter):
 			self.set_type(HIP_ESP_TRANSFORM_TYPE);
 			self.set_length(HIP_SUITS_RESERVED_LENGTH);
 	def add_suits(self, suits):
-		self.set_length(len(suits + 1) * 2);
+		self.set_length((len(suits) + 1) * 2);
 		for suit in suits:
 			suit_id = [0] * 2;
 			suit_id[0] = (suit >> 8) & 0xFF;
