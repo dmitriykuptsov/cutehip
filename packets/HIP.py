@@ -933,7 +933,7 @@ class ESPTransformParameter(HIPParameter):
 			counter += 2;
 			if counter >= length:
 				has_more_suits = False;
-		return ciphers;
+		return suits;
 
 HIP_ESP_INFO_TYPE                   = 0x41;
 HIP_ESP_INFO_RESERVED_LENGTH        = 0x2;
