@@ -72,6 +72,8 @@ Update the hosts file (on initiator)
 $ echo "<HIT> <IP>" >> config/hosts
 ```
 
+Remember to pad HIT with zeros if needed (ifconfig tool strips off unneeded zeros).
+
 Run the initiator
 ```
 $ sudo python3 cutehipd
