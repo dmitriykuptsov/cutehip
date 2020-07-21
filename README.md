@@ -82,4 +82,4 @@ Test the connection
 $ ssh pi@<HIT>
 ```
 
-You should get secrutity association installed once HIP BEX completes.
+You should get security association installed once HIP BEX completes.
