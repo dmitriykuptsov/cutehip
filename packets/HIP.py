@@ -978,10 +978,10 @@ class ESPInfoParameter(HIPParameter):
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
 	def set_new_spi(self, spi):
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] = (spi >> 24) & 0xFF;
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] = (spi >> 8) & 0xFF;
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3] = (spi & 0xFF) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET] = (spi >> 24) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 2] = (spi >> 8) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 3] = (spi & 0xFF) & 0xFF;
 	def get_new_spi(self):
 		return ((self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET] << 24) |
 			(self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 1] << 16) |
