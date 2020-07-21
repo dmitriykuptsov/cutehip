@@ -286,22 +286,22 @@ class Utils():
 		return 4 * (hmac.LENGTH + aes.KEY_SIZE_BITS);
 
 	@staticmethod
-	def get_keys(keymat, hmac_alg, cipher_alg, shit_bytes, rhit_bytes):
+	def get_keys(keymat, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
 		offset = 0;
-		shit = Math.bytes_to_int(shit_bytes);
+		ihit = Math.bytes_to_int(ihit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
 
 		hmac = HMACFactory.get(hmac_alg, None);
 		aes  = SymmetricCiphersFactory.get(cipher_alg);
-		if shit < rhit:
+		if ihit < rhit:
 			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
 		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
 			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
-	def get_keys_esp(keymat, hmac_alg, cipher_alg, shit_bytes, rhit_bytes):
+	def get_keys_esp(keymat, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
 		
-		shit = Math.bytes_to_int(shit_bytes);
+		ihit = Math.bytes_to_int(ihit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
 
 		hmac = HMACFactory.get(hmac_alg, None);
@@ -309,25 +309,25 @@ class Utils():
 		
 		offset = 2*(hmac.LENGTH + aes.KEY_SIZE_BITS);
 
-		if shit < rhit:
+		if ihit < rhit:
 			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
 		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
 			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
-	def sort_hits(shit_bytes, rhit_bytes):
-		shit = Math.bytes_to_int(shit_bytes);
+	def sort_hits(ihit_bytes, rhit_bytes):
+		ihit = Math.bytes_to_int(ihit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
-		if shit > rhit:
-			return rhit_bytes + shit_bytes;
+		if ihit > rhit:
+			return rhit_bytes + ihit_bytes;
 		else:
-			return shit_bytes + rhit_bytes;
+			return ihit_bytes + rhit_bytes;
 
 	@staticmethod
-	def is_hit_smaller(shit_bytes, rhit_bytes):
-		shit = Math.bytes_to_int(shit_bytes);
+	def is_hit_smaller(ihit_bytes, rhit_bytes):
+		ihit = Math.bytes_to_int(ihit_bytes);
 		rhit = Math.bytes_to_int(rhit_bytes);
-		if shit < rhit:
+		if ihit < rhit:
 			return True;
 		else:
 			return False;
