@@ -76,7 +76,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.CRITICAL,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -194,9 +194,9 @@ def hip_loop():
 			ihit = hip_packet.get_senders_hit();
 			rhit = hip_packet.get_receivers_hit();
 
-			logging.info("Got HIP packet");
-			logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
-			logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
+			#logging.info("Got HIP packet");
+			#logging.info("Responder's HIT %s" % Utils.ipv6_bytes_to_hex_formatted(rhit));
+			#logging.info("Our own HIT %s " % Utils.ipv6_bytes_to_hex_formatted(own_hit));
 
 
 			#hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -306,10 +306,10 @@ def hip_loop():
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
-				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
+				#logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				dh_param.add_public_value(dh.encode_public_key());
-				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
-				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
+				#logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
+				#logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
 
 				# HIP cipher parameter
 				cipher_param = HIP.CipherParameter();
@@ -323,7 +323,7 @@ def hip_loop():
 				hi_param = HIP.HostIdParameter();
 				hi_param.set_host_id(hi);
 				# It is important to set domain ID after host ID was set
-				logging.debug(di);
+				#logging.debug(di);
 				hi_param.set_domain_id(di);
 
 				# HIP HIT suit list parameter
@@ -407,7 +407,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
+				#logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
