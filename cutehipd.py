@@ -73,8 +73,7 @@ from databases import SA
 from databases import resolver
 # Utilities
 from utils.misc import Utils
-# Configure logging to console
-#logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+# Configure logging to console and file
 logging.basicConfig(
 	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
@@ -84,41 +83,41 @@ logging.basicConfig(
 	]
 );
 
-#print(Utils.kdf(0x1, bytearray([1, 2, 3, 4, 5, 6, 7, 8]), bytearray([1, 2, 3, 4, 5, 6, 7, 8]), bytearray([1, 2, 3, 4, 5, 6, 7, 8]), 4))
-
+# TUN interface MTU
 MTU = config.config["network"]["mtu"];
 
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3
+# Configure resolver
 logging.info("Using hosts file to resolve HITS %s" % (config.config["resolver"]["hosts_file"]));
 hit_resolver = resolver.HostsFileResolver(filename = config.config["resolver"]["hosts_file"]);
 
+# Security association database
 ip_sec_sa = SA.SecurityAssociationDatabase();
 
+# Configure the sockets
 logging.info("Initializing HIP socket");
 hip_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, HIP.HIP_PROTOCOL);
 hip_socket.bind(("0.0.0.0", HIP.HIP_PROTOCOL));
 # We will need to perform manual fragmentation
 hip_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
 logging.info("Initializing IPSec socket");
 ip_sec_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, IPSec.IPSEC_PROTOCOL);
 ip_sec_socket.bind(("0.0.0.0", IPSec.IPSEC_PROTOCOL));
+# We will need to perform manual fragmentation
 ip_sec_socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1);
-
+# Domain identifier
 di = DIFactory.get(config.config["resolver"]["domain_identifier"]["type"], 
 	bytearray(config.config["resolver"]["domain_identifier"]["value"], encoding="ascii"));
 
-logging.debug(di);
-
+#logging.debug(di);
 logging.info("Loading public key and constructing HIT")
-
 pubkey       = None;
 privkey      = None;
 hi           = None;
 ipv6_address = None;
 own_hit      = None;
 if config.config["security"]["sig_alg"] == 0x5: # RSA
-	if config.config["security"]["hash_alg"] != 0x1:
+	if config.config["security"]["hash_alg"] != 0x1: # SHA 256
 		raise Exception("Invalid hash algorithm. Must be 0x1")
 	pubkey = RSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = RSAPrivateKey.load_pem(config.config["security"]["private_key"]);
@@ -126,7 +125,7 @@ if config.config["security"]["sig_alg"] == 0x5: # RSA
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA256_OGA);
 	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA256_OGA);
 elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
-	if config.config["security"]["hash_alg"] != 0x2:
+	if config.config["security"]["hash_alg"] != 0x2: # SHA 384
 		raise Exception("Invalid hash algorithm. Must be 0x2")
 	pubkey = ECDSAPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = ECDSAPrivateKey.load_pem(config.config["security"]["private_key"]);
@@ -139,7 +138,7 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	logging.debug(list(hi.to_byte_array()));
 	logging.debug(list(own_hit))
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
-	if config.config["security"]["hash_alg"] != 0x3:
+	if config.config["security"]["hash_alg"] != 0x3: # SHA 1
 		raise Exception("Invalid hash algorithm. Must be 0x3")
 	pubkey = ECDSALowPublicKey.load_pem(config.config["security"]["public_key"]);
 	privkey = ECDSALowPrivateKey.load_pem(config.config["security"]["private_key"]);
@@ -150,20 +149,20 @@ else:
 	raise Exception("Unsupported Host ID algorithm")
 
 logging.debug("Configuring TUN interface");
-
+# Configure TUN interface
 logging.info("Configuring TUN device");
 hip_tun = tun.Tun(address=ipv6_address, mtu=MTU);
 logging.info("Configuring IPv6 routes");
+# Configure routes
 routing.Routing.add_hip_default_route();
-
+# Storage
 logging.debug("Configuring state machine and storage");
 hip_state_machine = HIPState.StateMachine();
-keymat_storage = HIPState.Storage();
-dh_storage = HIPState.Storage();
-cipher_storage = HIPState.Storage();
-pubkey_storage = HIPState.Storage();
-state_variables = HIPState.Storage();
-
+keymat_storage    = HIPState.Storage();
+dh_storage        = HIPState.Storage();
+cipher_storage    = HIPState.Storage();
+pubkey_storage    = HIPState.Storage();
+state_variables   = HIPState.Storage();
 
 def hip_loop():
 	"""
@@ -486,8 +485,6 @@ def hip_loop():
 						if hi_param.get_algorithm() == 0x5: #RSA
 							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x7: #ECDSA
-							logging.debug(".......HI is of ECDSAHostID type......")
-							logging.debug(list(hi_param.get_host_id()));
 							responder_hi = ECDSAHostID.from_byte_buffer(hi_param.get_host_id());
 						elif hi_param.get_algorithm() == 0x9: #ECDSA LOW
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
