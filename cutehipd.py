@@ -746,6 +746,9 @@ def hip_loop():
 				esp_info_param.set_keymat_index(Utils.compute_hip_keymat_length(hmac_alg, selected_cipher));
 				esp_info_param.set_new_spi(Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH)));
 
+				logging.debug("-------------------------------------------------------")
+				logging.debug(list(esp_info_param.get_byte_buffer()));
+
 
 				# Keying material generation
 				# https://tools.ietf.org/html/rfc7402#section-7

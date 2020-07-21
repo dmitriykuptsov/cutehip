@@ -968,9 +968,9 @@ class ESPInfoParameter(HIPParameter):
 	def get_keymat_index(self):
 		return (self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] << 8) | self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET + 1];
 	def set_old_spi(self, spi):
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] = (spi >> 24);
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] = (spi >> 16);
-		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] = (spi >> 8);
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] = (spi >> 24) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] = (spi >> 8) & 0xFF;
 		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3] = (spi & 0xFF);
 	def get_old_spi(self):
 		return ((self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] << 24) |
@@ -978,10 +978,10 @@ class ESPInfoParameter(HIPParameter):
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
 	def set_new_spi(self, spi):
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH] = (spi >> 24);
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 1] = (spi >> 16);
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 2] = (spi >> 8);
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 3] = (spi & 0xFF);
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH] = (spi >> 24) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 1] = (spi >> 16) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 2] = (spi >> 8) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 3] = (spi & 0xFF) & 0xFF;
 	def get_new_spi(self):
 		return ((self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] << 24) |
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] << 16) |
