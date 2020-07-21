@@ -1163,7 +1163,7 @@ def hip_loop():
 				original_length = hip_i2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
 				hip_i2_packet.set_length(int(packet_length / 8));
-				buf = hip_i2_packet.get_buffer() + buf;
+				buf = list(hip_i2_packet.get_buffer()) + list(buf);
 				
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);

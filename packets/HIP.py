@@ -914,7 +914,7 @@ class ESPTransformParameter(HIPParameter):
 			self.set_type(HIP_ESP_TRANSFORM_TYPE);
 			self.set_length(HIP_SUITS_RESERVED_LENGTH);
 	def add_suits(self, suits):
-		self.set_length(len(suits) * 2);
+		self.set_length(len(suits + 1) * 2);
 		for suit in suits:
 			suit_id = [0] * 2;
 			suit_id[0] = (suit >> 8) & 0xFF;
@@ -978,15 +978,15 @@ class ESPInfoParameter(HIPParameter):
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
 			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
 	def set_new_spi(self, spi):
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH] = (spi >> 24) & 0xFF;
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 1] = (spi >> 16) & 0xFF;
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 2] = (spi >> 8) & 0xFF;
-		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 3] = (spi & 0xFF) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] = (spi >> 24) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] = (spi >> 8) & 0xFF;
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3] = (spi & 0xFF) & 0xFF;
 	def get_new_spi(self):
-		return ((self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] << 24) |
-			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] << 16) |
-			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
-			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
+		return ((self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET] << 24) |
+			(self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 1] << 16) |
+			(self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 2] << 8) |
+			(self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 3]));
 
 HIP_NEXT_HEADER_OFFSET           = 0x0;
 HIP_HEADER_LENGTH_OFFSET         = 0x1;
