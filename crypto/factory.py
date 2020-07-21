@@ -102,7 +102,7 @@ class ESPTransformFactory():
 			return (NullCipher(), SHA256HMAC());
 		elif transform == 0x8: # AES128CBC with SHA256 HMAC
 			return (AES128CBCCipher(), SHA256HMAC());
-		elif transform == 0x8: # AES256CBC with SHA256 HMAC
+		elif transform == 0x9: # AES256CBC with SHA256 HMAC
 			return (AES256CBCCipher(), SHA256HMAC());
 		else:
 			raise Exception("Not implemented");
