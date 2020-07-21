@@ -926,7 +926,7 @@ class ESPTransformParameter(HIPParameter):
 		suits = [];
 		length = self.get_length();
 		has_more_suits = True;
-		counter = 2;
+		counter = 0;
 		while has_more_suits:
 			suits.append((self.buffer[HIP_SUITS_LIST_OFFSET + counter] << 8) | 
 				self.buffer[HIP_SUITS_LIST_OFFSET + counter + 1]);
