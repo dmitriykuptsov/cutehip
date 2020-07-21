@@ -1077,9 +1077,6 @@ def hip_loop():
 					logging.critical("ESP transform suit was not negotiated.")
 					raise Exception("ESP transform suit was not negotiated.");
 
-				logging.debug("----------------------ESP transforms-----------------------------");
-				logging.debug(esp_tranform_param.get_suits());
-				
 				selected_esp_transform = esp_tranform_param.get_suits()[0];
 
 				initiators_spi = esp_info_param.get_new_spi();
@@ -1238,7 +1235,7 @@ def hip_loop():
 				hip_r2_packet.set_version(HIP.HIP_VERSION);
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
-				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
+				responders_keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
 				responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
 
 				esp_info_param = HIP.ESPInfoParameter();
@@ -1485,6 +1482,8 @@ def hip_loop():
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
+				logging.debug(hmac.ALG_ID);
+				logging.debug(cipher.ALG_ID);
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
 					initiators_keymat_index, 
