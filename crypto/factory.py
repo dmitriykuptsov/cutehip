@@ -15,10 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# System libraries
 import sys
 import os
 sys.path.append(os.getcwd())
 
+# Logging libraries
+import logging 
+
+# Crypto libraries
 import crypto
 
 from crypto.ecdh import ECDHSECP160R1, ECDHNIST521, ECDHNIST384, ECDHNIST256
