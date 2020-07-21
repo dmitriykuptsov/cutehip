@@ -76,7 +76,7 @@ from utils.misc import Utils
 # Configure logging to console
 #logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.basicConfig(
-	level=logging.CRITICAL,
+	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -306,10 +306,10 @@ def hip_loop():
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
-				#logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
+				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				dh_param.add_public_value(dh.encode_public_key());
-				#logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
-				#logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
+				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
+				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh_param.get_public_value()));
 
 				# HIP cipher parameter
 				cipher_param = HIP.CipherParameter();
@@ -323,7 +323,7 @@ def hip_loop():
 				hi_param = HIP.HostIdParameter();
 				hi_param.set_host_id(hi);
 				# It is important to set domain ID after host ID was set
-				#logging.debug(di);
+				logging.debug(di);
 				hi_param.set_domain_id(di);
 
 				# HIP HIT suit list parameter
@@ -407,7 +407,7 @@ def hip_loop():
 				ipv4_packet.set_payload(hip_r1_packet.get_buffer());
 				# Send the packet
 				dst_str = Utils.ipv4_bytes_to_string(dst);
-				#logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
+				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
 					(dst_str, 0));
@@ -1948,7 +1948,7 @@ def ip_sec_loop():
 			src_str       = Utils.ipv4_bytes_to_string(src);
 			dst_str       = Utils.ipv4_bytes_to_string(dst);
 
-			logging.debug("Got packet from %s to %s of %d bytes" % (src_str, dst_str, len(buf)));
+			#logging.debug("Got packet from %s to %s of %d bytes" % (src_str, dst_str, len(buf)));
 			# Get SA record and construct the ESP payload
 			sa_record   = ip_sec_sa.get_record(src_str, dst_str);
 			hmac_alg    = sa_record.get_hmac_alg();
@@ -1958,38 +1958,38 @@ def ip_sec_loop():
 			ihit        = sa_record.get_src();
 			rhit        = sa_record.get_dst();
 
-			logging.debug("HMAC key");
-			logging.debug(hmac_key);
-			logging.debug("Cipher key");
-			logging.debug(cipher_key);
+			#logging.debug("HMAC key");
+			#logging.debug(hmac_key);
+			#logging.debug("Cipher key");
+			#logging.debug(cipher_key);
 
 			icv         = list(ip_sec_packet.get_byte_buffer())[-hmac_alg.LENGTH:];
 
-			logging.debug("Calculating ICV over IPSec packet");
-			logging.debug(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH]);
+			#logging.debug("Calculating ICV over IPSec packet");
+			#logging.debug(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH]);
 				
 			if bytearray(icv) != hmac_alg.digest(bytearray(list(ip_sec_packet.get_byte_buffer())[:-hmac_alg.LENGTH])):
 				logging.critical("Invalid ICV in IPSec packet");
 				continue;
 
 			padded_data = list(ip_sec_packet.get_payload())[:-hmac_alg.LENGTH];
-			logging.debug("Encrypted padded data");
-			logging.debug(padded_data);
+			#logging.debug("Encrypted padded data");
+			#logging.debug(padded_data);
 
 			iv          = padded_data[:cipher.BLOCK_SIZE];
 			
-			logging.debug("IV");
-			logging.debug(iv);
+			#logging.debug("IV");
+			#logging.debug(iv);
 
 			padded_data = padded_data[cipher.BLOCK_SIZE:];
 
-			logging.debug("Padded data");
-			logging.debug(padded_data);
+			#logging.debug("Padded data");
+			#logging.debug(padded_data);
 
 			decrypted_data = cipher.decrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 
-			logging.debug("Decrypted padded data");
-			logging.debug(decrypted_data);
+			#logging.debug("Decrypted padded data");
+			#logging.debug(decrypted_data);
 
 			unpadded_data  = IPSec.IPSecUtils.unpad(cipher.BLOCK_SIZE, decrypted_data);
 			next_header    = IPSec.IPSecUtils.get_next_header(decrypted_data);
@@ -2014,7 +2014,7 @@ def ip_sec_loop():
 
 			hip_state.established();
 
-			logging.debug("Sending IPv6 packet to %s" % (Utils.ipv6_bytes_to_hex_formatted(ihit)));
+			#logging.debug("Sending IPv6 packet to %s" % (Utils.ipv6_bytes_to_hex_formatted(ihit)));
 			hip_tun.write(bytearray(ipv6_packet.get_buffer()));
 		except Exception as e:
 			logging.critical("Exception occured. Dropping IPSec packet.");
@@ -2030,18 +2030,18 @@ def tun_if_loop():
 	while True:
 		try:
 			buf = hip_tun.read(MTU);
-			logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
+			#logging.info("Got packet on TUN interface %s bytes" % (len(buf)));
 			packet = IPv6.IPv6Packet(buf);
 			ihit = packet.get_source_address();
 			rhit = packet.get_destination_address();
-			logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(ihit));
-			logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
-			logging.info("Version %s " % (packet.get_version()));
-			logging.info("Traffic class %s " % (packet.get_traffic_class()));
-			logging.info("Flow label %s " % (packet.get_flow_label()));
-			logging.info("Packet length %s " %(packet.get_payload_length()));
-			logging.info("Next header %s " % (packet.get_next_header()));
-			logging.info("Hop limit %s" % (packet.get_hop_limit()));
+			#logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(ihit));
+			#logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
+			#logging.info("Version %s " % (packet.get_version()));
+			#logging.info("Traffic class %s " % (packet.get_traffic_class()));
+			#logging.info("Flow label %s " % (packet.get_flow_label()));
+			#logging.info("Packet length %s " %(packet.get_payload_length()));
+			#logging.info("Next header %s " % (packet.get_next_header()));
+			#logging.info("Hop limit %s" % (packet.get_hop_limit()));
 			# Get the state
 			#hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 			#	Utils.ipv6_bytes_to_hex_formatted(rhit));
@@ -2127,7 +2127,7 @@ def tun_if_loop():
 				sv.is_responder = False;
 
 			elif hip_state.is_established():
-				logging.debug("Sending IPSEC packet...")
+				#logging.debug("Sending IPSEC packet...")
 				# IPv6 fields
 				rhit_str    = Utils.ipv6_bytes_to_hex_formatted(rhit);
 				ihit_str    = Utils.ipv6_bytes_to_hex_formatted(ihit);
@@ -2147,33 +2147,33 @@ def tun_if_loop():
 				iv         = list(Utils.generate_random(cipher.BLOCK_SIZE));
 				sa_record.increment_sequence();
 
-				logging.debug("HMAC key");
-				logging.debug(hmac_key);
-				logging.debug("Cipher key");
-				logging.debug(cipher_key);
+				#logging.debug("HMAC key");
+				#logging.debug(hmac_key);
+				#logging.debug("Cipher key");
+				#logging.debug(cipher_key);
 			
-				logging.debug("IV");
-				logging.debug(iv);
+				#logging.debug("IV");
+				#logging.debug(iv);
 
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
-				logging.debug("Length of the padded data %d" % (len(padded_data)));
+				#logging.debug("Length of the padded data %d" % (len(padded_data)));
 
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
-				logging.debug("Padded data");
-				logging.debug(iv + list(encrypted_data));
-				logging.debug(list(encrypted_data));
+				#logging.debug("Padded data");
+				#logging.debug(iv + list(encrypted_data));
+				#logging.debug(list(encrypted_data));
 
-				logging.debug("Encrypted padded data");
-				logging.debug(padded_data);
+				#logging.debug("Encrypted padded data");
+				#logging.debug(padded_data);
 
 				ip_sec_packet = IPSec.IPSecPacket();
 				ip_sec_packet.set_spi(spi);
 				ip_sec_packet.set_sequence(seq);
 				ip_sec_packet.add_payload(iv + list(encrypted_data));
 
-				logging.debug("Calculating ICV over IPSec packet");
-				logging.debug(list(ip_sec_packet.get_byte_buffer()));
+				#logging.debug("Calculating ICV over IPSec packet");
+				#logging.debug(list(ip_sec_packet.get_byte_buffer()));
 
 				icv = hmac_alg.digest(bytearray(ip_sec_packet.get_byte_buffer()));
 				ip_sec_packet.add_payload(list(icv));
@@ -2188,7 +2188,7 @@ def tun_if_loop():
 				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
 				ipv4_packet.set_payload(ip_sec_packet.get_byte_buffer());
 
-				logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer())));
+				#logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer())));
 
 				ip_sec_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
