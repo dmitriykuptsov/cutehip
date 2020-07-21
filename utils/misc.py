@@ -282,8 +282,14 @@ class Utils():
 	@staticmethod
 	def compute_keymat_length(hmac_alg, cipher_alg):
 		hmac = HMACFactory.get(hmac_alg, None);
-		aes  = SymmetricCiphersFactory.get(cipher_alg);
-		return 4 * (hmac.LENGTH + aes.KEY_SIZE_BITS);
+		cipher  = SymmetricCiphersFactory.get(cipher_alg);
+		return 4 * (hmac.LENGTH + cipher.KEY_SIZE_BITS);
+
+	@staticmethod
+	def compute_hip_keymat_length(hmac_alg, cipher_alg):
+		hmac = HMACFactory.get(hmac_alg, None);
+		cipher  = SymmetricCiphersFactory.get(cipher_alg);
+		return 2 * (hmac.LENGTH + cipher.KEY_SIZE_BITS);
 
 	@staticmethod
 	def get_keys(keymat, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
@@ -292,11 +298,11 @@ class Utils():
 		rhit = Math.bytes_to_int(rhit_bytes);
 
 		hmac = HMACFactory.get(hmac_alg, None);
-		aes  = SymmetricCiphersFactory.get(cipher_alg);
+		cipher  = SymmetricCiphersFactory.get(cipher_alg);
 		if ihit < rhit:
-			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
-		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
-			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
+			offset += (hmac.LENGTH + cipher.KEY_SIZE_BITS);
+		return (keymat[offset: offset + cipher.KEY_SIZE_BITS], \
+			keymat[offset + cipher.KEY_SIZE_BITS: offset + cipher.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
 	def get_keys_esp(keymat, hmac_alg, cipher_alg, ihit_bytes, rhit_bytes):
@@ -305,14 +311,14 @@ class Utils():
 		rhit = Math.bytes_to_int(rhit_bytes);
 
 		hmac = HMACFactory.get(hmac_alg, None);
-		aes  = SymmetricCiphersFactory.get(cipher_alg);
+		cipher  = SymmetricCiphersFactory.get(cipher_alg);
 		
-		offset = 2*(hmac.LENGTH + aes.KEY_SIZE_BITS);
+		offset = 2*(hmac.LENGTH + cipher.KEY_SIZE_BITS);
 
 		if ihit < rhit:
-			offset += (hmac.LENGTH + aes.KEY_SIZE_BITS);
-		return (keymat[offset: offset + aes.KEY_SIZE_BITS], \
-			keymat[offset + aes.KEY_SIZE_BITS: offset + aes.KEY_SIZE_BITS + hmac.LENGTH]);
+			offset += (hmac.LENGTH + cipher.KEY_SIZE_BITS);
+		return (keymat[offset: offset + cipher.KEY_SIZE_BITS], \
+			keymat[offset + cipher.KEY_SIZE_BITS: offset + cipher.KEY_SIZE_BITS + hmac.LENGTH]);
 
 	@staticmethod
 	def sort_hits(ihit_bytes, rhit_bytes):

@@ -897,6 +897,100 @@ class EchoResponseUnsignedParameter(HIPParameter):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_RESPONSE_UNSIGNED_OFFSET:HIP_ECHO_RESPONSE_UNSIGNED_OFFSET + length]
 
+
+HIP_ESP_TRANSFORM_TYPE              = 0xFFF;
+HIP_SUITS_LIST_OFFSET               = 0x2;
+HIP_SUITS_RESERVED_LENGTH           = 0x2;
+
+class ESPTransformParameter(HIPParameter):
+	def __init__(self, buffer = None):
+		self.buffer = buffer;
+		if not self.buffer:
+			self.buffer = [0] * (
+				HIP_TLV_LENGTH_LENGTH + 
+				HIP_TLV_TYPE_LENGTH + 
+				HIP_SUITS_RESERVED_LENGTH
+				);
+			self.set_type(HIP_ESP_TRANSFORM_TYPE);
+			self.set_length(HIP_SUITS_RESERVED_LENGTH);
+	def add_suits(self, suits):
+		length = self.get_length();
+		if length > 0:
+			raise Exception("Suits were set");
+		self.set_length(len(suits) * 2);
+		for suit in suits:
+			suit_id = [0] * 2;
+			suit_id[0] = (suit >> 8) & 0xFF;
+			suit_id[1] = suit & 0xFF;
+			self.buffer += suit_id;
+		padding = (8 - len(self.buffer) % 8) % 8;
+		self.buffer += [0] * padding;
+	def get_suits(self):
+		suits = [];
+		length = self.get_length();
+		has_more_suits = True;
+		counter = 2;
+		while has_more_suits:
+			suits.append((self.buffer[HIP_SUITS_LIST_OFFSET + counter] << 8) | 
+				self.buffer[HIP_SUITS_LIST_OFFSET + counter + 1]);
+			counter += 2;
+			if counter >= length:
+				has_more_suits = False;
+		return ciphers;
+
+HIP_ESP_INFO_TYPE                   = 0x41;
+HIP_ESP_INFO_RESERVED_LENGTH        = 0x2;
+HIP_ESP_INFO_KEYMAT_INDEX_LENGTH    = 0x2;
+HIP_ESP_INFO_KEYMAT_INDEX_OFFSET    = 0x6;
+HIP_ESP_INFO_OLD_SPI_LENGTH         = 0x4;
+HIP_ESP_INFO_OLD_SPI_OFFSET         = 0x8;
+HIP_ESP_INFO_NEW_SPI_LENGTH         = 0x4;
+HIP_ESP_INFO_NEW_SPI_OFFSET         = 0xC;
+
+class ESPInfoParameter(HIPParameter):
+	def __init__(self, buffer = None):
+		self.buffer = buffer;
+		if not self.buffer:
+			self.buffer = [0] * (
+				HIP_TLV_LENGTH_LENGTH + 
+				HIP_TLV_TYPE_LENGTH +
+				HIP_ESP_INFO_RESERVED_LENGTH +
+				HIP_ESP_INFO_KEYMAT_INDEX_LENGTH +
+				HIP_ESP_INFO_OLD_SPI_LENGTH +
+				HIP_ESP_INFO_NEW_SPI_LENGTH
+				);
+			self.set_type(HIP_ESP_TRANSFORM_TYPE);
+			self.set_length(
+				HIP_ESP_INFO_RESERVED_LENGTH +
+				HIP_ESP_INFO_KEYMAT_INDEX_LENGTH +
+				HIP_ESP_INFO_OLD_SPI_LENGTH +
+				HIP_ESP_INFO_NEW_SPI_LENGTH);
+	def set_keymat_index(self, keymat_index):
+		self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] = (keymat_index >> 8);
+		self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET + 1] = (keymat_index & 0xFF);
+	def get_keymat_index(self):
+		return (self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] << 8) | self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET + 1];
+	def set_old_spi(self, spi):
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] = (spi >> 24);
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] = (spi >> 16);
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] = (spi >> 8);
+		self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3] = (spi & 0xFF);
+	def get_old_spi(self):
+		return ((self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] << 24) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] << 16) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
+	def set_new_spi(self, spi):
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH] = (spi >> 24);
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 1] = (spi >> 16);
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 2] = (spi >> 8);
+		self.buffer[HIP_ESP_INFO_NEW_SPI_LENGTH + 3] = (spi & 0xFF);
+	def get_new_spi(self):
+		return ((self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET] << 24) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 1] << 16) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 2] << 8) |
+			(self.buffer[HIP_ESP_INFO_OLD_SPI_OFFSET + 3]));
+
 HIP_NEXT_HEADER_OFFSET           = 0x0;
 HIP_HEADER_LENGTH_OFFSET         = 0x1;
 HIP_PACKET_TYPE_OFFSET           = 0x2;
@@ -1030,6 +1124,10 @@ class HIPPacket():
 				parameters.append(DHParameter(param_data));
 			elif param_type == HIP_CIPHER_TYPE:
 				parameters.append(CipherParameter(param_data));
+			elif param_type == HIP_ESP_TRANSFORM_TYPE:
+				parameters.append(ESPTransformParameter(param_data));
+			elif param_type == HIP_ESP_INFO_TYPE:
+				parameters.append(ESPInfoParameter(param_data));
 			elif param_type == HIP_HI_TYPE:
 				parameters.append(HostIdParameter(param_data));
 			elif param_type == HIP_HIT_SUITS_TYPE:
