@@ -91,7 +91,8 @@ class TransportFactory():
 
 class ESPTransformFactory():
 	@staticmethod
-	def get(transform, ):
+	def get(transform):
+		logging.debug("Transform %d " % (transform));
 		if transform == 0x7: # NULL cipher with SHA256 HMAC
 			return (NullCipher(), SHA256HMAC());
 		elif transform == 0x8: # AES128CBC with SHA256 HMAC
