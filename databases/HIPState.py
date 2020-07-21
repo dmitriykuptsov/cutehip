@@ -75,32 +75,32 @@ class State():
 class StateMachine():
 	def __init__(self):
 		self.states = dict();
-	def get(self, shit, rhit):
-		if not self.states.get(shit+rhit, None):
-			self.initialize(shit, rhit);
-		return self.states.get(shit+rhit, None);
-	def initialize(self, shit, rhit):
-		self.states[shit+rhit] = State();
+	def get(self, ihit, rhit):
+		if not self.states.get(ihit+rhit, None):
+			self.initialize(ihit, rhit);
+		return self.states.get(ihit+rhit, None);
+	def initialize(self, ihit, rhit):
+		self.states[ihit+rhit] = State();
 
 class Storage():
 	def __init__(self):
 		self.storage = dict();
-	def get(self, shit, rhit):
-		return self.storage.get(shit + rhit, None);
+	def get(self, ihit, rhit):
+		return self.storage.get(ihit + rhit, None);
 	def get_by_key(self, key):
 		return self.storage.get(key, None);
-	def save(self, shit, rhit, value):
-		self.storage[shit + rhit] = value;
-	def remove(self, shit, rhit):
-		del self.storage[shit + rhit]
+	def save(self, ihit, rhit, value):
+		self.storage[ihit + rhit] = value;
+	def remove(self, ihit, rhit):
+		del self.storage[ihit + rhit]
 	def keys(self):
 		return self.storage.keys();
 
 class StateVariables():
-	def __init__(self, state, shit, rhit, src, dst):
+	def __init__(self, state, ihit, rhit, src, dst):
 		self.state = state;
 		self.rhit  = rhit;
-		self.shit  = shit;
+		self.ihit  = ihit;
 		self.src   = src;
 		self.dst   = dst;
 		self.timer = time.time();
