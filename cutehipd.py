@@ -1494,8 +1494,8 @@ def hip_loop():
 					ihit, rhit);
 				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, dst, src);
 				sa_record.set_spi(responders_spi);
-				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), sa_record);
+				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
 
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
 					keymat, 
