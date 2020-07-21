@@ -17,6 +17,7 @@ need to first install the needed libraries.
 
 ```
 $ pip3 install pycryptodome
+$ pip3 install netifaces
 ```
 
 ```
