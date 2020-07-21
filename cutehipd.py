@@ -316,8 +316,8 @@ def hip_loop():
 				cipher_param.add_ciphers(config.config["security"]["supported_ciphers"]);
 
 				# ESP transform parameter
-				esp_transform = HIP.ESPTransformParameter();
-				esp_transform.add_suits(config.config["security"]["supported_esp_transform_suits"]);
+				esp_transform_param = HIP.ESPTransformParameter();
+				esp_transform_param.add_suits(config.config["security"]["supported_esp_transform_suits"]);
 
 				# HIP host ID parameter
 				hi_param = HIP.HostIdParameter();
@@ -342,7 +342,7 @@ def hip_loop():
 				buf = puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_transform.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer() + \
 						hit_suit_param.get_byte_buffer() + \
 						dh_groups_param.get_byte_buffer() + \
@@ -372,7 +372,7 @@ def hip_loop():
 				hip_r1_packet.add_parameter(puzzle_param);
 				hip_r1_packet.add_parameter(dh_param);
 				hip_r1_packet.add_parameter(cipher_param);
-				hip_r1_packet.add_parameter(esp_tranform_param);
+				hip_r1_packet.add_parameter(esp_transform_param);
 				hip_r1_packet.add_parameter(hi_param);
 				hip_r1_packet.add_parameter(hit_suit_param);
 				hip_r1_packet.add_parameter(dh_groups_param);
