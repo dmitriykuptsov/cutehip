@@ -1077,6 +1077,9 @@ def hip_loop():
 					logging.critical("ESP transform suit was not negotiated.")
 					raise Exception("ESP transform suit was not negotiated.");
 
+				logging.debug("----------------------ESP transforms-----------------------------");
+				logging.debug(esp_tranform_param.get_suits());
+				
 				selected_esp_transform = esp_tranform_param.get_suits()[0];
 
 				initiators_spi = esp_info_param.get_new_spi();
