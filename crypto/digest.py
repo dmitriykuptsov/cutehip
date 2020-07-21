@@ -21,7 +21,7 @@ class HMACDigest():
 	LENGTH = 0x0;
 	ALG_ID = 0x0;
 	
-	def __init__(self, key):
+	def __init__(self, key = None):
 		self.key = key;
 	def digest(data, key = None):
 		raise Exception("Not implemented");
@@ -30,7 +30,7 @@ class SHA256HMAC(HMACDigest):
 	LENGTH = 0x20;
 	ALG_ID = 0x1;
 	
-	def __init__(self, key):
+	def __init__(self, key = None):
 		self.key = key;
 	def digest(self, data, key = None):
 		if key:
@@ -43,7 +43,7 @@ class SHA384HMAC(HMACDigest):
 	LENGTH = 0x30;
 	ALG_ID = 0x2;
 	
-	def __init__(self, key):
+	def __init__(self, key = None):
 		self.key = key;
 	def digest(self, data, key = None):
 		if key:
@@ -56,7 +56,7 @@ class SHA1HMAC(HMACDigest):
 	LENGTH = 0x14;
 	ALG_ID = 0x3;
 	
-	def __init__(self, key):
+	def __init__(self, key = None):
 		self.key = key;
 	def digest(self, data, key = None):
 		if key:
