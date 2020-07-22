@@ -1663,14 +1663,10 @@ def hip_loop():
 				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = [];
-				if esp_info_param:
-					buf += esp_info_param.get_byte_buffer();
 				if seq_param:
 					buf += seq_param.get_byte_buffer();
 				if ack_param:
 					buf += ack_param.get_byte_buffer();
-				if dh_param:
-					buf += dh_param.get_byte_buffer();
 				buf += mac_param.get_byte_buffer();
 
 				original_length = hip_update_packet.get_length();
@@ -1684,12 +1680,8 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				if ack_param and not seq_param:
+				if ack_param:
 					logging.debug("This is a response to a UPDATE. Skipping pong...");
-					continue;
-
-				if not ack_param and not seq_param:
-					logging.debug("Invalid UPDATE packet. Dropping");
 					continue;
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
