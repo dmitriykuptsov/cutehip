@@ -164,6 +164,9 @@ cipher_storage    = HIPState.Storage();
 pubkey_storage    = HIPState.Storage();
 state_variables   = HIPState.Storage();
 
+if config.config["general"]["rekey_after_packets"] > ((2<<32)-1):
+	config.config["general"]["rekey_after_packets"] = (2<<32)-1;
+
 def hip_loop():
 	"""
 	This loop is responsible for reading HIP packets
@@ -300,8 +303,13 @@ def hip_loop():
 				dh = factory.DHFactory.get(selected_dh_group);
 				private_key = dh.generate_private_key();
 				public_key = dh.generate_public_key();
-				dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
+				if Utils.is_hit_smaller(rhit, ihit):
+					dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit), dh);
+				else:
+					dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
+				
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
@@ -490,10 +498,7 @@ def hip_loop():
 							responder_hi = ECDSALowHostID.from_byte_buffer(hi_param.get_host_id());
 						else:
 							raise Exception("Invalid signature algorithm");
-						#responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
-						#if hi_param.get_algorithm() != config.config["security"]["sig_alg"]:
-						#	logging.critical("Invalid signature algorithm");
-						#	continue;
+
 						oga = HIT.get_responders_oga_id(ihit);
 						logging.debug("Responder's OGA ID %d" % (oga));
 						logging.debug(list(responder_hi.to_byte_array()));
@@ -660,8 +665,14 @@ def hip_loop():
 
 				logging.debug("Secret key %d" % shared_secret);
 
-				dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
+				if Utils.is_hit_smaller(rhit, ihit):
+					dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit), dh);
+				else:
+					dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
+				#dh_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit), dh);
 
 				info = Utils.sort_hits(ihit, rhit);
 				salt = irandom + jrandom;
@@ -1045,8 +1056,15 @@ def hip_loop():
 					continue;
 				logging.debug("Puzzle was solved");
 
-				dh_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit));
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					dh = dh_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit));
+				else:
+					dh = dh_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+				#dh_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				public_key_r = dh.decode_public_key(dh_param.get_public_value());
 				shared_secret = dh.compute_shared_secret(public_key_r);
@@ -1469,16 +1487,6 @@ def hip_loop():
 
 				logging.debug("Setting SA records... %s - %s" % (src_str, dst_str));
 
-				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, ihit, rhit);
-				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, dst, src);
-				#sa_record.set_spi(esp_info_param.get_spi());
-				#ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
-				#	Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
-
-				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
-				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
-				#ip_sec_sa.add_record(src_str, dst_str, sa_record);
-
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
 				logging.debug(hmac.ALG_ID);
@@ -1500,8 +1508,7 @@ def hip_loop():
 					hmac.ALG_ID, 
 					cipher.ALG_ID, 
 					rhit, ihit);
-				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
-				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
+				
 				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, rhit, ihit);
 				sa_record.set_spi(responders_spi);
 				ip_sec_sa.add_record(src_str, dst_str, sa_record);
@@ -1514,10 +1521,8 @@ def hip_loop():
 				else:
 					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(ihit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
-				#sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
-				#	Utils.ipv6_bytes_to_hex_formatted(ihit))
 				sv.state = HIPState.HIP_STATE_ESTABLISHED;
-				#logging.debug("REACHED ESTABLISHED STATE SOURCE %s DESTINATION %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit), Utils.ipv6_bytes_to_hex_formatted(ihit)));
+				
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 				if (hip_state.is_i1_sent() 
@@ -1612,7 +1617,7 @@ def hip_loop():
 
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
-				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
+				
 				if isinstance(responders_public_key, RSAPublicKey):
 					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				elif isinstance(responders_public_key, ECDSAPublicKey):
@@ -1667,7 +1672,6 @@ def hip_loop():
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
-				#signature_alg = RSASHA256Signature(privkey.get_key_info());
 				if isinstance(privkey, RSAPrivateKey):
 					signature_alg = RSASHA256Signature(privkey.get_key_info());
 				elif isinstance(privkey, ECDSAPrivateKey):
@@ -1812,7 +1816,6 @@ def hip_loop():
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if isinstance(responders_public_key, RSAPublicKey):
 					signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				elif isinstance(responders_public_key, ECDSAPublicKey):
@@ -1860,7 +1863,6 @@ def hip_loop():
 				mac_param.set_hmac(hmac.digest(bytearray(hip_close_ack_packet.get_buffer())));
 				hip_close_ack_packet.add_parameter(mac_param);
 
-				#signature_alg = RSASHA256Signature(privkey.get_key_info());
 				if isinstance(privkey, RSAPrivateKey):
 					signature_alg = RSASHA256Signature(privkey.get_key_info());
 				elif isinstance(privkey, ECDSAPrivateKey):
@@ -2031,17 +2033,15 @@ def tun_if_loop():
 			packet = IPv6.IPv6Packet(buf);
 			ihit = packet.get_source_address();
 			rhit = packet.get_destination_address();
-			#logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(ihit));
-			#logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
-			#logging.info("Version %s " % (packet.get_version()));
-			#logging.info("Traffic class %s " % (packet.get_traffic_class()));
-			#logging.info("Flow label %s " % (packet.get_flow_label()));
-			#logging.info("Packet length %s " %(packet.get_payload_length()));
-			#logging.info("Next header %s " % (packet.get_next_header()));
-			#logging.info("Hop limit %s" % (packet.get_hop_limit()));
+			logging.info("Source %s " % Utils.ipv6_bytes_to_hex_formatted(ihit));
+			logging.info("Destination %s " % Utils.ipv6_bytes_to_hex_formatted(rhit));
+			logging.info("Version %s " % (packet.get_version()));
+			logging.info("Traffic class %s " % (packet.get_traffic_class()));
+			logging.info("Flow label %s " % (packet.get_flow_label()));
+			logging.info("Packet length %s " %(packet.get_payload_length()));
+			logging.info("Next header %s " % (packet.get_next_header()));
+			logging.info("Hop limit %s" % (packet.get_hop_limit()));
 			# Get the state
-			#hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-			#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 			if Utils.is_hit_smaller(rhit, ihit):
 				hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 					Utils.ipv6_bytes_to_hex_formatted(ihit));
@@ -2144,33 +2144,33 @@ def tun_if_loop():
 				iv         = list(Utils.generate_random(cipher.BLOCK_SIZE));
 				sa_record.increment_sequence();
 
-				#logging.debug("HMAC key");
-				#logging.debug(hmac_key);
-				#logging.debug("Cipher key");
-				#logging.debug(cipher_key);
+				logging.debug("HMAC key");
+				logging.debug(hmac_key);
+				logging.debug("Cipher key");
+				logging.debug(cipher_key);
 			
-				#logging.debug("IV");
-				#logging.debug(iv);
+				logging.debug("IV");
+				logging.debug(iv);
 
 				padded_data = IPSec.IPSecUtils.pad(cipher.BLOCK_SIZE, data, next_header);
-				#logging.debug("Length of the padded data %d" % (len(padded_data)));
+				logging.debug("Length of the padded data %d" % (len(padded_data)));
 
 				encrypted_data = cipher.encrypt(cipher_key, bytearray(iv), bytearray(padded_data));
 				
-				#logging.debug("Padded data");
-				#logging.debug(iv + list(encrypted_data));
-				#logging.debug(list(encrypted_data));
+				logging.debug("Padded data");
+				logging.debug(iv + list(encrypted_data));
+				logging.debug(list(encrypted_data));
 
-				#logging.debug("Encrypted padded data");
-				#logging.debug(padded_data);
+				logging.debug("Encrypted padded data");
+				logging.debug(padded_data);
 
 				ip_sec_packet = IPSec.IPSecPacket();
 				ip_sec_packet.set_spi(spi);
 				ip_sec_packet.set_sequence(seq);
 				ip_sec_packet.add_payload(iv + list(encrypted_data));
 
-				#logging.debug("Calculating ICV over IPSec packet");
-				#logging.debug(list(ip_sec_packet.get_byte_buffer()));
+				logging.debug("Calculating ICV over IPSec packet");
+				logging.debug(list(ip_sec_packet.get_byte_buffer()));
 
 				icv = hmac_alg.digest(bytearray(ip_sec_packet.get_byte_buffer()));
 				ip_sec_packet.add_payload(list(icv));
@@ -2185,7 +2185,7 @@ def tun_if_loop():
 				ipv4_packet.set_ihl(IPv4.IPV4_IHL_NO_OPTIONS);
 				ipv4_packet.set_payload(ip_sec_packet.get_byte_buffer());
 
-				#logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer())));
+				logging.debug("Sending IPSEC packet to %s %d bytes" % (Utils.ipv4_bytes_to_string(dst), len(ipv4_packet.get_buffer())));
 
 				ip_sec_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
@@ -2340,7 +2340,6 @@ while main_loop:
 				mac_param.set_hmac(hmac.digest(bytearray(hip_update_packet.get_buffer())));
 				hip_update_packet.add_parameter(mac_param);
 
-				#signature_alg = RSASHA256Signature(privkey.get_key_info());
 				if isinstance(privkey, RSAPrivateKey):
 					signature_alg = RSASHA256Signature(privkey.get_key_info());
 				elif isinstance(privkey, ECDSAPrivateKey):
