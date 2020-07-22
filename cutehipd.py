@@ -1627,14 +1627,11 @@ def hip_loop():
 
 				# Compute HMAC here
 				buf = [];
-				if esp_info_param:
-					buf += esp_info_param.get_byte_buffer();
-				if seq_param:
-					buf += seq_param.get_byte_buffer();
 				if ack_param:
 					buf += ack_param.get_byte_buffer();
-				if dh_param:
-					buf += dh_param.get_byte_buffer();
+				if seq_param:
+					buf += seq_param.get_byte_buffer();
+				
 
 				original_length = hip_update_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
@@ -1663,14 +1660,10 @@ def hip_loop():
 				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = [];
-				if esp_info_param:
-					buf += esp_info_param.get_byte_buffer();
-				if seq_param:
-					buf += seq_param.get_byte_buffer();
 				if ack_param:
 					buf += ack_param.get_byte_buffer();
-				if dh_param:
-					buf += dh_param.get_byte_buffer();
+				if seq_param:
+					buf += seq_param.get_byte_buffer();
 				buf += mac_param.get_byte_buffer();
 
 				original_length = hip_update_packet.get_length();
