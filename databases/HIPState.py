@@ -115,7 +115,7 @@ class StateVariables():
 		self.data_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
 		self.ec_complete_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
 		self.closing_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
-		self.close_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.closed_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
 
 class KeyInfo():
 	def __init__(self, info, salt, dh_group):
