@@ -1775,7 +1775,7 @@ def hip_loop():
 				# process the packet...
 			elif hip_packet.get_packet_type() == HIP.HIP_CLOSE_PACKET:
 				logging.info("CLOSE packet");
-				if hip_state.is_i1_sent():
+				if hip_state.is_i1_sent() or hip_state.is_unassociated():
 					logging.debug("Dropping the packet...");
 				# send close ack packet
 				parameters       = hip_packet.get_parameters();
@@ -2283,8 +2283,19 @@ def exit_handler():
 
 	for key in state_variables.keys():
 		logging.debug("Sending close packet....");
+
 		sv = state_variables.get_by_key(key);
-		
+
+		if Utils.is_hit_smaller(sv.rhit, sv.ihit):
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
+				Utils.ipv6_bytes_to_hex_formatted(sv.ihit));
+		else:
+			hip_state = hip_state_machine.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
+				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
+
+		if hip_state.is_unassociated():
+			continue;
+
 		if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 			keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
 				Utils.ipv6_bytes_to_hex_formatted(sv.ihit));
