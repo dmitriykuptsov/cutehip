@@ -2586,6 +2586,7 @@ while main_loop:
 				sv.i1_retries += 1;
 				if sv.i1_retries > config.config["general"]["i1_retries"]:
 					hip_state.failed();
+					sv.failed_timeout = time.time() + config["general"]["failed_timeout"];
 		elif hip_state.is_i2_sent():
 			if sv.i2_timeout <= time.time():
 				dst_str = Utils.ipv4_bytes_to_string(sv.dst);
@@ -2595,6 +2596,7 @@ while main_loop:
 				sv.i2_retries += 1;
 				if sv.i2_retries > config.config["general"]["i2_retries"]:
 					hip_state.failed();
+					sv.failed_timeout = time.time() + config["general"]["failed_timeout"];
 				sv.i2_timeout = time.time() + config.config["general"]["i2_timeout_s"];
 		elif hip_state.is_r2_sent():
 			if sv.ec_complete_timeout <= time.time():
@@ -2684,6 +2686,10 @@ while main_loop:
 		elif hip_state.is_closed():
 			if sv.closed_timeout <= time.time():
 				logging.debug("Transitioning to UNASSOCIATED state....")
+				hip_state.unassociated();
+		elif hip_state.is_failed():
+			if sv.failed_timeout <= time.time():
+				logging.debug("Transitioning to UNASSOCIATED state...");
 				hip_state.unassociated();
 
 

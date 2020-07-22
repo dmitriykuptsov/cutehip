@@ -31,16 +31,17 @@ config = {
 		}
 	},
 	"general": {
-		"i1_timeout_s": 20,
-		"i1_retries": 3,
-		"i2_retries": 3,
-		"i2_timeout_s": 20,
-		"update_timeout_s": 60,
-		"close_timeout_s": 30,
-		"UAL": 120,
-		"MSL": 120,
-		"EC": 120,
-		"rekey_after_packets": 100
+		"i1_timeout_s": 20,                                    # I1 timeout
+		"i1_retries": 3,                                       # I1 retrues
+		"i2_retries": 3,                                       # I2 retries
+		"i2_timeout_s": 20,                                    # I2 timeout
+		"update_timeout_s": 120,                               # Update send interval
+		"close_timeout_s": 30,                                 # Close timeout
+		"UAL": 120,                                            # Unused Association Lifetime (UAL)
+		"MSL": 120,                                            # Maximum Segment Lifetime (MSL)
+		"EC": 120,                                             # Exchange Complete (EC) timeout
+		"failed_timeout": 120                                  # Failed timeout
+		"rekey_after_packets": 100                             # When to rekey the association
 	}
 }
 
