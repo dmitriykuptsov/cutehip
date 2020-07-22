@@ -39,7 +39,8 @@ config = {
 		"close_timeout_s": 30,
 		"UAL": 120,
 		"MSL": 120,
-		"EC": 120
+		"EC": 120,
+		"rekey_after_packets": 100
 	}
 }
 
