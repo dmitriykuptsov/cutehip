@@ -283,7 +283,7 @@ class Utils():
 	def compute_keymat_length(hmac_alg, cipher_alg):
 		hmac = HMACFactory.get(hmac_alg, None);
 		cipher  = SymmetricCiphersFactory.get(cipher_alg);
-		return 4 * (hmac.LENGTH + cipher.KEY_SIZE_BITS);
+		return 10 * (hmac.LENGTH + cipher.KEY_SIZE_BITS);
 
 	@staticmethod
 	def compute_hip_keymat_length(hmac_alg, cipher_alg):
@@ -315,7 +315,6 @@ class Utils():
 		
 		#offset = 2*(hmac.LENGTH + cipher.KEY_SIZE_BITS);
 		offset = keymat_index;
-
 		if ihit > rhit:
 			offset += (hmac.LENGTH + cipher.KEY_SIZE_BITS);
 		return (keymat[offset: offset + cipher.KEY_SIZE_BITS], \

@@ -163,6 +163,7 @@ dh_storage        = HIPState.Storage();
 cipher_storage    = HIPState.Storage();
 pubkey_storage    = HIPState.Storage();
 state_variables   = HIPState.Storage();
+key_info_storage  = HIPState.Storage();
 
 if config.config["general"]["rekey_after_packets"] > ((2<<32)-1):
 	config.config["general"]["rekey_after_packets"] = (2<<32)-1;
@@ -678,6 +679,15 @@ def hip_loop():
 				salt = irandom + jrandom;
 				hmac_alg  = HIT.get_responders_oga_id(ihit);
 
+				key_info = HIPState.KeyInfo(info, salt, dh.ALG_ID);
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					key_info_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit), key_info);
+				else:
+					key_info_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), key_info);
+
 				offered_ciphers = cipher_param.get_ciphers();
 				supported_ciphers = config.config["security"]["supported_ciphers"];
 				selected_cipher = None;
@@ -1073,6 +1083,15 @@ def hip_loop():
 				info = Utils.sort_hits(ihit, rhit);
 				salt = irandom + jrandom;
 				hmac_alg  = HIT.get_responders_oga_id(rhit);
+
+				key_info = HIPState.KeyInfo(info, salt, dh.ALG_ID);
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					key_info_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit), key_info);
+				else:
+					key_info_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), key_info);
 
 				offered_ciphers = cipher_param.get_ciphers();
 				supported_ciphers = config.config["security"]["supported_ciphers"];
@@ -1539,6 +1558,8 @@ def hip_loop():
 				seq_param        = None;
 				signature_param  = None;
 				mac_param        = None;
+				dh_param         = None;
+				esp_info         = None;
 				
 				if Utils.is_hit_smaller(rhit, ihit):
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -1582,6 +1603,12 @@ def hip_loop():
 					if isinstance(parameter, HIP.SignatureParameter):
 						logging.debug("Signature parameter");
 						signature_param = parameter;
+					if isinstance(parameter, HIP.DHParameter):
+						logging.debug("DH parameter");
+						dh_param = parameter;
+					if isinstance(parameter, HIP.ESPInfoParameter):
+						logging.debug("ESP info parameter");
+						esp_info_param = parameter;
 
 				if not mac_param:
 					logging.debug("Missing MAC parameter");
@@ -1600,11 +1627,14 @@ def hip_loop():
 
 				# Compute HMAC here
 				buf = [];
-				if ack_param:
-					buf += ack_param.get_byte_buffer();
+				if esp_info_param:
+					buf += esp_info_param.get_byte_buffer();
 				if seq_param:
 					buf += seq_param.get_byte_buffer();
-				
+				if ack_param:
+					buf += ack_param.get_byte_buffer();
+				if dh_param:
+					buf += dh_param.get_byte_buffer();
 
 				original_length = hip_update_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
@@ -1633,10 +1663,14 @@ def hip_loop():
 				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = [];
-				if ack_param:
-					buf += ack_param.get_byte_buffer();
+				if esp_info_param:
+					buf += esp_info_param.get_byte_buffer();
 				if seq_param:
 					buf += seq_param.get_byte_buffer();
+				if ack_param:
+					buf += ack_param.get_byte_buffer();
+				if dh_param:
+					buf += dh_param.get_byte_buffer();
 				buf += mac_param.get_byte_buffer();
 
 				original_length = hip_update_packet.get_length();
@@ -1650,8 +1684,12 @@ def hip_loop():
 				else:
 					logging.debug("Signature is correct");
 
-				if ack_param:
+				if ack_param and not seq_param:
 					logging.debug("This is a response to a UPDATE. Skipping pong...");
+					continue;
+
+				if not ack_param and not seq_param:
+					logging.debug("Invalid UPDATE packet. Dropping");
 					continue;
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);

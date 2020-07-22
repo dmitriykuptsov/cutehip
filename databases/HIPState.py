@@ -108,3 +108,9 @@ class StateVariables():
 		self.update_seq = 0;
 		self.is_responder = True;
 		self.data_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+
+class KeyInfo():
+	def __init__(self, info, salt, dh_group):
+		self.info = info;
+		self.salt = salt;
+		self.dh_group = dh_group;
