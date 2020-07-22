@@ -104,10 +104,18 @@ class StateVariables():
 		self.src   = src;
 		self.dst   = dst;
 		self.timer = time.time();
-		self.timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.update_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.i1_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.i1_retries = 0;
+		self.i2_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.i2_retries = 0;
+		self.i2_packet = None;
 		self.update_seq = 0;
 		self.is_responder = True;
 		self.data_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.ec_complete_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.closing_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
+		self.close_timeout = time.time() + DEFAULT_TIMEOUT_SECONDS;
 
 class KeyInfo():
 	def __init__(self, info, salt, dh_group):
