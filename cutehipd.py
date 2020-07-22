@@ -1769,7 +1769,7 @@ def hip_loop():
 
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
 				logging.info("NOTIFY packet");
-				if hip_state.is_i1_sent() or hip_state.is_i2_sent():
+				if hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_unassociated():
 					logging.debug("Dropping the packet...")
 					continue;
 				# process the packet...
@@ -1965,7 +1965,7 @@ def hip_loop():
 					sv.closed_timeout = time.time() + config.config["general"]["UAL"] + 2*config.config["general"]["MSL"];
 			elif hip_packet.get_packet_type == HIP.HIP_CLOSE_ACK_PACKET:
 				logging.info("CLOSE ACK packet");
-				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i1_sent() or hip_state.is_i2_sent():
+				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_unassociated():
 					logging.debug("Dropping packet");
 					continue;
 				if hip_state.is_closing() or hip_state.is_closed():
