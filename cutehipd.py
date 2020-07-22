@@ -18,7 +18,7 @@
 __author__ = "Dmitriy Kuptsov"
 __copyright__ = "Copyright 2020, stangebit"
 __license__ = "GPL"
-__version__ = "0.0.1a"
+__version__ = "0.0.1b"
 __maintainer__ = "Dmitriy Kuptsov"
 __email__ = "dmitriy.kuptsov@gmail.com"
 __status__ = "development"
