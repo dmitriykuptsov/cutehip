@@ -423,7 +423,7 @@ def hip_loop():
 			elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
 				logging.info("R1 packet");
 
-				# 1 0 0
+				# 1 0 1
 				# 1 1 1
 				if (hip_state.is_unassociated() 
 					or hip_state.is_r2_sent() 
@@ -2608,6 +2608,7 @@ while main_loop:
 				if sv.i2_retries > config.config["general"]["i2_retries"]:
 					hip_state.failed();
 					sv.failed_timeout = time.time() + config["general"]["failed_timeout"];
+					continue;
 				sv.i2_timeout = time.time() + config.config["general"]["i2_timeout_s"];
 		elif hip_state.is_r2_sent():
 			if sv.ec_complete_timeout <= time.time():
