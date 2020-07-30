@@ -69,7 +69,7 @@ Then repeat the operation on intiator.
 
 Update the hosts file (on initiator)
 ```
-$ echo "<HIT> <IP>" >> config/hosts
+$ echo "<RHIT> <IP>" >> config/hosts
 ```
 
 Remember to pad HIT with zeros if needed (ifconfig tool strips off unneeded zeros).
@@ -81,7 +81,7 @@ $ sudo python3 cutehipd
 
 Test the connection
 ```
-$ ssh pi@<HIT>
+$ ssh pi@<RHIT>
 ```
 
 You should get security association installed once HIP BEX completes.
