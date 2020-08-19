@@ -37,7 +37,7 @@ $ cd cutehip
 Then generate the keys on both initiator and responder as follows
 
 ```
-$ bash tools/genkey.sh gen RSA 4096
+$ bash tools/genkey.sh gen RSA 2048
 ```
 
 or (to create ECDSA key pair)
