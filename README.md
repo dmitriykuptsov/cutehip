@@ -34,10 +34,11 @@ $ git clone https://github.com/dmitriykuptsov/cutehip.git
 $ cd cutehip
 ```
 
-Then generate the keys on both initiator and responder as follows
+Then generate the keys on both initiator and responder as follows (only small keys are supported
+at the moment, because fragmentation does not work)
 
 ```
-$ bash tools/genkey.sh gen RSA 2048
+$ bash tools/genkey.sh gen RSA 1024
 ```
 
 or (to create ECDSA key pair)
