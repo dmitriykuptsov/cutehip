@@ -32,6 +32,8 @@ class HostsFileResolver(Resolver):
 		logging.info("Importing hosts file");
 		for record in lines:
 			record = record.split(" ");
+			if len(record) != 2:
+				continue;
 			self.mapping[record[0].rstrip()] = record[1];
 			logging.info("%s %s", record[0].rstrip(), record[1]);
 	def resolve(self, hit):
