@@ -594,7 +594,7 @@ def hip_loop():
 				#if PuzzleSolver.verify_puzzle(irandom, jrandom, hip_packet.get_receivers_hit(), hip_packet.get_senders_hit(), puzzle_param.get_k_value(), r_hash):
 				logging.debug("Puzzle was solved and verified....");
 				end_time = time.time();
-				if (end_time - start_time) > 2**(puzzle_param.get_lifetime() - 32):
+				if (end_time - start_time) > (2 << (puzzle_param.get_lifetime() - 32)):
 					logging.critical("Maximum time to solve the puzzle exceeded. Dropping the packet...");
 					# Abandon the BEX
 					hip_state.unassociated();
@@ -1048,6 +1048,7 @@ def hip_loop():
 					continue;
 				if not mac_param:
 					logging.critical("Missing MAC parameter");
+					continue;
 				
 				oga = HIT.get_responders_oga_id(rhit);
 
@@ -1557,9 +1558,8 @@ def hip_loop():
 				else:
 					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(ihit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
+				sv.data_timeout = time.time() + config.config["general"]["UAL"];
 				#sv.state = HIPState.HIP_STATE_ESTABLISHED;
-
-				
 			elif hip_packet.get_packet_type() == HIP.HIP_UPDATE_PACKET:
 				logging.info("UPDATE packet");
 				if (hip_state.is_i1_sent() 
