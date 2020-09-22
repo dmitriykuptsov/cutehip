@@ -55,7 +55,7 @@ class Routing():
 		interface = Routing.get_IPv4_default_route_interface();
 		addresses = netifaces.ifaddresses(interface);
 		for k in list(addresses.keys()):
-			if re.match("[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}", addresses[k][0]["addr"]):
+			if re.match("[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", addresses[k][0]["addr"]):
 				return addresses[k][0]["addr"]
 		return None;
 
