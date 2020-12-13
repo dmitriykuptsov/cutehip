@@ -2493,14 +2493,15 @@ while main_loop:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 				
-				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);	
-
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
+					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.ihit));
 				else:
+					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
+					
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
