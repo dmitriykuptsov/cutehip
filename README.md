@@ -2,6 +2,7 @@
 
 This is the replacement for the Java-based implementation of Host Indentity Protocol (HIP) version 2.
 
+The solution was tested on Ubuntu 18.04.
 
 # Introduction
 
