@@ -29,6 +29,12 @@ $ pip3 install pycryptodome
 $ pip3 install netifaces
 ```
 
+Make sure also net-tools are installed (needed for ifconfig):
+
+```
+$ sudo apt-get install net-tools
+```
+
 ```
 $ git clone https://github.com/dmitriykuptsov/cutehip.git
 $ cd cutehip
