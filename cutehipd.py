@@ -418,7 +418,7 @@ def hip_loop():
 				logging.debug("Sending R1 packet to %s %f" % (dst_str, (time.time() - st)));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+					(dst_str.strip(), 0));
 				# Stay in current state
 			elif hip_packet.get_packet_type() == HIP.HIP_R1_PACKET:
 				logging.info("R1 packet");
@@ -912,7 +912,7 @@ def hip_loop():
 				logging.debug("Sending I2 packet to %s %d" % (dst_str, len(ipv4_packet.get_buffer())));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+					(dst_str.strip(), 0));
 
 				if Utils.is_hit_smaller(rhit, ihit):
 					sv = state_variables.get(Utils.ipv6_bytes_to_hex_formatted(rhit),
@@ -1372,7 +1372,7 @@ def hip_loop():
 					logging.debug("Sending R2 packet to %s %f" % (dst_str, time.time() - st));
 					hip_socket.sendto(
 						bytearray(ipv4_packet.get_buffer()), 
-						(dst_str, 0));
+						(dst_str.strip(), 0));
 
 				logging.debug("Setting SA records...");
 
@@ -1762,7 +1762,7 @@ def hip_loop():
 				logging.debug("Sending UPDATE ACK packet %s" % (dst_str));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+					(dst_str.strip(), 0));
 
 				if hip_state.is_r2_sent():
 					hip_state.established();
@@ -1953,7 +1953,7 @@ def hip_loop():
 				logging.debug("Sending CLOSE ACK packet %s" % (dst_str));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+					(dst_str.strip(), 0));
 				if hip_state.is_r2_sent() or hip_state.is_established() or hip_state.is_i2_sent() or hip_state.is_closing():
 					hip_state.closed();
 					if Utils.is_hit_smaller(rhit, ihit):
@@ -2162,7 +2162,7 @@ def tun_if_loop():
 
 				# Send HIP I1 packet to destination
 				logging.debug("Sending I1 packet to %s %f" % (dst_str, time.time() - st));
-				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0));
+				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str.strip(), 0));
 
 				# Transition to an I1-Sent state
 				hip_state.i1_sent();
@@ -2592,7 +2592,7 @@ while main_loop:
 
 				# Send HIP I1 packet to destination
 				logging.debug("Sending I1 packet to %s" % (dst_str));
-				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str, 0))
+				hip_socket.sendto(bytearray(ipv4_packet.get_buffer()), (dst_str.strip(), 0))
 
 				sv.i1_retries += 1;
 				if sv.i1_retries > config.config["general"]["i1_retries"]:
@@ -2603,7 +2603,7 @@ while main_loop:
 				dst_str = Utils.ipv4_bytes_to_string(sv.dst);
 				# Send HIP I2 packet to destination
 				logging.debug("Sending I2 packet to %s" % (dst_str));
-				hip_socket.sendto(bytearray(sv.i2_packet.get_buffer()), (dst_str, 0))
+				hip_socket.sendto(bytearray(sv.i2_packet.get_buffer()), (dst_str.strip(), 0))
 				sv.i2_retries += 1;
 				if sv.i2_retries > config.config["general"]["i2_retries"]:
 					hip_state.failed();
@@ -2691,7 +2691,7 @@ while main_loop:
 				logging.debug("Sending CLOSE PACKET packet %s" % (dst_str));
 				hip_socket.sendto(
 					bytearray(ipv4_packet.get_buffer()), 
-					(dst_str, 0));
+					(dst_str.strip(), 0));
 			else:
 				logging.debug("Transitioning to UNASSOCIATED state....")
 				hip_state.unassociated();
