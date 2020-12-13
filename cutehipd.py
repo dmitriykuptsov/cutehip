@@ -1854,9 +1854,13 @@ def hip_loop():
 				hip_close_packet.set_length(int(packet_length / 8));
 				buf = hip_close_packet.get_buffer() + buf;
 
+				logging.debug(list(mac_param.get_hmac()));
+				logging.debug(list(hmac.digest(bytearray(buf))));
+
 				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
+				logging.debug("HMAC OK");
 
 				responders_public_key = pubkey_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 							Utils.ipv6_bytes_to_hex_formatted(rhit));
