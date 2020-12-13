@@ -2418,6 +2418,7 @@ while main_loop:
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
+				logging.debug("HMAC algorithm %d" % (hmac_alg));
 
 				hip_close_packet = HIP.ClosePacket();
 				hip_close_packet.set_senders_hit(sv.ihit);
