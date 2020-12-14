@@ -1623,7 +1623,12 @@ def hip_loop():
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				logging.debug(list(hmac_key));
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				for parameter in parameters:
@@ -1719,9 +1724,10 @@ def hip_loop():
 
 				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				hip_update_packet = HIP.UpdatePacket();
