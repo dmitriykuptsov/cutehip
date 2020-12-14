@@ -2331,6 +2331,7 @@ def exit_handler():
 		logging.debug("Responder's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
 		logging.debug("Initiator's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 		if sv.is_responder:
+			logging.debug("Host is Responder....")
 			hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 			logging.debug("Responder's HMAC algorithm %d " % (hmac_alg))
 		else:
