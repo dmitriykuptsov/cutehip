@@ -1836,7 +1836,10 @@ def hip_loop():
 				logging.debug("Cipher algorithm %d " % (cipher_alg));
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key)
 
 				logging.debug(list(hmac_key));
