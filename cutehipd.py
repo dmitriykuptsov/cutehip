@@ -1879,8 +1879,9 @@ def hip_loop():
 				hip_close_packet.set_length(int(packet_length / 8));
 				buf = hip_close_packet.get_buffer() + buf;
 
-				logging.debug(list(mac_param.get_hmac()));
-				logging.debug(list(hmac.digest(bytearray(buf))));
+				logging.debug("------------------------------------");
+				logging.debug(list((buf)));
+				logging.debug("------------------------------------");
 
 				if list(hmac.digest(bytearray(buf))) != list(mac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
