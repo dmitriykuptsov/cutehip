@@ -1624,10 +1624,13 @@ def hip_loop():
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				
+				#if sv.is_responder:
+				#	(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				#	logging.debug("Using RHIT/IHIT KEY")
+				#else:
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				logging.debug("Using IHIT/RHIT KEY")
 				logging.debug("------------------------------------");
 				logging.debug(list(hmac_key))
 				logging.debug("------------------------------------");
@@ -1725,10 +1728,12 @@ def hip_loop():
 					continue;
 
 				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				#if sv.is_responder:
+				#	(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				#	logging.debug("Using RHIT/IHIT KEY")
+				#else:
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				logging.debug("Using IHIT/RHIT KEY")
 
 				logging.debug("------------------------------------");
 				logging.debug(list(hmac_key))
