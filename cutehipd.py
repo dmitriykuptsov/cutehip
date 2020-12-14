@@ -1737,7 +1737,7 @@ def hip_loop():
 					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
 					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
 				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 					logging.debug("Using IHIT/RHIT KEY");
 					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
 					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
