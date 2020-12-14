@@ -1814,9 +1814,11 @@ def hip_loop():
 					continue;
 
 				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(rhit);
-				else:
 					hmac_alg  = HIT.get_responders_oga_id(ihit);
+					logging.debug("Responder HMAC algorithm %d" % (hmac_alg));
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(rhit);
+					logging.debug("Initiator HMAC algorithm %d" % (hmac_alg));
 
 				if Utils.is_hit_smaller(rhit, ihit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -2321,9 +2323,12 @@ def exit_handler():
 				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
 		if sv.is_responder:
+
 			hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+			logging.debug("Responder HMAC algorithm %d " % (hmac_alg))
 		else:
 			hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
+			logging.debug("Initiator HMAC algorithm %d " % (hmac_alg))
 
 		if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 			#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2425,6 +2430,7 @@ while main_loop:
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
 				if sv.is_responder:
+
 					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 				else:
 					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2439,6 +2445,7 @@ while main_loop:
 					#hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
 
