@@ -26,8 +26,8 @@ Currently RSA and ECDSA (HI) algorithms for Host Identity are supported. To test
 need to first install the needed libraries.
 
 ```
-$ pip3 install pycryptodome
-$ pip3 install netifaces
+$ sudo pip3 install pycryptodome
+$ sudo pip3 install netifaces
 ```
 
 Make sure also net-tools are installed (needed for ifconfig):
