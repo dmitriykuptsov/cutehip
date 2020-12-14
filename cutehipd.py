@@ -1606,14 +1606,13 @@ def hip_loop():
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				if sv.is_responder:
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(ihit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(rhit)))
 					hmac_alg  = HIT.get_responders_oga_id(rhit);
-					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
-					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
-					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 					logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
 				else:
-					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
-					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))					
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(rhit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(ihit)))					
 					hmac_alg  = HIT.get_responders_oga_id(ihit);
 					logging.debug("Initiator HMAC algorithm %d" % (hmac_alg))
 
