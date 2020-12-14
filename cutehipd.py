@@ -1624,13 +1624,16 @@ def hip_loop():
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				
 				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
 					logging.debug("Using IHIT/RHIT KEY")
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
 				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-					logging.debug("Using RHIT/IHIT KEY")
+					logging.debug("Using RHIT/IHIT KEY");
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
 				logging.debug("------------------------------------");
 				logging.debug(list(hmac_key))
 				logging.debug("------------------------------------");
@@ -1731,9 +1734,13 @@ def hip_loop():
 				if sv.is_responder:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 					logging.debug("Using RHIT/IHIT KEY")
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
 				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
 					logging.debug("Using IHIT/RHIT KEY");
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
+					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				logging.debug("------------------------------------");
 				logging.debug(list(hmac_key))
@@ -2601,7 +2608,10 @@ while main_loop:
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.rhit, sv.ihit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				hip_update_packet = HIP.UpdatePacket();
