@@ -1628,7 +1628,9 @@ def hip_loop():
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
 				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-				logging.debug(list(hmac_key));
+				logging.debug("------------------------------------");
+				logging.debug(list(hmac_key))
+				logging.debug("------------------------------------");
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				for parameter in parameters:
@@ -1727,6 +1729,10 @@ def hip_loop():
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+
+				logging.debug("------------------------------------");
+				logging.debug(list(hmac_key))
+				logging.debug("------------------------------------");
 
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
