@@ -1840,6 +1840,7 @@ def hip_loop():
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
 				else:
 					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+
 				hmac = HMACFactory.get(hmac_alg, hmac_key)
 
 				logging.debug(list(hmac_key));
@@ -2586,9 +2587,13 @@ while main_loop:
 				if sv.is_responder:
 					hip_update_packet.set_senders_hit(sv.rhit);
 					hip_update_packet.set_receivers_hit(sv.ihit);
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 				else:
 					hip_update_packet.set_senders_hit(sv.ihit);
 					hip_update_packet.set_receivers_hit(sv.rhit);
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
 				hip_update_packet.set_senders_hit(sv.ihit);
 				hip_update_packet.set_receivers_hit(sv.rhit);
 				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
