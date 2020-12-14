@@ -2328,13 +2328,14 @@ def exit_handler():
 			keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
+		logging.debug("Responder's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+		logging.debug("Initiator's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 		if sv.is_responder:
-
 			hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-			logging.debug("Responder HMAC algorithm %d " % (hmac_alg))
+			logging.debug("Responder's HMAC algorithm %d " % (hmac_alg))
 		else:
 			hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-			logging.debug("Initiator HMAC algorithm %d " % (hmac_alg))
+			logging.debug("Responder's HMAC algorithm %d " % (hmac_alg))
 
 		if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 			#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2444,7 +2445,7 @@ while main_loop:
 				logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
 				logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-				logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
+				logging.debug("Responders's HMAC algorithm %d" % (hmac_alg))
 				
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
@@ -2690,7 +2691,7 @@ while main_loop:
 				logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
 				logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-				logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
+				logging.debug("Responders's HMAC algorithm %d" % (hmac_alg))
 
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
