@@ -1607,8 +1607,10 @@ def hip_loop():
 
 				if sv.is_responder:
 					hmac_alg  = HIT.get_responders_oga_id(rhit);
+					logging.debug("Responder HMAC algorithm %d" % (hmac_alg))
 				else:
 					hmac_alg  = HIT.get_responders_oga_id(ihit);
+					logging.debug("Initiator HMAC algorithm %d" % (hmac_alg))
 
 				if Utils.is_hit_smaller(rhit, ihit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
