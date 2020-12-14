@@ -2594,8 +2594,6 @@ while main_loop:
 					hip_update_packet.set_receivers_hit(sv.rhit);
 					logging.debug("Source HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 					logging.debug("Destination HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
-				hip_update_packet.set_senders_hit(sv.ihit);
-				hip_update_packet.set_receivers_hit(sv.rhit);
 				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_update_packet.set_version(HIP.HIP_VERSION);
 				hip_update_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
