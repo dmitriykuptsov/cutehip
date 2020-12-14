@@ -1717,7 +1717,11 @@ def hip_loop():
 					logging.debug("This is a response to a UPDATE. Skipping pong...");
 					continue;
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				hip_update_packet = HIP.UpdatePacket();
