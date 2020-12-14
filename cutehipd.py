@@ -1860,8 +1860,12 @@ def hip_loop():
 					continue;
 				
 				hip_close_packet = HIP.ClosePacket();
-				hip_close_packet.set_senders_hit(ihit);
-				hip_close_packet.set_receivers_hit(rhit);
+				if sv.is_responder:
+					hip_close_packet.set_senders_hit(ihit);
+					hip_close_packet.set_receivers_hit(rhit);
+				else:
+					hip_close_packet.set_senders_hit(rhit);
+					hip_close_packet.set_receivers_hit(ihit);
 				hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_close_packet.set_version(HIP.HIP_VERSION);
 				hip_close_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
@@ -2486,6 +2490,7 @@ while main_loop:
 				hip_close_packet.add_parameter(echo_param);
 
 				mac_param = HIP.MACParameter();
+				logging.debug(bytearray(hip_close_packet.get_buffer()));
 				mac_param.set_hmac(hmac.digest(bytearray(hip_close_packet.get_buffer())));
 				hip_close_packet.add_parameter(mac_param);
 
