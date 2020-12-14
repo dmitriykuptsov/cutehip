@@ -1623,20 +1623,7 @@ def hip_loop():
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-					logging.debug("Using IHIT/RHIT KEY")
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
-				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-					logging.debug("Using RHIT/IHIT KEY");
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
-				logging.debug("------------------------------------");
-				logging.debug(list(hmac_key))
-				logging.debug("------------------------------------");
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				for parameter in parameters:
@@ -1730,22 +1717,7 @@ def hip_loop():
 					logging.debug("This is a response to a UPDATE. Skipping pong...");
 					continue;
 
-				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-					logging.debug("Using RHIT/IHIT KEY")
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
-				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-					logging.debug("Using IHIT/RHIT KEY");
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit));
-					logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit));
-
-				logging.debug("------------------------------------");
-				logging.debug(list(hmac_key))
-				logging.debug("------------------------------------");
-
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				hip_update_packet = HIP.UpdatePacket();
@@ -1864,14 +1836,8 @@ def hip_loop():
 				logging.debug("Cipher algorithm %d " % (cipher_alg));
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
 
-				if sv.is_responder:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				else:
-					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
-
-				hmac = HMACFactory.get(hmac_alg, hmac_key)
-
-				logging.debug(list(hmac_key));
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
+				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				for parameter in parameters:
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
@@ -2386,7 +2352,10 @@ def exit_handler():
 			cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-		(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+		if sv.is_responder:
+			(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.rhit, sv.ihit);
+		else:
+			(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
 		hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 		hip_close_packet = HIP.ClosePacket();
@@ -2502,7 +2471,11 @@ while main_loop:
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 					#hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+				#(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.rhit, sv.ihit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
 
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
@@ -2767,7 +2740,11 @@ while main_loop:
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+				if sv.is_responder:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.rhit, sv.ihit);
+				else:
+					(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, sv.ihit, sv.rhit);
+
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
