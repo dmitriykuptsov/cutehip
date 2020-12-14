@@ -1424,14 +1424,26 @@ def hip_loop():
 				st = time.time();
 
 				logging.info("R2 packet");
+				
+				hmac_alg  = HIT.get_responders_oga_id(ihit);
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit));
+				else:
+					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
 				if Utils.is_hit_smaller(rhit, ihit):
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(ihit));
 				else:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
+
 				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
+
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				parameters       = hip_packet.get_parameters();
@@ -1766,7 +1778,6 @@ def hip_loop():
 
 				if hip_state.is_r2_sent():
 					hip_state.established();
-
 			elif hip_packet.get_packet_type() == HIP.HIP_NOTIFY_PACKET:
 				logging.info("NOTIFY packet");
 				if hip_state.is_i1_sent() or hip_state.is_i2_sent() or hip_state.is_unassociated():
@@ -1801,6 +1812,7 @@ def hip_loop():
 				if not sv:
 					logging.debug("Not state exists. Skipping the packet...")
 					continue;
+
 				if sv.is_responder:
 					hmac_alg  = HIT.get_responders_oga_id(rhit);
 				else:
@@ -2309,9 +2321,9 @@ def exit_handler():
 				Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
 		if sv.is_responder:
-			hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-		else:
 			hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+		else:
+			hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
 
 		if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 			#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2413,9 +2425,9 @@ while main_loop:
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
 				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-				else:
 					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
 
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
@@ -2504,9 +2516,9 @@ while main_loop:
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 				
 				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-				else:
 					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
 
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2646,10 +2658,10 @@ while main_loop:
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
 				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-				else:
 					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-					
+				else:
+					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
+
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
