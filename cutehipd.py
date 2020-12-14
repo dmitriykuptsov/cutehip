@@ -247,11 +247,11 @@ def hip_loop():
 				if Utils.is_hit_smaller(rhit, ihit):
 					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
 						Utils.ipv6_bytes_to_hex_formatted(ihit),
-						HIPState.StateVariables(hip_state.get_state(), rhit, ihit, dst, src))
+						HIPState.StateVariables(hip_state.get_state(), ihit, rhit, dst, src))
 				else:
 					state_variables.save(Utils.ipv6_bytes_to_hex_formatted(ihit),
 						Utils.ipv6_bytes_to_hex_formatted(rhit),
-						HIPState.StateVariables(hip_state.get_state(), rhit, ihit, dst, src))
+						HIPState.StateVariables(hip_state.get_state(), ihit, rhit, dst, src))
 
 				st = time.time();
 				
