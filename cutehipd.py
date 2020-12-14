@@ -2491,7 +2491,9 @@ while main_loop:
 				hip_close_packet.add_parameter(echo_param);
 
 				mac_param = HIP.MACParameter();
-				logging.debug(bytearray(hip_close_packet.get_buffer()));
+				logging.debug("------------------------------");
+				logging.debug(list(hip_close_packet.get_buffer()));
+				logging.debug("------------------------------");
 				mac_param.set_hmac(hmac.digest(bytearray(hip_close_packet.get_buffer())));
 				hip_close_packet.add_parameter(mac_param);
 
