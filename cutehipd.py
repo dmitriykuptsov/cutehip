@@ -1837,7 +1837,9 @@ def hip_loop():
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
 
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, ihit, rhit);
-				hmac = HMACFactory.get(hmac_alg, hmac_key);
+				hmac = HMACFactory.get(hmac_alg, hmac_key)
+
+				logging.debug(list(hmac_key));
 
 				for parameter in parameters:
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
@@ -1860,12 +1862,10 @@ def hip_loop():
 					continue;
 				
 				hip_close_packet = HIP.ClosePacket();
-				if sv.is_responder:
-					hip_close_packet.set_senders_hit(ihit);
-					hip_close_packet.set_receivers_hit(rhit);
-				else:
-					hip_close_packet.set_senders_hit(rhit);
-					hip_close_packet.set_receivers_hit(ihit);
+				logging.debug("Sender's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(ihit)));
+				logging.debug("Receiver's HIT %s" % (Utils.ipv6_bytes_to_hex_formatted(rhit)));
+				hip_close_packet.set_senders_hit(ihit);
+				hip_close_packet.set_receivers_hit(rhit);
 				hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_close_packet.set_version(HIP.HIP_VERSION);
 				hip_close_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
@@ -2474,6 +2474,7 @@ while main_loop:
 
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				logging.debug("HMAC algorithm %d" % (hmac_alg));
+				logging.debug(list(hmac_key));
 
 				hip_close_packet = HIP.ClosePacket();
 				if sv.is_responder:
