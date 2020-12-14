@@ -218,8 +218,8 @@ def hip_loop():
 			# Check wether the destination address is our own HIT
 			if not Utils.hits_equal(rhit, own_hit) and not Utils.hits_equal(rhit, [0] * 16):
 				logging.critical("Not our HIT");
-				logging.critical(list(rhit));
-				logging.critical(list(own_hit));
+				logging.critical(Utils.ipv6_bytes_to_hex_formatted(rhit));
+				logging.critical(Utils.ipv6_bytes_to_hex_formatted(own_hit));
 				continue;
 
 			# https://tools.ietf.org/html/rfc7401#section-5
@@ -2587,13 +2587,13 @@ while main_loop:
 				if sv.is_responder:
 					hip_update_packet.set_senders_hit(sv.rhit);
 					hip_update_packet.set_receivers_hit(sv.ihit);
-					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
-					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+					logging.debug("Source HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+					logging.debug("Destination HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
 				else:
 					hip_update_packet.set_senders_hit(sv.ihit);
 					hip_update_packet.set_receivers_hit(sv.rhit);
-					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
-					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+					logging.debug("Source HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+					logging.debug("Destination HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
 				hip_update_packet.set_senders_hit(sv.ihit);
 				hip_update_packet.set_receivers_hit(sv.rhit);
 				hip_update_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
