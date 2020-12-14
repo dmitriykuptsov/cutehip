@@ -2,7 +2,8 @@
 
 This is the replacement for the Java-based implementation of Host Indentity Protocol (HIP) version 2.
 
-The solution was tested on Ubuntu 18.04.
+The solution was tested on Ubuntu 18.04, but in general, all Ubuntu like platforms should work fine.
+We have also tested the implmentation on Raspberry PI.
 
 # Introduction
 
