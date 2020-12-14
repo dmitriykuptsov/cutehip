@@ -1607,8 +1607,13 @@ def hip_loop():
 
 				if sv.is_responder:
 					hmac_alg  = HIT.get_responders_oga_id(rhit);
-					logging.debug("Responder HMAC algorithm %d" % (hmac_alg))
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+					logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
 				else:
+					logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+					logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))					
 					hmac_alg  = HIT.get_responders_oga_id(ihit);
 					logging.debug("Initiator HMAC algorithm %d" % (hmac_alg))
 
@@ -2431,12 +2436,17 @@ while main_loop:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-				if sv.is_responder:
-
-					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-				else:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
-
+				#if sv.is_responder:
+				#	logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				#	logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				#	hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				#	logging.debug("Using Responder's HMAC algorithm %d" % (hmac_alg))
+				#else:
+				logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
+				
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					cipher_alg = cipher_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.rhit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.ihit));
@@ -2524,10 +2534,16 @@ while main_loop:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 				
-				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-				else:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
+				#if sv.is_responder:
+				#	logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				#	logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				#	hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				#	logging.debug("Using Responder's HMAC algorithm %d" % (hmac_alg))
+				#else:
+				logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
 
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
@@ -2666,10 +2682,16 @@ while main_loop:
 					keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(sv.ihit), 
 						Utils.ipv6_bytes_to_hex_formatted(sv.rhit));
 
-				if sv.is_responder:
-					hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
-				else:
-					hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
+				#if sv.is_responder:
+				#	logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				#	logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				#	hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				#	logging.debug("Using Responder's HMAC algorithm %d" % (hmac_alg))
+				#else:
+				logging.debug("Reponder's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.rhit)))
+				logging.debug("Initiator's HIT %s " % (Utils.ipv6_bytes_to_hex_formatted(sv.ihit)))
+				hmac_alg  = HIT.get_responders_oga_id(sv.rhit);
+				logging.debug("Using Responders's HMAC algorithm %d" % (hmac_alg))
 
 				if Utils.is_hit_smaller(sv.rhit, sv.ihit):
 					#hmac_alg  = HIT.get_responders_oga_id(sv.ihit);
