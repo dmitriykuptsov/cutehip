@@ -2351,8 +2351,14 @@ def exit_handler():
 		hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 		hip_close_packet = HIP.ClosePacket();
-		hip_close_packet.set_senders_hit(sv.rhit);
-		hip_close_packet.set_receivers_hit(sv.ihit);
+
+		if sv.is_responder:
+			hip_close_packet.set_senders_hit(sv.rhit);
+			hip_close_packet.set_receivers_hit(sv.ihit);
+		else:
+			hip_close_packet.set_senders_hit(sv.ihit);
+			hip_close_packet.set_receivers_hit(sv.rhit);
+
 		hip_close_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 		hip_close_packet.set_version(HIP.HIP_VERSION);
 		hip_close_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
