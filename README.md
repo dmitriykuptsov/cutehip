@@ -24,7 +24,7 @@ understand how well Python copes with these computation intensive tasks.
 # Usage
 
 Currently RSA and ECDSA (HI) algorithms for Host Identity are supported. To test the implementation one
-need to first install the needed libraries.
+needs to first install the needed libraries.
 
 ```
 $ sudo pip3 install pycryptodome
