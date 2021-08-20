@@ -15,6 +15,7 @@
 \usepackage{caption}
 \usepackage{rotating}
 \usepackage{subcaption}
+\usepackage{flushend}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{example}{Example}
@@ -38,19 +39,24 @@
 
 \begin{document}
 \sloppy
-\title{Implementing Host Identity Protocol using Python}
+%\balance
+\title{Experimenting with Python implementation of Host Identity Protocol}
+\author{Dmitriy Kuptsov}
 \maketitle
 \begin{abstract}
-Host Identity Protocol, or HIP, is layer 3.5 solution,
-which was initially designed to split the dual role of
-the IP address - locator and identifier. Using HIP protocol
-one can solve not only mobility problems, but also 
-establish authenticated secure channel. In this short 
-report we will introduce description of the implementation
-of HIP and IPSec protocols using Python. We will also present the 
-microbanchmarking results for various cryptographic primitives,
-and present the results for overall performance of HIP and IPSec,
-which we implement in userspace using Python language.
+Host Identity Protocol, or HIP, is a layer 3.5 solution and 
+was initially designed to split the dual role of the IP 
+address - locator and identifier. Using HIP protocol one 
+can solve not only mobility problems but also establish 
+authenticated secure channel between two communicating 
+end-hosts. In this short article, we first introduce relevant 
+background information. We then present some mathematical 
+background related to Elliptic Curve (EC) Cryptography and 
+Diffie-Hellman protocol based on EC. Finally, we demonstrate 
+some micro benchmarking results for various cryptographic 
+primitives and conclude the paper with the results for the 
+overall performance of HIP and IPSec, which we implemented 
+in Linux userspace using Python language.
 \end{abstract}
 \input intro.tex
 \input background.tex

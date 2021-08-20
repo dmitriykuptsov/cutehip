@@ -6,7 +6,8 @@ HIPv2 implementation. We begin the discussion with the set of
 microbanchmarkings. Thus, we first evaluate the performance of ECDH and DH
 algorithms, then we switch to performance of RSA, DSA, and ECDSA signature
 algorithms, we conclude the discussion with the performance of various HMAC 
-algorithms.
+algorithms. Afterwards, we present the results for the overall performance 
+of the HIP implmentation.
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/puzzle_solution_perf.pdf}
@@ -53,6 +54,31 @@ to reduced key sizes.
 \label{tab:strength}
 \end{table}
 
+Next, we have measured the computational performance of other 
+cryptographic primitives. Thus, in Table~\ref{tab:micro} we 
+show summary statistics for all the operations we have completed.
+We have performed $100$ rounds of measurements for each 
+cryptographic primitive. The block size for all operations
+was selected to be $1500$ bytes - the maximum size of an IP packet.
+
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\bf{Operation} & \bf{Mean time, ms} & \bf{Median time, ms} & \bf{Standard deviation, ms}\\\hline\hline
+RSA signing			&    0                        & 0               &                   \\
+RSA verification	&    0                        & 0               &                   \\
+DSA signing			&    0                        & 0               &                   \\
+DSA verification	&    0                        & 0               &                   \\
+AES-256 encryption  &    0                        & 0               &                   \\
+AES-256 descryption &	 0 						  & 0               &                   \\
+SHA-256 hashing     &    0                        & 0               &                   \\
+HMAC (SHA-256)      &    0                        & 0               &                   \\
+\hline
+\end{tabular}
+\caption{Performance of cryptographic primitives}
+\label{tab:micro}
+\end{table}
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/packet_processing.pdf}
@@ -69,8 +95,9 @@ amount of time on responder. Since our implementation was lacking pre-creation o
 processing time was expected. We have also measured the overall duration of the HIPv2 base exchange (BEX). 
 In Figure~\ref{fig:duration_bex} we demonstrate distribution of HIP BEX durations. Clearly, implementing 
 cryptographic protocols in userspace using high-level languages, such as Python, is not the best choice: the performance
-of such implementations is really poor and it is better to implement the security solutions using lower 
-level languages, such as C or C++. 
+of such implementations is somewhat unacceptable for production servers and it is better to implement the security 
+solutions for overloaded servers using lower level languages, such as C or C++. On the otherside, Python implmentation
+is more suitable for study and experimental purposes.
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/duration_bex.pdf}
@@ -79,17 +106,14 @@ level languages, such as C or C++.
 \end{figure}
 
 Finally, we have measured throughput for TCP connections over IPSec tunnel and plain TCP. We have used
-\texttt{iperf} tool to measure throughput. Clearly, with our implementation we were able to achieve
+\texttt{iperf}~\cite{iperf} tool to measure throughput. Clearly, with our implementation we were able to achieve
 throughput slightly $25$ times less, than throughput, which we have obtained for plain TCP connections.
+Such result was expected for Python implementations of security protocols. For example, we have 
+observed similar behaviour with our Python implmentation of VPN solution in one of our previous 
+studies~\cite{vpn}.
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/throughput.pdf}
 	\caption{Obtained throughput for TCP over IPSec and plain TCP connections}
 	\label{fig:throughput}
 \end{figure}
-
-While experimenting with the HIPv2 protocol we have noticed one limitation:
-if RSA keys larger than 4096 bits long are used together with the ECDH NIST 521
-curve, the size of the packet becomes unacceptably large and protocol fails (HIPv2
-packet size cannot be larger than 2008 bytes). Therefore we have only experimented 
-with RSA keys of sizees: $512$, $1024$, $2048$ and $4096$ bits. 

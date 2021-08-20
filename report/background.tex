@@ -3,59 +3,125 @@
 
 In this section we will describe basic background. First, we will
 discuss the problem of mobile Internet and introduce the Host Identity
-Protocol. We then move to the discussion of other layer 3 security protocols.
+Protocol. We then move to the discussion of various security protocols.
 We will conclude the section with the discussion of Elliptic Curves and
 a variant of Diffie-Hellman algorithm, which uses EC cryptography (ECC).
 
 \subsection{Dual role of IP}
 
 Internet was designed initially so that the Internet Protocol (IP)
-address was playing dual role: it was the locator, so that the 
-routers could find the recipient of a message, and identifier, so that 
+address is playing dual role: it is the locator, so that the 
+routers can find the recipient of a message, and it is an identifier, so that 
 the upper layer protocols (such as TCP and UDP) can make bindings 
 (for example, transport layer sockets use IP addresses and ports 
 to make a connections). This becomes a problem when a networked 
 device roams from one network to another, and so the IP address changes, 
-leading to failures in upper layer connections. 
+leading to failures in upper layer connections. The other problem is
+establishment of the authenticated channel between the communicating
+parties. In practice, when making connections, long term identities 
+of the parties are not verified. Of course, there are solutions such 
+as SSL which can readily solve the problem at hand.
+However, SSL is suitable only for TCP connections and most of the 
+time practical use cases include only secure web surfing and 
+establishment of VPN tunnels. Host Identity Protocol on the 
+other hand is more flexible: it allows peers to create authenticated secure 
+channel on network layer, and so all upper layer protocols can
+benefit from such channel.
 
-\subsection{Layer 3 security protocols}
+HIP~\cite{hip} relies on the 4-way handshake to establish
+authenticated session. During the handshake, the peers authenticate
+each other using long-term public keys and derive session keys 
+using Diffie-Hellman or Elliptic Curve (EC) Diffie-Hellman algorithms.
+To combat the denial-of-service attacks, HIP also introduces computational 
+puzzles.
+
+HIP uses truncated hash of the public key as identifier in a form of IPv6 address 
+and exposes this identifier to the upper layer protocols so that applications can make 
+regular connections (for example, applications can open regular TCP or UDP socket connections). 
+At the same time HIP uses regular IP addresses (both IPv4 and IPv6 are supported) for routing purposes. 
+Thus, when the attachment of a host changes (and so does the IP address used 
+for routing purposes), the identifier, which is exposed to the applications, stays the same.
+HIP uses special signaling routine to notify the corresponding peer about the 
+change of locator. More information about HIP can be found in
+RFC 7401~\cite{rfc7401}.
+
+\subsection{Secure network protocols}
 
 There are a lot of solutions today which allow communicating parties 
-to authenticate each other and establish secure channel. But only few provide
-a separation of identifier and locator.
-
-{\bf Locator Identifier Separation Protocol (LISP)}
-
-{\bf Identifier/Locator Network Protocol (ILNP)}
+to authenticate each other and establish secure channel. In this section,
+we will review some of the most widely used security protocols and discuss
+their application use cases. Here, we will also review some of the 
+protocols which allow end-hosts to separate the dual role of the IP addresses.
 
 {\bf Secure Shell protocol (SSH)} is one security solution~\cite{ssh}. SSH is
 the application layer protocol which provides an encrypted channel for insecure
 networks. SSH was originally designed to provide secure  
 remote command-line, login, and command execution. But in fact, 
 any network service can be secured with SSH. Moreover, SSH provides
-means for creating VPN tunnels between the spatially separated networks.
+means for creating VPN tunnels between the spatially separated networks:
+SSH is a great protocol for forwarding local traffic through remote 
+server. However, the protocol will fail once the network device changes its 
+attachment point in the network. 
 
-{\bf IPSec} runs directly on top of the IP protocol and offers two 
+{\bf IPSec}~\cite{ipsec} runs directly on top of the IP protocol and offers two 
 various services: (i) it provides the so called Authentication Header (AH),
-which is used only for authentication, i.e., it uses various HMAC algorithms, and 
+which is used only for authentication, and 
 (ii) it provides Encapsulated Security Payload (ESP), which is an authentication 
 plus payload encryption mechanism. To establish the security association (negotiate
 secret keys and algorithms) one can use IKE or IKEv2, ISAKMP (popular on Windows) or
-use preshared keys and set of negotiated algorithms.
+even preshared keys and set of negotiated beforehand security algorithms. 
 
-{\bf Internet Key Exchange protocol (IKE)} is a protocol used in IPSec to establish
+{\bf Internet Key Exchange protocol (IKE)}~\cite{rfc5996} is a protocol used in IPSec to establish
 security association, just like HIP. Unlike HIP, however, IKE does not solve the 
-dual problem of the IP address.
+dual role problem of the IP address.
 
-{\bf Mobile TCP (mTCP)} There are a lot of solutions for mobility support. 
-For sampling see Mobile IP, ROAMIP and Cellular IP.
+{\bf Secure socket layer (SSL)} is an application layer solution to secure TCP 
+connections. SSL was standardized in RFC 6101~\cite{rfc6101}. And was designed 
+to prevent eavesdropping, man-in-the-middle attacks, tampering and message forgery.
+In SSL the communicating hosts can authenticate each other with help of 
+longer term identities - public key certificates.
+
+Although, the solutions which we have listed above do solve security problems
+at various layers of the OSI model, they are not designed to deal with node 
+mobility. We, therefore, in the paragraphs that follow, list several protocols,
+which were designed specifically to support mobility and solve the dual role of 
+an IP address.
+
+{\bf Locator Identifier Separation Protocol (LISP)} was specified in RFC 6830~\cite{rfc6830}.
+In LISP identifiers and locators can be anything: IPv4 address, IPv6 address, Medium
+Access Control address, etc. Some of the advantages, besides separation of locator and
+identifier, include: address family traversal (IPv4 over IPv4, IPv4 over IPv6, IPv6 over IPv6,
+and even IPv6 over IPv4), mobility, and improved routing scalability.
+
+{\bf Identifier/Locator Network Protocol (ILNP)} was specified in several RFCs. 
+It is worth to take a look at RFC 6740~\cite{rfc6740}, which contains
+protocol's architectural description. The main advantage of ILNP is that 
+it offers incremental deployment, and backwards compatibility with the IP 
+protocol. 
+
+{\bf Mobile IP}. Despite that the protocol does not solve
+the separation of locator and identifier problem as such, we still
+refer it to this category, because it solves issues, which occur
+during node mobility. Thus, the protocol was originally designed 
+to allow mobile users to move from one network to the other while 
+maintaining permanent IP address. The protocol is specified
+in RFC 5944~\cite{rfc5944} (for IPv4 protocol) and RFC 6275~\cite{rfc6275} 
+(for IPv6 protocol). The main disadvantage of the protocol, however,
+is its complexity.
+
+We will now move on to the discussion of the limitations of the cryptography library
+which we have used when we were implementing the Host Identity Protocol
+using Python language.
 
 \subsection{Diffie-Hellman (DH) and Elliptic Curve DH}
 
-Because \texttt{pycryptodome} library does not support 
-Diffie-Hellman (DH) and Elliptic Curve Diffie-Hellman (ECDH) algorithms,
+The cryptography library (pycryptodome~\cite{crypto}), which we have used in our 
+implementation, at the time of writing, did not support 
+Diffie-Hellman (DH) and Elliptic Curve Diffie-Hellman (ECDH) algorithms. Thus, we
 we have sat down and derived our own implementation of these
-protocols. Here we will mention some background on Elliptic Curve Cryptography (ECC)
+algorithms. To make things a little bit clear, here we will mention 
+some background (the reader can look at~\cite{stinson} for more information on 
+EC cryptography) on Elliptic Curve Cryptography (ECC)
 and discuss the implementation details of ECDH.
 
 Elliptic curves have the following form $y^2 \equiv x^3+ax+b \mod p$. For the 
@@ -77,8 +143,7 @@ are called \texttt{cyclic} abelian groups.
 Lets define $O$, a point at infinity, to be identity element, such 
 that $P+O = O + P = P, \forall P \in E$. Also, we define 
 $P+(-P)=O$, where $-P=(x, -y)$. Next lets 
-suppose that $P, Q \in E$ (reads P and Q belong to elliptic curve), 
-where $P=(x_1, y_1)$ and $Q=(x_2, y_2)$. We 
+suppose that $P, Q \in E$, where $P=(x_1, y_1)$ and $Q=(x_2, y_2)$. We 
 can then distinguish the following three cases: (i) $x_1 \neq x_2$ (in this
 case the line, which passes through the two given points, 
 must intersect the curve somewhere at a third point $R = (x_3, y_3)$), 
@@ -105,7 +170,7 @@ x^3+ax+b-\beta^2x^2-2\beta \upsilon x - \upsilon^2=\\
 x^3+(a-2\beta \upsilon)x-\beta^2x^2+b-\upsilon^2=0
 \end{multline*}
 
-But since the obtained equation has three roots we have:
+But since the obtained equation has three roots, we have:
 
 \begin{multline*}
 (x-x_1)(x-x_2)(x-x_3)=(x^2-xx_2-xx_1+x_1x_2)(x-x_3)=\\
@@ -113,7 +178,7 @@ x^3-x^2x_3-x^2x_2+xx_2x_3-x^2x_1+xx_1x_3+xx_1x_2-x_1x_2x_3 = \\
 x^3-(x_3+x_2+x_1)x^2+(x_2x_3+x_1x_3+x_1x_2)x-x_1x_2x_3
 \end{multline*}
 
-But noticing that the $\beta^2=x_1+x_2+x_3$, we have:
+By noticing that the $\beta^2=x_1+x_2+x_3$, we have:
 
 $$x_3=\beta^2-x_1-x_2$$
 
