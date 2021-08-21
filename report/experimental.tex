@@ -4,8 +4,8 @@
 In this section we will discuss the performance related issues of our 
 HIPv2 implementation. We begin the discussion with the set of 
 microbanchmarkings. Thus, we first evaluate the performance of ECDH and DH
-algorithms, then we switch to performance of RSA, DSA, and ECDSA signature
-algorithms, we conclude the discussion with the performance of various HMAC 
+algorithms, then we switch to performance of RSA and ECDSA signature
+algorithms, we conclude the discussion with the performance evaluation of AES and HMAC 
 algorithms. Afterwards, we present the results for the overall performance 
 of the HIP implmentation.
 
@@ -58,27 +58,26 @@ Next, we have measured the computational performance of other
 cryptographic primitives. Thus, in Table~\ref{tab:micro} we 
 show summary statistics for all the operations we have completed.
 We have performed $100$ rounds of measurements for each 
-cryptographic primitive. The block size for all operations
-was selected to be $1500$ bytes - the maximum size of an IP packet.
+cryptographic primitive. The size of the data for all operations
+was selected to be $1500$ bytes.
 
-\begin{table}
+\begin{table*}
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \bf{Operation} & \bf{Mean time, ms} & \bf{Median time, ms} & \bf{Standard deviation, ms}\\\hline\hline
-RSA signing			&    0                        & 0               &                   \\
-RSA verification	&    0                        & 0               &                   \\
-DSA signing			&    0                        & 0               &                   \\
-DSA verification	&    0                        & 0               &                   \\
-AES-256 encryption  &    0                        & 0               &                   \\
-AES-256 descryption &	 0 						  & 0               &                   \\
-SHA-256 hashing     &    0                        & 0               &                   \\
-HMAC (SHA-256)      &    0                        & 0               &                   \\
+RSA (2048 bits, SHA-256) signing					&    $2.099$                        & $2.094$               & $0.026$                  \\
+RSA (2048 bits, SHA-256) verification			&    $0.591$                        & $0.589$               & $0.008$                  \\
+ECDSA (secp384r1, SHA-384) signing		&    $1.379$                        & $1.374$               & $0.042$                  \\
+ECDSA (secp384r1, SHA-384) verification	&    $3.008$                        & $3.006$               & $0.016$                  \\
+AES-256 encryption  &    $0.036$                  & $0.031$         & $0.027$           \\
+AES-256 descryption &	 $0.032$ 				  & $0.029$         & $0.017$           \\
+HMAC (SHA-256)      &    $0.057$                  & $0.054$         & $0.018$           \\
 \hline
 \end{tabular}
 \caption{Performance of cryptographic primitives}
 \label{tab:micro}
-\end{table}
+\end{table*}
 
 \begin{figure}
 	\includegraphics[width=0.5\textwidth]{graphics/packet_processing.pdf}
