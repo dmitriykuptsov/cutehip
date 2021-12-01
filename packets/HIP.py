@@ -19,6 +19,8 @@
 
 import logging
 
+import copy
+
 #import sys
 #import os
 #sys.path.append(os.getcwd() + "/..")
@@ -62,7 +64,7 @@ class HIPParameter():
 		self.buffer[HIP_TLV_LENGTH_OFFSET] = (length >> 8) & 0xFF;
 		self.buffer[HIP_TLV_LENGTH_OFFSET + 1] = (length & 0xFF);
 	def get_byte_buffer(self):
-		return self.buffer;
+		return copy.deepcopy(self.buffer);
 
 HIP_R1_COUNTER_OFFSET            = 0x8;
 
@@ -963,7 +965,7 @@ class ESPInfoParameter(HIPParameter):
 				HIP_ESP_INFO_OLD_SPI_LENGTH +
 				HIP_ESP_INFO_NEW_SPI_LENGTH);
 	def set_keymat_index(self, keymat_index):
-		self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] = (keymat_index >> 8);
+		self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] = (keymat_index >> 8) & 0xFF;
 		self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET + 1] = (keymat_index & 0xFF);
 	def get_keymat_index(self):
 		return (self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET] << 8) | self.buffer[HIP_ESP_INFO_KEYMAT_INDEX_OFFSET + 1];
@@ -981,7 +983,7 @@ class ESPInfoParameter(HIPParameter):
 		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET] = (spi >> 24) & 0xFF;
 		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 1] = (spi >> 16) & 0xFF;
 		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 2] = (spi >> 8) & 0xFF;
-		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 3] = (spi & 0xFF) & 0xFF;
+		self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 3] = (spi & 0xFF);
 	def get_new_spi(self):
 		return ((self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET] << 24) |
 			(self.buffer[HIP_ESP_INFO_NEW_SPI_OFFSET + 1] << 16) |

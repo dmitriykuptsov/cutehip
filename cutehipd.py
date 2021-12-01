@@ -75,7 +75,7 @@ from databases import resolver
 from utils.misc import Utils
 # Configure logging to console and file
 logging.basicConfig(
-	level=logging.DEBUG,
+	level=logging.CRITICAL,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -813,6 +813,7 @@ def hip_loop():
 				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = esp_info_param.get_byte_buffer();
+
 				if r1_counter_param:
 					buf += r1_counter_param.get_byte_buffer();
 
@@ -853,8 +854,6 @@ def hip_loop():
 				hip_i2_packet.set_receivers_hit(ihit);
 				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
 				hip_i2_packet.set_version(HIP.HIP_VERSION);
-				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
-
 				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				hip_i2_packet.add_parameter(esp_info_param);
