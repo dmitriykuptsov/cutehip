@@ -805,12 +805,12 @@ def hip_loop():
 
 				# Compute signature here
 				
-				hip_i2_packet = HIP.I2Packet();
-				hip_i2_packet.set_senders_hit(rhit);
-				hip_i2_packet.set_receivers_hit(ihit);
-				hip_i2_packet.set_next_header(HIP.HIP_IPPROTO_NONE);
-				hip_i2_packet.set_version(HIP.HIP_VERSION);
-				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+				hip_i2_packet_ = HIP.I2Packet();
+				hip_i2_packet_.set_senders_hit(rhit);
+				hip_i2_packet_.set_receivers_hit(ihit);
+				hip_i2_packet_.set_next_header(HIP.HIP_IPPROTO_NONE);
+				hip_i2_packet_.set_version(HIP.HIP_VERSION);
+				hip_i2_packet_.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				buf = esp_info_param.get_byte_buffer();
 				if r1_counter_param:
@@ -828,10 +828,10 @@ def hip_loop():
 				buf += transport_param.get_byte_buffer() + \
 						mac_param.get_byte_buffer();
 				
-				original_length = hip_i2_packet.get_length();
+				original_length = hip_i2_packet_.get_length();
 				packet_length = original_length * 8 + len(buf);
-				hip_i2_packet.set_length(int(packet_length / 8));
-				buf = hip_i2_packet.get_buffer() + buf;
+				hip_i2_packet_.set_length(int(packet_length / 8));
+				buf = hip_i2_packet_.get_buffer() + buf;
 				#signature_alg = RSASHA256Signature(privkey.get_key_info());
 				if isinstance(privkey, RSAPrivateKey):
 					signature_alg = RSASHA256Signature(privkey.get_key_info());
@@ -848,23 +848,23 @@ def hip_loop():
 
 				total_param_length = 0;
 
-				hip_i2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
+				hip_i2_packet_.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
-				hip_i2_packet.add_parameter(esp_info_param);
+				hip_i2_packet_.add_parameter(esp_info_param);
 				if r1_counter_param:
-					hip_i2_packet.add_parameter(r1_counter_param);
-				hip_i2_packet.add_parameter(solution_param);
-				hip_i2_packet.add_parameter(dh_param);
-				hip_i2_packet.add_parameter(cipher_param);
-				hip_i2_packet.add_parameter(esp_tranform_param)
-				hip_i2_packet.add_parameter(hi_param);
+					hip_i2_packet_.add_parameter(r1_counter_param);
+				hip_i2_packet_.add_parameter(solution_param);
+				hip_i2_packet_.add_parameter(dh_param);
+				hip_i2_packet_.add_parameter(cipher_param);
+				hip_i2_packet_.add_parameter(esp_tranform_param)
+				hip_i2_packet_.add_parameter(hi_param);
 				if echo_signed:
-					hip_i2_packet.add_parameter(echo_signed);
-				hip_i2_packet.add_parameter(transport_param);
-				hip_i2_packet.add_parameter(mac_param);
-				hip_i2_packet.add_parameter(signature_param);
+					hip_i2_packet_.add_parameter(echo_signed);
+				hip_i2_packet_.add_parameter(transport_param);
+				hip_i2_packet_.add_parameter(mac_param);
+				hip_i2_packet_.add_parameter(signature_param);
 				for unsigned_param in echo_unsigned:
-					hip_i2_packet.add_parameter(unsigned_param);
+					hip_i2_packet_.add_parameter(unsigned_param);
 
 				# Swap the addresses
 				temp = src;
@@ -876,11 +876,11 @@ def hip_loop():
 					src, 
 					dst, 
 					HIP.HIP_PROTOCOL, 
-					hip_i2_packet.get_length() * 8 + 8, 
-					hip_i2_packet.get_buffer());
-				hip_i2_packet.set_checksum(checksum);
+					hip_i2_packet_.get_length() * 8 + 8, 
+					hip_i2_packet_.get_buffer());
+				hip_i2_packet_.set_checksum(checksum);
 
-				buf = hip_i2_packet.get_buffer();
+				buf = hip_i2_packet_.get_buffer();
 				
 				total_length = len(buf);
 				fragment_len = HIP.HIP_FRAGMENT_LENGTH;
