@@ -61,7 +61,7 @@ from utils.misc import Utils, Math
 from utils.puzzles import PuzzleSolver
 # Crypto
 from crypto import factory
-from crypto.asymmetric import RSAPublicKey, RSAPrivateKey, ECDSAPublicKey, ECDSAPrivateKey, RSASHA256Signature, ECDSASHA384Signature, ECDSASHA1Signature
+from crypto.asymmetric import RSAPublicKey, RSAPrivateKey, ECDSAPublicKey, ECDSAPrivateKey, RSASHA256Signature, ECDSALowPublicKey, ECDSALowPrivateKey, ECDSASHA384Signature, ECDSASHA1Signature
 from crypto.factory import HMACFactory, SymmetricCiphersFactory, ESPTransformFactory
 # Tun interface
 from network import tun
