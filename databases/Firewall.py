@@ -36,7 +36,7 @@ class BasicFirewall():
         rules = fd.readlines();
         for rule_desc in rules:
             parts = rule_desc.split(" ")
-            rule = Rule(parts[0], parts[1], parts[2] == "allow")
+            rule = Rule(parts[0], parts[1], parts[2].strip() == "allow")
             self.rules.append(rule);
     
     def allow(self, shit, dhit):
