@@ -24,7 +24,7 @@ class Rule():
         return self.shit;
     def get_dst(self):
         return self.dhit;
-    def allow(self):
+    def is_allowed(self):
         return self.allow;
 
 class BasicFirewall():
@@ -42,5 +42,5 @@ class BasicFirewall():
     def allow(self, shit, dhit):
         for rule in self.rules:
             if rule.get_src() == shit and rule.get_dst() == dhit:
-                return rule.allow();
+                return rule.is_allowed();
         return False
