@@ -88,7 +88,7 @@ logging.basicConfig(
 MTU = config.config["network"]["mtu"];
 
 firewall = Firewall.BasicFirewall();
-firewall.load_rules(config.config["firewal"]["rules_file"])
+firewall.load_rules(config.config["firewall"]["rules_file"])
 
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3
 # Configure resolver
