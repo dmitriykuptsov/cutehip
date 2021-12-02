@@ -42,6 +42,9 @@ config = {
 		"EC": 120,                                             # Exchange Complete (EC) timeout
 		"failed_timeout": 120,                                 # Failed timeout
 		"rekey_after_packets": 100                             # When to rekey the association
+	},
+	"firewall": {
+		"rules_file": "./config/rules"
 	}
 }
 

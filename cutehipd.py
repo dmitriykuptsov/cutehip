@@ -71,6 +71,7 @@ from network import routing
 from databases import HIPState
 from databases import SA
 from databases import resolver
+from databases import Firewall
 # Utilities
 from utils.misc import Utils
 # Configure logging to console and file
@@ -85,6 +86,9 @@ logging.basicConfig(
 
 # TUN interface MTU
 MTU = config.config["network"]["mtu"];
+
+firewall = Firewall.BasicFirewall();
+firewall.load_rules(config.config["firewal"]["rules_file"])
 
 # HIP v2 https://tools.ietf.org/html/rfc7401#section-3
 # Configure resolver
@@ -239,6 +243,10 @@ def hip_loop():
 
 			if hip_packet.get_packet_type() == HIP.HIP_I1_PACKET:
 				logging.info("I1 packet");
+
+				if not firewall.allow(Utils.ipv6_bytes_to_hex_formatted(ihit), Utils.ipv6_bytes_to_hex_formatted(rhit)):
+					logging.critical("Blocked by firewall...")
+					continue;
 
 				if hip_state.is_i1_sent() and Utils.is_hit_smaller(rhit, ihit):
 					logging.debug("Staying in I1-SENT state");
