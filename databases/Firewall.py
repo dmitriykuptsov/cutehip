@@ -35,7 +35,7 @@ class BasicFirewall():
         fd = open(file, "r")
         rules = fd.readlines();
         for rule_desc in rules:
-            parts = rule.split(" ")
+            parts = rule_desc.split(" ")
             rule = Rule(parts[0], parts[1], parts[2] == "allow")
             self.rules.append(rule);
     
