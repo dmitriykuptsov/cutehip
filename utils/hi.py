@@ -182,8 +182,8 @@ class ECDSALowHostID(HostID):
 		self.y = Math.int_to_bytes(y);
 		if curve_id == ECDSALowHostID.SECP160R1_CURVE_ID:
 			#if self.SECP160R1_LENGTH - len(self.x) > 0:
-			self.x = bytearray(([0] * (ECDSALowHostID.NIST_P_384_CURVE_ID - len(self.x)))) + self.x;
-			self.y = bytearray(([0] * (ECDSALowHostID.NIST_P_384_CURVE_ID - len(self.y)))) + self.y;
+			self.x = bytearray(([0] * (ECDSALowHostID.SECP160R1_LENGTH - len(self.x)))) + self.x;
+			self.y = bytearray(([0] * (ECDSALowHostID.SECP160R1_LENGTH - len(self.y)))) + self.y;
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
