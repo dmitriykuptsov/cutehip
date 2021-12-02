@@ -40,7 +40,7 @@ class BasicFirewall():
             self.rules.append(rule);
     
     def allow(self, shit, dhit):
-        for rule in self.rules():
+        for rule in self.rules:
             if rule.get_src() == shit and rule.get_dst() == dhit:
                 return rule.allow();
         return False
