@@ -36,6 +36,7 @@ Make sure also net-tools are installed (needed for ifconfig):
 ```
 $ sudo apt-get install net-tools
 ```
+Clone the repository on both machines as follows:
 
 ```
 $ git clone https://github.com/dmitriykuptsov/cutehip.git
@@ -43,7 +44,8 @@ $ cd cutehip
 ```
 
 Then generate the keys on both initiator and responder as follows (only small keys are supported
-at the moment, because fragmentation does not work)
+at the moment, because fragmentation does not work. We have tested the implementation using RSA 
+with 4096 bits modulus)
 
 ```
 $ bash tools/genkey.sh gen RSA 1024
@@ -54,7 +56,7 @@ or (to create ECDSA key pair)
 $ bash tools/genkey.sh gen ECDSA secp384r1
 ```
 
-ECDSALow is not supported due to used cryptographic library limitations.
+ECDSALow curve is not supported due to used cryptographic library limitations (it is basically, too insecure).
 
 The next step is to change the configuration. If RSA is used, set sig_alg to 0x5, and hash 
 algorithm (hash_alg) to 0x1. If ECDSA is used for signatures, set sig_alg 0x7, and hash
@@ -73,6 +75,7 @@ Check the HIT of the responder (first you need to SSH on the responder and only 
 ```
 $ ifconfig hip0
 ```
+Copy the HIT and pad it with zeros if needed.
 
 Then repeat the operation on intiator.
 
@@ -87,6 +90,11 @@ Run the initiator
 ```
 $ sudo python3 cutehipd
 ```
+
+We have added a simple firewall. So make sure you add rules to config/rules (the first
+HIT in the rules is the source HIT and the second HIT is the destination (or responder's)
+HIT. The can either deny or allow the communication with the hosts. Restart the responder
+once the rules are in place.
 
 Test the connection
 ```
