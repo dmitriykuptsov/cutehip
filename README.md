@@ -91,9 +91,9 @@ Run the initiator
 $ sudo python3 cutehipd
 ```
 
-We have added a simple firewall. So make sure you add rules to config/rules (the first
-HIT in the rules is the source HIT and the second HIT is the destination (or responder's)
-HIT. The can either deny or allow the communication with the hosts. Restart the responder
+We have added a simple firewall. So make sure you have added the rules to config/rules (the first
+HIT in the rule is the source HIT and the second HIT is the destination (or responder's)
+HIT. The rule can either deny or allow the communication with the hosts. Restart the responder
 once the rules are in place.
 
 Test the connection
