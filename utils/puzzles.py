@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os import urandom
 
+import logging
+
 from crypto import digest
 from math import floor, pow
 from packets import HIP
