@@ -168,6 +168,7 @@ cipher_storage    = HIPState.Storage();
 pubkey_storage    = HIPState.Storage();
 state_variables   = HIPState.Storage();
 key_info_storage  = HIPState.Storage();
+esp_transform_storage = HIPState.Storage();
 
 if config.config["general"]["rekey_after_packets"] > ((2<<32)-1):
 	config.config["general"]["rekey_after_packets"] = (2<<32)-1;
@@ -767,6 +768,9 @@ def hip_loop():
 
 				esp_tranform_param = HIP.ESPTransformParameter();
 				esp_tranform_param.add_suits([selected_esp_transform]);
+
+				esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+                            Utils.ipv6_bytes_to_hex_formatted(rhit), selected_esp_transform);
 
 				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
 
@@ -1390,6 +1394,9 @@ def hip_loop():
 						(dst_str.strip(), 0));
 
 				logging.debug("Setting SA records...");
+
+				selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+                            Utils.ipv6_bytes_to_hex_formatted(rhit));
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
