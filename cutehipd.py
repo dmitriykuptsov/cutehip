@@ -1570,14 +1570,12 @@ def hip_loop():
 
 				logging.debug("Setting SA records... %s - %s" % (src_str, dst_str));
 
-
-				logging.debug("...............................")
-				logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit))
-				logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit))
-				logging.debug("...............................")
-
-				selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-					Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
+				if Utils.is_hit_smaller(rhit, ihit):
+					selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit))[0];
+				else:
+					selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
