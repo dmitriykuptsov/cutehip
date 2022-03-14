@@ -1459,7 +1459,7 @@ def hip_loop():
 				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, ihit);
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				parameters       = hip_packet.get_parameters();
 				
