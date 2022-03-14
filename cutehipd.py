@@ -1399,11 +1399,11 @@ def hip_loop():
 
 				logging.debug("Setting SA records...");
 
-                selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-                            Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
+				selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+					Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
 
-                logging.debug("Using the following ESP transform....")
-                logging.debug(selected_esp_transform)
+				logging.debug("Using the following ESP transform....")
+				logging.debug(selected_esp_transform)
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
