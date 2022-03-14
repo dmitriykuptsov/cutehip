@@ -61,6 +61,7 @@ class PuzzleSolver():
 		logging.debug(actual_output)
 		logging.debug("Exprected solution")
 		logging.debug(expected_solution)
+		return expected_solution == actual_output
 
 	@staticmethod
 	def generate_irandom(length):
