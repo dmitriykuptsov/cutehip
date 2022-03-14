@@ -769,8 +769,12 @@ def hip_loop():
 				esp_tranform_param = HIP.ESPTransformParameter();
 				esp_tranform_param.add_suits([selected_esp_transform]);
 
-				esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-                            Utils.ipv6_bytes_to_hex_formatted(rhit), selected_esp_transform);
+				if Utils.is_hit_smaller(rhit, ihit):
+					esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+                            Utils.ipv6_bytes_to_hex_formatted(ihit), [selected_esp_transform]);
+				else:
+					esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+                            Utils.ipv6_bytes_to_hex_formatted(rhit), [selected_esp_transform]);
 
 				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
 
@@ -1395,8 +1399,11 @@ def hip_loop():
 
 				logging.debug("Setting SA records...");
 
-				selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
-                            Utils.ipv6_bytes_to_hex_formatted(rhit));
+                selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+                            Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
+
+                logging.debug("Using the following ESP transform....")
+                logging.debug(selected_esp_transform)
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
