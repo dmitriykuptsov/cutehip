@@ -1077,6 +1077,7 @@ def hip_loop():
 						logging.debug("Dropping I2 packet...");
 						continue;
 
+				r_hash = HIT.get_responders_hash_algorithm(rhit);
 				jrandom = solution_param.get_solution(r_hash.LENGTH);
 				irandom = solution_param.get_random(r_hash.LENGTH);
 				if not PuzzleSolver.verify_puzzle(
@@ -1084,7 +1085,7 @@ def hip_loop():
 					jrandom, 
 					hip_packet.get_senders_hit(), 
 					hip_packet.get_receivers_hit(), 
-					puzzle_param.get_k_value(), r_hash):
+					solution_param.get_k_value(), r_hash):
 					logging.debug("Puzzle was not solved....");
 					continue;
 				logging.debug("Puzzle was solved");
