@@ -378,6 +378,8 @@ def hip_loop():
 
 				#logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
+				logging.debug("Signature buffer")
+				logging.debug(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);				
 
@@ -648,7 +650,7 @@ def hip_loop():
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
 				#logging.debug(privkey.get_key_info());
-
+				logging.debug(bytearray(buf));
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
