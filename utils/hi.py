@@ -63,7 +63,7 @@ class RSAHostID(HostID):
 		self.buffer = bytearray([0] * (self.exponent_length_field_length + \
 						len(exponent_bytes) + len(modulus_bytes)));
 		offset = 0x1;
-		if exponent > 255:
+		if exponent_length > 255:
 			self.buffer[1] = (exponent_length >> 8) & 0xFF;
 			self.buffer[2] = (exponent_length) & 0xFF;
 			offset = 0x3;
