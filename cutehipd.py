@@ -504,10 +504,11 @@ def hip_loop():
 						logging.debug("DI value: %s " % parameter.get_domain_id());
 						logging.debug("Host ID");
 
+						hi_param = parameter;
+						
 						logging.debug("Host ID buffer");
 						logging.debug(hi_param.get_byte_buffer())
 						
-						hi_param = parameter;
 						# Check the algorithm and construct the HI based on the proposed algorithm
 						if hi_param.get_algorithm() == 0x5: #RSA
 							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
