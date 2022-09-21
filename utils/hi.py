@@ -63,6 +63,9 @@ class RSAHostID(HostID):
 		self.buffer = bytearray([0] * (self.exponent_length_field_length + \
 						len(exponent_bytes) + len(modulus_bytes)));
 		offset = 0x1;
+		logging.debug("Exponent:")
+		logging.debug(exponent)
+		logging.debug(modulus)
 		if exponent_length > 255:
 			self.buffer[1] = (exponent_length >> 8) & 0xFF;
 			self.buffer[2] = (exponent_length) & 0xFF;
@@ -84,8 +87,8 @@ class RSAHostID(HostID):
 			offset = 0x1;
 		exponent = buffer[offset:offset + exponent_length];
 		offset += exponent_length;
-		logging.critical("Exponent length ... ")
-		logging.critical(exponent_length)
+		logging.debug("Exponent length ... ")
+		logging.debug(exponent_length)
 		modulus = buffer[offset:];
 		return RSAHostID(Math.bytes_to_int(exponent), Math.bytes_to_int(modulus));
 
