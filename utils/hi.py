@@ -84,6 +84,8 @@ class RSAHostID(HostID):
 			offset = 0x1;
 		exponent = buffer[offset:offset + exponent_length];
 		offset += exponent_length;
+		logging.critical("Exponent length ... ")
+		logging.critical(exponent_length)
 		modulus = buffer[offset:];
 		return RSAHostID(Math.bytes_to_int(exponent), Math.bytes_to_int(modulus));
 
