@@ -343,6 +343,9 @@ def hip_loop():
 				logging.debug(di);
 				hi_param.set_domain_id(di);
 
+				logging.debug("Host ID buffer");
+				logging.debug(hi_param.get_byte_buffer())
+
 				# HIP HIT suit list parameter
 				hit_suit_param = HIP.HITSuitListParameter();
 				hit_suit_param.add_suits(config.config["security"]["supported_hit_suits"]);
@@ -500,6 +503,10 @@ def hip_loop():
 						logging.debug("DI type: %d " % parameter.get_di_type());
 						logging.debug("DI value: %s " % parameter.get_domain_id());
 						logging.debug("Host ID");
+
+						logging.debug("Host ID buffer");
+						logging.debug(hi_param.get_byte_buffer())
+						
 						hi_param = parameter;
 						# Check the algorithm and construct the HI based on the proposed algorithm
 						if hi_param.get_algorithm() == 0x5: #RSA
