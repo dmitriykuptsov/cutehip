@@ -43,7 +43,7 @@ class HIT():
 
 	@staticmethod
 	def get_responders_hash_algorithm(rhit):
-		oga_id = rhit[OGA_OFFSET];
+		oga_id = rhit[OGA_OFFSET] & 0x0F;
 		if oga_id == 0x1:
 			rhash = digest.SHA256Digest();
 		elif oga_id == 0x2:
@@ -56,7 +56,7 @@ class HIT():
 
 	@staticmethod
 	def get_responders_oga_id(rhit):
-		return rhit[OGA_OFFSET];
+		return rhit[OGA_OFFSET] & 0x0F;
 
 	@staticmethod
 	def bytearray_to_int(b):
