@@ -507,7 +507,7 @@ def hip_loop():
 						hi_param = parameter;
 						
 						logging.debug("Host ID buffer");
-						logging.debug(hi_param.get_byte_buffer())
+						logging.debug(list(hi_param.get_byte_buffer()))
 						
 						# Check the algorithm and construct the HI based on the proposed algorithm
 						if hi_param.get_algorithm() == 0x5: #RSA
