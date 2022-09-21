@@ -87,9 +87,13 @@ class RSAHostID(HostID):
 			offset = 0x1;
 		exponent = buffer[offset:offset + exponent_length];
 		offset += exponent_length;
+		modulus = buffer[offset:];
 		logging.debug("Exponent length ... ")
 		logging.debug(exponent_length)
-		modulus = buffer[offset:];
+		logging.debug("Exponent:")
+		logging.debug(Math.bytes_to_int(exponent))
+		logging.debug(Math.bytes_to_int(modulus))
+		
 		return RSAHostID(Math.bytes_to_int(exponent), Math.bytes_to_int(modulus));
 
 	def to_byte_array(self):
