@@ -102,3 +102,7 @@ $ ssh pi@<RHIT>
 ```
 
 You should get security association installed once HIP BEX completes.
+
+# Contact information
+
+Would like to contact the author please send an email to dmitriy.kuptsov@strangebit.io or give a call to +998977435564
