@@ -61,14 +61,14 @@ class HIT():
 	@staticmethod
 	def bytearray_to_int(b):
 		int_value = 0;
-		for byte in b:
-			int_value = (int_value << 8) | byte;
+		for i in range(0, len(b)):
+			int_value = (b[i] << ((len(b) - i - 1)*8)) | int_value;
 		return int_value;
 
 	@staticmethod
 	def int_to_bytearray(v, length):
 		b = [];
-		for i in range(0, length):
+		for i in range(length - 1, -1, -1):
 			b += [(v >> (i*8)) & 0xFF]
 		return b;
 
