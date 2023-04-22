@@ -43,7 +43,7 @@ class HIT():
 
 	@staticmethod
 	def get_responders_hash_algorithm(rhit):
-		oga_id = rhit[OGA_OFFSET];
+		oga_id = rhit[OGA_OFFSET] & 0x0F;
 		if oga_id == 0x1:
 			rhash = digest.SHA256Digest();
 		elif oga_id == 0x2:
@@ -56,19 +56,19 @@ class HIT():
 
 	@staticmethod
 	def get_responders_oga_id(rhit):
-		return rhit[OGA_OFFSET];
+		return rhit[OGA_OFFSET] & 0x0F;
 
 	@staticmethod
 	def bytearray_to_int(b):
 		int_value = 0;
-		for byte in b:
-			int_value = (int_value << 8) | byte;
+		for i in range(0, len(b)):
+			int_value = (b[i] << ((len(b) - i - 1)*8)) | int_value;
 		return int_value;
 
 	@staticmethod
 	def int_to_bytearray(v, length):
 		b = [];
-		for i in range(0, length):
+		for i in range(length - 1, -1, -1):
 			b += [(v >> (i*8)) & 0xFF]
 		return b;
 
@@ -103,7 +103,7 @@ class HIT():
 		Hash       :=  Hash_function( Hash Input )
 		ORCHID     :=  Prefix | OGA ID | Encode_96( Hash )
 		"""
-		HIP_HIT_PREFIX = bytearray(unhexlify("20012000"));
+		HIP_HIT_PREFIX = bytearray(unhexlify("20010020"));
 		HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] = HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] | (oga_id & 0xF);
 		encoded_hit = HIT.encode_96(rhash.digest(HIP_HIT_CONTEX_ID + hi))
 		return HIP_HIT_PREFIX + encoded_hit;

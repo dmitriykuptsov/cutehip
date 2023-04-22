@@ -168,6 +168,7 @@ cipher_storage    = HIPState.Storage();
 pubkey_storage    = HIPState.Storage();
 state_variables   = HIPState.Storage();
 key_info_storage  = HIPState.Storage();
+esp_transform_storage = HIPState.Storage();
 
 if config.config["general"]["rekey_after_packets"] > ((2<<32)-1):
 	config.config["general"]["rekey_after_packets"] = (2<<32)-1;
@@ -342,6 +343,9 @@ def hip_loop():
 				logging.debug(di);
 				hi_param.set_domain_id(di);
 
+				logging.debug("Host ID buffer");
+				logging.debug(hi_param.get_byte_buffer())
+
 				# HIP HIT suit list parameter
 				hit_suit_param = HIP.HITSuitListParameter();
 				hit_suit_param.add_suits(config.config["security"]["supported_hit_suits"]);
@@ -377,6 +381,8 @@ def hip_loop():
 
 				#logging.debug(privkey.get_key_info());
 				signature = signature_alg.sign(bytearray(buf));
+				logging.debug("Signature buffer")
+				logging.debug(bytearray(buf));
 				signature_param.set_signature_algorithm(config.config["security"]["sig_alg"]);
 				signature_param.set_signature(signature);				
 
@@ -452,7 +458,7 @@ def hip_loop():
 				r1_counter_param   = None;
 				irandom            = None;
 				opaque             = None;
-				esp_tranform_param = None;
+				esp_transform_param = None;
 				dh_param           = None;
 				cipher_param       = None;
 				hi_param           = None;
@@ -497,7 +503,12 @@ def hip_loop():
 						logging.debug("DI type: %d " % parameter.get_di_type());
 						logging.debug("DI value: %s " % parameter.get_domain_id());
 						logging.debug("Host ID");
+
 						hi_param = parameter;
+						
+						logging.debug("Host ID buffer");
+						logging.debug(list(hi_param.get_byte_buffer()))
+						
 						# Check the algorithm and construct the HI based on the proposed algorithm
 						if hi_param.get_algorithm() == 0x5: #RSA
 							responder_hi = RSAHostID.from_byte_buffer(hi_param.get_host_id());
@@ -563,7 +574,7 @@ def hip_loop():
 						cipher_param = parameter;
 					if isinstance(parameter, HIP.ESPTransformParameter):
 						logging.debug("ESP transform");
-						esp_tranform_param = parameter;
+						esp_transform_param = parameter;
 
 				if not puzzle_param:
 					logging.critical("Missing puzzle parameter");
@@ -574,7 +585,7 @@ def hip_loop():
 				if not cipher_param:
 					logging.critical("Missing cipher parameter");
 					continue;
-				if not esp_tranform_param:
+				if not esp_transform_param:
 					logging.critical("Missing ESP transform parameter");
 					continue;
 				if not hi_param:
@@ -617,7 +628,7 @@ def hip_loop():
 					buf += puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer() + \
 						hit_suit_param.get_byte_buffer() + \
 						dh_groups_param.get_byte_buffer() + \
@@ -626,7 +637,7 @@ def hip_loop():
 					buf += puzzle_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer() + \
 						hit_suit_param.get_byte_buffer() + \
 						dh_groups_param.get_byte_buffer() + \
@@ -647,7 +658,7 @@ def hip_loop():
 					signature_alg = ECDSASHA1Signature(responders_public_key.get_key_info());
 
 				#logging.debug(privkey.get_key_info());
-
+				logging.debug(bytearray(buf));
 				if not signature_alg.verify(signature_param.get_signature(), bytearray(buf)):
 					logging.critical("Invalid signature in R1 packet. Dropping the packet");
 					continue;
@@ -710,7 +721,7 @@ def hip_loop():
 					# Transition to unassociated state
 					raise Exception("Unsupported cipher");
 
-				offered_esp_transforms = esp_tranform_param.get_suits();
+				offered_esp_transforms = esp_transform_param.get_suits();
 				supported_esp_transform_suits = config.config["security"]["supported_esp_transform_suits"];
 				selected_esp_transform = None;
 				for suit in offered_esp_transforms:
@@ -721,6 +732,18 @@ def hip_loop():
 				if not selected_esp_transform:
 					logging.critical("Unsupported ESP transform suit");
 					raise Exception("Unsupported ESP transform suit");
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit), [selected_esp_transform]);
+				else:
+					esp_transform_storage.save(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit), [selected_esp_transform]);
+
+				logging.debug("...............................")
+				logging.debug(Utils.ipv6_bytes_to_hex_formatted(rhit))
+				logging.debug(Utils.ipv6_bytes_to_hex_formatted(ihit))
+				logging.debug("...............................")
 
 				if Utils.is_hit_smaller(rhit, ihit):
 					cipher_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit), 
@@ -765,8 +788,8 @@ def hip_loop():
 				cipher_param = HIP.CipherParameter();
 				cipher_param.add_ciphers([selected_cipher]);
 
-				esp_tranform_param = HIP.ESPTransformParameter();
-				esp_tranform_param.add_suits([selected_esp_transform]);
+				esp_transform_param = HIP.ESPTransformParameter();
+				esp_transform_param.add_suits([selected_esp_transform]);
 
 				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
 
@@ -794,7 +817,7 @@ def hip_loop():
 				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer();
 
 				if echo_signed:
@@ -828,7 +851,7 @@ def hip_loop():
 				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer();
 
 				if echo_signed:
@@ -870,7 +893,7 @@ def hip_loop():
 				hip_i2_packet.add_parameter(solution_param);
 				hip_i2_packet.add_parameter(dh_param);
 				hip_i2_packet.add_parameter(cipher_param);
-				hip_i2_packet.add_parameter(esp_tranform_param)
+				hip_i2_packet.add_parameter(esp_transform_param)
 				hip_i2_packet.add_parameter(hi_param);
 				if echo_signed:
 					hip_i2_packet.add_parameter(echo_signed);
@@ -946,7 +969,7 @@ def hip_loop():
 				r1_counter_param   = None;
 				dh_param           = None;
 				cipher_param       = None;
-				esp_tranform_param = None;
+				esp_transform_param = None;
 				esp_info_param     = None;
 				hi_param           = None;
 				transport_param    = None;
@@ -1032,7 +1055,7 @@ def hip_loop():
 						cipher_param = parameter;
 					if isinstance(parameter, HIP.ESPTransformParameter):
 						logging.debug("ESP transform parameter");
-						esp_tranform_param = parameter;
+						esp_transform_param = parameter;
 					if isinstance(parameter, HIP.MACParameter):
 						logging.debug("MAC parameter");	
 						mac_param = parameter;
@@ -1077,6 +1100,7 @@ def hip_loop():
 						logging.debug("Dropping I2 packet...");
 						continue;
 
+				r_hash = HIT.get_responders_hash_algorithm(rhit);
 				jrandom = solution_param.get_solution(r_hash.LENGTH);
 				irandom = solution_param.get_random(r_hash.LENGTH);
 				if not PuzzleSolver.verify_puzzle(
@@ -1084,7 +1108,7 @@ def hip_loop():
 					jrandom, 
 					hip_packet.get_senders_hit(), 
 					hip_packet.get_receivers_hit(), 
-					puzzle_param.get_k_value(), r_hash):
+					solution_param.get_k_value(), r_hash):
 					logging.debug("Puzzle was not solved....");
 					continue;
 				logging.debug("Puzzle was solved");
@@ -1130,11 +1154,11 @@ def hip_loop():
 					# Transition to unassociated state
 					raise Exception("Unsupported cipher");
 
-				if len(esp_tranform_param.get_suits()) == 0:
+				if len(esp_transform_param.get_suits()) == 0:
 					logging.critical("ESP transform suit was not negotiated.")
 					raise Exception("ESP transform suit was not negotiated.");
 
-				selected_esp_transform = esp_tranform_param.get_suits()[0];
+				selected_esp_transform = esp_transform_param.get_suits()[0];
 
 				initiators_spi = esp_info_param.get_new_spi();
 				initiators_keymat_index = esp_info_param.get_keymat_index();
@@ -1218,7 +1242,7 @@ def hip_loop():
 				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer();
 
 				if echo_signed:
@@ -1253,7 +1277,7 @@ def hip_loop():
 				buf += solution_param.get_byte_buffer() + \
 						dh_param.get_byte_buffer() + \
 						cipher_param.get_byte_buffer() + \
-						esp_tranform_param.get_byte_buffer() + \
+						esp_transform_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer();
 
 				if echo_signed:
@@ -1390,6 +1414,12 @@ def hip_loop():
 
 				logging.debug("Setting SA records...");
 
+				#selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+				#	Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
+
+				logging.debug("Using the following ESP transform....")
+				logging.debug(selected_esp_transform)
+
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 
 				(cipher_key, hmac_key) = Utils.get_keys_esp(
@@ -1458,7 +1488,7 @@ def hip_loop():
 				#keymat = keymat_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
 				#	Utils.ipv6_bytes_to_hex_formatted(rhit));
 
-				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, rhit, ihit);
+				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, cipher_alg, rhit, ihit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 				parameters       = hip_packet.get_parameters();
 				
@@ -1549,6 +1579,13 @@ def hip_loop():
 				src_str = Utils.ipv4_bytes_to_string(src);
 
 				logging.debug("Setting SA records... %s - %s" % (src_str, dst_str));
+
+				if Utils.is_hit_smaller(rhit, ihit):
+					selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit))[0];
+				else:
+					selected_esp_transform = esp_transform_storage.get(Utils.ipv6_bytes_to_hex_formatted(ihit), 
+						Utils.ipv6_bytes_to_hex_formatted(rhit))[0];
 
 				(cipher, hmac) = ESPTransformFactory.get(selected_esp_transform);
 

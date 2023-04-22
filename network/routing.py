@@ -24,7 +24,7 @@ class Routing():
 	Routing configuration
 	"""
 	@staticmethod
-	def add_hip_default_route(interface = "hip0", prefix="2001:2000::/28"):
+	def add_hip_default_route(interface = "hip0", prefix="2001:0020::/28"):
 		"""
 		Adds default route for IPv6 packets
 		"""

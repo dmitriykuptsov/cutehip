@@ -408,7 +408,7 @@ class HostIdParameter(HIPParameter):
 		self.set_di_type(di.get_type());
 		length = self.get_length() + di_length;
 		self.set_length(length);
-		self.buffer += [0] * (8 - len(self.buffer) % 8);
+		self.buffer += [0] * ((8 - len(self.buffer) % 8) % 8);
 	def set_host_id(self, hi):
 		hi_length = self.get_hi_length();
 		if hi_length > 0:

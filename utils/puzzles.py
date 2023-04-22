@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os import urandom
 
+import logging
+
 from crypto import digest
 from math import floor, pow
 from packets import HIP
@@ -53,7 +55,13 @@ class PuzzleSolver():
 		expected_solution = bytearray([0] * floor(difficulty / BITS_IN_BYTE));
 		if difficulty % BITS_IN_BYTE > 0:
 			expected_solution += bytearray([0]);
-		return bytearray(PuzzleSolver.ltrunc(rhash.digest(irandom + senders_hit + responers_hit + jrandom), difficulty)) == expected_solution
+		#return  == expected_solution
+		actual_output = bytearray(PuzzleSolver.ltrunc(rhash.digest(irandom + senders_hit + responers_hit + jrandom), difficulty))
+		logging.debug("Solved pussle")
+		logging.debug(actual_output)
+		logging.debug("Exprected solution")
+		logging.debug(expected_solution)
+		return expected_solution == actual_output
 
 	@staticmethod
 	def generate_irandom(length):
