@@ -140,7 +140,7 @@ class ECDSAHostID(HostID):
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
 		self.compression = bytearray([ECDSAHostID.UNCOMPRESSED_POINT]);
-		self.buffer = self.curve_id + this.compression + self.x + self.y;
+		self.buffer = self.curve_id + self.compression + self.x + self.y;
 
 	CURVE_ID_LENGTH = 0x2;
 	POINT_OFFSET = 0x3;
@@ -198,7 +198,7 @@ class ECDSALowHostID(HostID):
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
 		self.compression = bytearray([ECDSALowHostID.UNCOMPRESSED_POINT]);
 		#self.buffer = self.curve_id + self.x + self.y;
-		self.buffer = self.curve_id + this.compression + self.x + self.y;
+		self.buffer = self.curve_id + self.compression + self.x + self.y;
 
 	CURVE_ID_LENGTH = 0x2;
 	POINT_OFFSET = 0x3;
