@@ -139,7 +139,7 @@ class ECDSAHostID(HostID):
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
-		self.compression = bytearray([UNCOMPRESSED_POINT]);
+		self.compression = bytearray([ECDSAHostID.UNCOMPRESSED_POINT]);
 		self.buffer = self.curve_id + this.compression + self.x + self.y;
 
 	CURVE_ID_LENGTH = 0x2;
@@ -149,7 +149,7 @@ class ECDSAHostID(HostID):
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
 		compression = buffer[2] & 0xFF;
-		if compression != UNCOMPRESSED_POINT:
+		if compression != ECDSAHostID.UNCOMPRESSED_POINT:
 			raise Exception("Only uncompressed points are supported")
 		if curve_id == ECDSAHostID.NIST_P_256_CURVE_ID:
 			x = buffer[ECDSAHostID.POINT_OFFSET:ECDSAHostID.POINT_OFFSET + ECDSAHostID.NIST_P_256_LENGTH];
@@ -196,7 +196,7 @@ class ECDSALowHostID(HostID):
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
-		self.compression = bytearray([UNCOMPRESSED_POINT]);
+		self.compression = bytearray([ECDSALowHostID.UNCOMPRESSED_POINT]);
 		#self.buffer = self.curve_id + self.x + self.y;
 		self.buffer = self.curve_id + this.compression + self.x + self.y;
 
@@ -206,7 +206,7 @@ class ECDSALowHostID(HostID):
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
 		compression = buffer[2] & 0xFF;
-		if compression != UNCOMPRESSED_POINT:
+		if compression != ECDSALowHostID.UNCOMPRESSED_POINT:
 			raise Exception("Only uncompressed points are supported")
 		if curve_id == ECDSALowHostID.SECP160R1_CURVE_ID:
 			x = buffer[ECDSALowHostID.POINT_OFFSET:ECDSALowHostID.POINT_OFFSET + ECDSALowHostID.SECP160R1_LENGTH];
