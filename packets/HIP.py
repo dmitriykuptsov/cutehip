@@ -77,12 +77,12 @@ class R1CounterParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_R1_COUNTER_RESERVED_LENGTH +
 				HIP_R1_GENERATION_COUNTER_LENGTH
-				);
+				));
 			self.set_type(HIP_R1_COUNTER_TYPE);
 			self.set_length(HIP_R1_COUNTER_LENGTH);
 
@@ -133,14 +133,14 @@ class PuzzleParameter(HIPParameter):
 
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_PUZZLE_K_LENGTH +
 				HIP_PUZZLE_LIFETIME_LENGTH +
 				HIP_PUZZLE_OPAQUE_LENGTH + 
 				self.HIP_PUZZLE_RANDOM_I_LENGTH
-				);
+				));
 			self.set_type(HIP_PUZZLE_TYPE);
 			self.set_length(self.HIP_PUZZLE_LENGTH);
 	def get_k_value(self):
@@ -193,7 +193,7 @@ class SolutionParameter(HIPParameter):
 		self.HIP_SOLUTION_LENGTH = 4 + rhash_length * 2;
 
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_SOLUTION_K_LENGTH +
@@ -201,7 +201,7 @@ class SolutionParameter(HIPParameter):
 				HIP_SOLUTION_OPAQUE_LENGTH + 
 				self.HIP_SOLUTION_RANDOM_I_LENGTH + 
 				self.HIP_SOLUTION_J_LENGTH
-				);
+				));
 			self.set_type(HIP_SOLUTION_TYPE);
 			self.set_length(self.HIP_SOLUTION_LENGTH);
 	def get_k_value(self):
@@ -244,17 +244,17 @@ class DHGroupListParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_DH_GROUP_LIST_TYPE);
 			self.set_length(0);
 	def add_groups(self, groups):
 		self.set_length(len(groups));
-		self.buffer += groups;
+		self.buffer += bytearray(groups);
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_groups(self):
 		groups = [];
 		length = self.get_length();
@@ -279,12 +279,12 @@ class DHParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH +
 				HIP_GROUP_ID_LENGTH +
 				HIP_PUBLIC_VALUE_LENGTH_LENGTH
-				);
+				));
 			self.set_type(HIP_DH_TYPE);
 			self.set_length(HIP_GROUP_ID_LENGTH + HIP_PUBLIC_VALUE_LENGTH_LENGTH);
 	def get_group_id(self):
@@ -301,14 +301,15 @@ class DHParameter(HIPParameter):
 		if dh_public_value_length != 0x0:
 			raise Exception("DH public key was already set");
 		length = self.get_length();
-		length += len(public_value);
-		self.set_length(length);
-		self.set_public_value_length(len(public_value));
 		self.buffer += public_value;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
+		length = len(public_value) + HIP_GROUP_ID_LENGTH + HIP_PUBLIC_VALUE_LENGTH_LENGTH + padding;
+		self.set_length(length);
+		self.set_public_value_length(int(len(public_value) / 8));
+		
 	def get_public_value(self):
-		public_value_length = self.get_public_value_length();
+		public_value_length = self.get_public_value_length() * 8;
 		return self.buffer[HIP_PUBLIC_VALUE_OFFSET:HIP_PUBLIC_VALUE_OFFSET + public_value_length]
 
 HIP_CIPHER_TYPE                     = 0x243;
@@ -318,10 +319,10 @@ class CipherParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_CIPHER_TYPE);
 			self.set_length(0);
 	def add_ciphers(self, ciphers):
@@ -330,12 +331,12 @@ class CipherParameter(HIPParameter):
 			raise Exception("Ciphers were set");
 		self.set_length(len(ciphers) * 2);
 		for cipher in ciphers:
-			cipher_id = [0] * 2;
+			cipher_id = bytearray([0] * 2);
 			cipher_id[0] = (cipher >> 8) & 0xFF;
 			cipher_id[1] = cipher & 0xFF;
 			self.buffer += cipher_id;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_ciphers(self):
 		ciphers = [];
 		length = self.get_length();
@@ -364,13 +365,13 @@ class HostIdParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH +
 				HIP_HI_LENGTH_LENGTH +
 				HIP_DI_LENGTH_LENGTH +
 				HIP_ALGORITHM_LENGTH
-				);
+				));
 			self.set_type(HIP_HI_TYPE);
 			self.set_length(
 				HIP_HI_LENGTH_LENGTH + 
@@ -408,7 +409,7 @@ class HostIdParameter(HIPParameter):
 		self.set_di_type(di.get_type());
 		length = self.get_length() + di_length;
 		self.set_length(length);
-		self.buffer += [0] * ((8 - len(self.buffer) % 8) % 8);
+		self.buffer += bytearray([0] * ((8 - len(self.buffer) % 8) % 8));
 	def set_host_id(self, hi):
 		hi_length = self.get_hi_length();
 		if hi_length > 0:
@@ -437,10 +438,10 @@ class HITSuitListParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_HIT_SUITS_TYPE);
 			self.set_length(0);
 	def add_suits(self, suits):
@@ -448,9 +449,9 @@ class HITSuitListParameter(HIPParameter):
 		if length > 0:
 			raise Exception("Suits were set already");
 		self.set_length(len(suits));
-		self.buffer += suits;
+		self.buffer += bytearray(suits);
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_suits(self):
 		suits = [];
 		length = self.get_length();
@@ -464,10 +465,10 @@ class TransportListParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_TRANSPORT_FORMAT_LIST_TYPE);
 			self.set_length(0);
 
@@ -477,12 +478,12 @@ class TransportListParameter(HIPParameter):
 			raise Exception("Transport format list was set");
 		self.set_length(len(transport_formats) * 2);
 		for transport_format in transport_formats:
-			transport_format_id = [0] * 2;
+			transport_format_id = bytearray([0] * 2);
 			transport_format_id[0] = (transport_format >> 8) & 0xFF;
 			transport_format_id[1] = transport_format & 0xFF;
 			self.buffer += transport_format_id;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 	def get_transport_formats(self):
 		transport_formats = [];
@@ -504,10 +505,10 @@ class MACParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_MAC_TYPE);
 			self.set_length(0);
 	def get_hmac(self):
@@ -518,7 +519,7 @@ class MACParameter(HIPParameter):
 		length = len(hmac);
 		self.buffer[HIP_MAC_OFFSET:HIP_MAC_OFFSET + length] = hmac;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 HIP_MAC_2_TYPE    = 0xF081;
 HIP_MAC_2_OFFSET  = 0x4;
@@ -527,10 +528,10 @@ class MAC2Parameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_MAC_2_TYPE);
 			self.set_length(0);
 	def get_hmac(self):
@@ -541,7 +542,7 @@ class MAC2Parameter(HIPParameter):
 		length = len(hmac);
 		self.buffer[HIP_MAC_2_OFFSET:HIP_MAC_2_OFFSET + length] = hmac;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 HIP_SIG_TYPE             = 0xF101;
 HIP_SIG_ALG_TYPE_OFFSET  = 0x4;
@@ -553,11 +554,11 @@ class SignatureParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_SIG_ALG_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_SIG_TYPE);
 			self.set_length(0);
 
@@ -577,7 +578,7 @@ class SignatureParameter(HIPParameter):
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 HIP_SIG_2_TYPE           = 0xF0C1;
 HIP_SIG_ALG_TYPE_OFFSET  = 0x4;
@@ -589,11 +590,11 @@ class Signature2Parameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_SIG_ALG_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_SIG_2_TYPE);
 			self.set_length(0);
 
@@ -614,7 +615,7 @@ class Signature2Parameter(HIPParameter):
 		length = len(sig);
 		self.buffer[HIP_SIG_OFFSET:HIP_SIG_OFFSET + length] = sig;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 HIP_SEQ_TYPE             = 0x181;
 HIP_UPDATE_ID_OFFSET     = 0x4;
@@ -625,11 +626,11 @@ class SequenceParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_UPDATE_ID_LENGTH
-				);
+				));
 			self.set_type(HIP_SEQ_TYPE);
 			self.set_length(HIP_UPDATE_ID_LENGTH);
 	def get_id(self):
@@ -650,17 +651,17 @@ class AckParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_ACK_TYPE);
 			self.set_length(0);
 	def set_ids(self, ids):
 		self.set_length(len(ids) * HIP_UPDATE_ID_LENGTH);
 		offset = HIP_UPDATE_ID_OFFSET;
 		for id in ids:
-			self.buffer += [0] * HIP_UPDATE_ID_LENGTH;
+			self.buffer += bytearray([0] * HIP_UPDATE_ID_LENGTH);
 			self.buffer[offset] = (id << 24) & 0xFF;
 			self.buffer[offset + 1] = (id << 16) & 0xFF;
 			self.buffer[offset + 2] = (id << 8) & 0xFF;
@@ -692,11 +693,11 @@ class EncryptedParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH +
 				HIP_ENCRYPTED_RESERVED_LENGTH
-				);
+				));
 			self.set_type(HIP_ENCRYPTED_TYPE);
 			self.set_length(HIP_ENCRYPTED_RESERVED_LENGTH);
 	def add_iv(self, iv_length, iv):
@@ -705,7 +706,7 @@ class EncryptedParameter(HIPParameter):
 			HIP_ENCRYPTED_RESERVED_LENGTH):
 			raise Exception("IV was already set");
 		offset = HIP_ENCRYPTED_IV_OFFSET;
-		self.buffer += [0] * iv_length;
+		self.buffer += bytearray([0] * iv_length);
 		self.buffer[offset:offset + iv_length] = iv;
 		length = self.get_length();
 		length += len(iv);
@@ -726,13 +727,13 @@ class EncryptedParameter(HIPParameter):
 			raise Exception("IV was not set yet");
 		offset = HIP_ENCRYPTED_IV_OFFSET + iv_length;
 		padding = len(enc_data) % 4;
-		self.buffer += [0] * (len(enc_data) + padding);
+		self.buffer += bytearray([0] * (len(enc_data) + padding));
 		self.buffer[offset:offset + len(enc_data)] = enc_data;
 		length = self.get_length();
 		length += len(enc_data);
 		self.set_length(length);
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_encrypted_data(self, iv_length):
 		if len(self.buffer) <= (
 			HIP_TLV_LENGTH_LENGTH + 
@@ -775,12 +776,12 @@ class NotificationParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH +
 				HIP_NOTIFICATION_RESERVED_LENGTH +
 				HIP_NOTIFY_DATA_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_NOTIFICATION_TYPE);
 			self.set_length(HIP_NOTIFICATION_RESERVED_LENGTH + HIP_NOTIFY_DATA_TYPE_LENGTH);
 	def get_notify_message_type(self):
@@ -801,11 +802,11 @@ class NotificationParameter(HIPParameter):
 			raise Exception("Notification data was already set");
 		padding = 4 - len(data) % 4;
 		offset = HIP_NOTIFICATION_DATA_OFFSET;
-		self.buffer += [0] * (len(data) + padding);
+		self.buffer += bytearray([0] * (len(data) + padding));
 		self.buffer[offset:offset + len(data)] = data;
 		self.set_length(length + len(data));
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 
 
 HIP_ECHO_REQUEST_SIGNED_TYPE             = 0x381;
@@ -816,17 +817,17 @@ class EchoRequestSignedParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_ECHO_REQUEST_SIGNED_TYPE);
 			self.set_length(0);
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_REQUEST_SIGNED_OFFSET:HIP_ECHO_REQUEST_SIGNED_OFFSET + length]
@@ -838,17 +839,17 @@ class EchoRequestUnsignedParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_ECHO_REQUEST_UNSIGNED_TYPE);
 			self.set_length(0);
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_REQUEST_UNSIGNED_OFFSET:HIP_ECHO_REQUEST_UNSIGNED_OFFSET + length]
@@ -861,17 +862,17 @@ class EchoResponseSignedParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_ECHO_RESPONSE_SIGNED_TYPE);
 			self.set_length(0);
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_RESPONSE_SIGNED_OFFSET:HIP_ECHO_RESPONSE_SIGNED_OFFSET + length]
@@ -884,17 +885,17 @@ class EchoResponseUnsignedParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH
-				);
+				));
 			self.set_type(HIP_ECHO_RESPONSE_UNSIGNED_TYPE);
 			self.set_length(0);
 	def add_opaque_data(self, data):
 		self.set_length(len(data));
 		self.buffer += data;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_opaque_data(self):
 		length = self.get_length();
 		return self.buffer[HIP_ECHO_RESPONSE_UNSIGNED_OFFSET:HIP_ECHO_RESPONSE_UNSIGNED_OFFSET + length]
@@ -908,22 +909,22 @@ class ESPTransformParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH + 
 				HIP_SUITS_RESERVED_LENGTH
-				);
+				));
 			self.set_type(HIP_ESP_TRANSFORM_TYPE);
 			self.set_length(HIP_SUITS_RESERVED_LENGTH);
 	def add_suits(self, suits):
 		self.set_length((len(suits) + 1) * 2);
 		for suit in suits:
-			suit_id = [0] * 2;
+			suit_id = bytearray([0] * 2);
 			suit_id[0] = (suit >> 8) & 0xFF;
 			suit_id[1] = suit & 0xFF;
 			self.buffer += suit_id;
 		padding = (8 - len(self.buffer) % 8) % 8;
-		self.buffer += [0] * padding;
+		self.buffer += bytearray([0] * padding);
 	def get_suits(self):
 		suits = [];
 		length = self.get_length();
@@ -950,14 +951,14 @@ class ESPInfoParameter(HIPParameter):
 	def __init__(self, buffer = None):
 		self.buffer = buffer;
 		if not self.buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 				HIP_TLV_LENGTH_LENGTH + 
 				HIP_TLV_TYPE_LENGTH +
 				HIP_ESP_INFO_RESERVED_LENGTH +
 				HIP_ESP_INFO_KEYMAT_INDEX_LENGTH +
 				HIP_ESP_INFO_OLD_SPI_LENGTH +
 				HIP_ESP_INFO_NEW_SPI_LENGTH
-				);
+				));
 			self.set_type(HIP_ESP_INFO_TYPE);
 			self.set_length(
 				HIP_ESP_INFO_RESERVED_LENGTH +
@@ -1048,7 +1049,7 @@ HIP_CLOSE_ACK_PACKET             = 0x13;
 class HIPPacket():
 	def __init__(self, buffer = None):
 		if not buffer:
-			self.buffer = [0] * (
+			self.buffer = bytearray([0] * (
 					HIP_NEXT_HEADER_LENGTH +
 					HIP_HEADER_LENGHT_LENGTH + 
 					HIP_PACKET_TYPE_LENGTH + 
@@ -1056,7 +1057,7 @@ class HIPPacket():
 					HIP_CHECKSUM_LENGTH +
 					HIP_CONTROLS_LENGTH +
 					HIP_SENDERS_HIT_LENGTH +
-					HIP_RECIEVERS_HIT_LENGTH);
+					HIP_RECIEVERS_HIT_LENGTH));
 			self.set_length(int(HIP_FIXED_HEADER_LENGTH_EXCL_8_BYTES / 8));
 		else:
 			self.buffer = buffer;
