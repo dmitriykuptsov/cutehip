@@ -63,9 +63,6 @@ class RSAHostID(HostID):
 		self.buffer = bytearray([0] * (self.exponent_length_field_length + \
 						len(exponent_bytes) + len(modulus_bytes)));
 		offset = 0x1;
-		logging.debug("Exponent:")
-		logging.debug(exponent)
-		logging.debug(modulus)
 		if exponent_length > 255:
 			self.buffer[1] = (exponent_length >> 8) & 0xFF;
 			self.buffer[2] = (exponent_length) & 0xFF;
@@ -88,12 +85,6 @@ class RSAHostID(HostID):
 		exponent = buffer[offset:offset + exponent_length];
 		offset += exponent_length;
 		modulus = buffer[offset:];
-		logging.debug("Exponent length ... ")
-		logging.debug(exponent_length)
-		logging.debug("Exponent:")
-		logging.debug(Math.bytes_to_int(exponent))
-		logging.debug(Math.bytes_to_int(modulus))
-		
 		return RSAHostID(Math.bytes_to_int(exponent), Math.bytes_to_int(modulus));
 
 	def to_byte_array(self):
@@ -132,6 +123,8 @@ class ECDSAHostID(HostID):
 	NIST_P_384_CURVE_ID = 0x2;
 	NIST_P_384_LENGTH = 0x30;
 
+	UNCOMPRESSED_POINT = 0x4;
+
 	def __init__(self, curve_id, x, y):
 		self.x = Math.int_to_bytes(x);
 		self.y = Math.int_to_bytes(y);
@@ -146,18 +139,24 @@ class ECDSAHostID(HostID):
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
-		self.buffer = self.curve_id + self.x + self.y;
+		self.compression = bytearray([ECDSAHostID.UNCOMPRESSED_POINT]);
+		self.buffer = self.curve_id + self.compression + self.x + self.y;
 
 	CURVE_ID_LENGTH = 0x2;
+	POINT_OFFSET = 0x3;
+
 	@staticmethod
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
+		compression = buffer[2] & 0xFF;
+		if compression != ECDSAHostID.UNCOMPRESSED_POINT:
+			raise Exception("Only uncompressed points are supported")
 		if curve_id == ECDSAHostID.NIST_P_256_CURVE_ID:
-			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH];
-			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_256_LENGTH:];
+			x = buffer[ECDSAHostID.POINT_OFFSET:ECDSAHostID.POINT_OFFSET + ECDSAHostID.NIST_P_256_LENGTH];
+			y = buffer[ECDSAHostID.POINT_OFFSET + ECDSAHostID.NIST_P_256_LENGTH:];
 		elif curve_id == ECDSAHostID.NIST_P_384_CURVE_ID:
-			x = buffer[ECDSAHostID.CURVE_ID_LENGTH:ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_LENGTH];
-			y = buffer[ECDSAHostID.CURVE_ID_LENGTH + ECDSAHostID.NIST_P_384_LENGTH:];
+			x = buffer[ECDSAHostID.POINT_OFFSET:ECDSAHostID.POINT_OFFSET + ECDSAHostID.NIST_P_384_LENGTH];
+			y = buffer[ECDSAHostID.POINT_OFFSET + ECDSAHostID.NIST_P_384_LENGTH:];
 		else:
 			raise Exception("Unsupported curve");
 		return ECDSAHostID(curve_id, Math.bytes_to_int(x), Math.bytes_to_int(y));
@@ -185,6 +184,7 @@ class ECDSAHostID(HostID):
 class ECDSALowHostID(HostID):
 	SECP160R1_LENGTH = 0x14;
 	SECP160R1_CURVE_ID = 0x1;
+	UNCOMPRESSED_POINT = 0x4;
 
 	def __init__(self, curve_id, x, y):
 		self.x = Math.int_to_bytes(x);
@@ -196,15 +196,21 @@ class ECDSALowHostID(HostID):
 		else:
 			raise Exception("Unsupported curve");
 		self.curve_id = bytearray([(curve_id >> 8) & 0xFF, curve_id & 0xFF]);
-		self.buffer = self.curve_id + self.x + self.y;
+		self.compression = bytearray([ECDSALowHostID.UNCOMPRESSED_POINT]);
+		#self.buffer = self.curve_id + self.x + self.y;
+		self.buffer = self.curve_id + self.compression + self.x + self.y;
 
 	CURVE_ID_LENGTH = 0x2;
+	POINT_OFFSET = 0x3;
 	@staticmethod
 	def from_byte_buffer(buffer):
 		curve_id = (buffer[0] << 8) | buffer[1];
+		compression = buffer[2] & 0xFF;
+		if compression != ECDSALowHostID.UNCOMPRESSED_POINT:
+			raise Exception("Only uncompressed points are supported")
 		if curve_id == ECDSALowHostID.SECP160R1_CURVE_ID:
-			x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.SECP160R1_LENGTH];
-			y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.SECP160R1_LENGTH:];
+			x = buffer[ECDSALowHostID.POINT_OFFSET:ECDSALowHostID.POINT_OFFSET + ECDSALowHostID.SECP160R1_LENGTH];
+			y = buffer[ECDSALowHostID.POINT_OFFSET + ECDSALowHostID.SECP160R1_LENGTH:];
 		#elif curve_id == ECDSALowHostID.NIST_P_384_CURVE_ID:
 		#	x = buffer[ECDSALowHostID.CURVE_ID_LENGTH:ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.SECP160R1_LENGTH];
 		#	y = buffer[ECDSALowHostID.CURVE_ID_LENGTH + ECDSALowHostID.SECP160R1_LENGTH:];

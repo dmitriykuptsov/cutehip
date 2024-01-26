@@ -30,7 +30,7 @@ class Routing():
 		"""
 		system("ip -6 route add %s dev %s" % (prefix, interface));
 	@staticmethod
-	def del_hip_default_route(interface = "hip0", prefix="2001:2000::/28"):
+	def del_hip_default_route(interface = "hip0", prefix="2001:0020::/28"):
 		"""
 		Removes default route for IPv6 packets
 		"""

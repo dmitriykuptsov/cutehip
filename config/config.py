@@ -27,7 +27,7 @@ config = {
 		"hosts_file": "./config/hosts",
 		"domain_identifier": {                                 # Domain identifier type and value
 			"type": 0x2,                                       # FQDN 0x1, NAI 0x2
-			"value": "dmitriy.kuptsov@strangebit.com"          # NAI value
+			"value": "dmitriy.kuptsov@strangebit.io"           # NAI value
 		}
 	},
 	"general": {
