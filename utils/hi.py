@@ -23,8 +23,8 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-import utils
-from utils.misc import Math
+import hiplib.utils
+from hiplib.utils.misc import Math
 
 """
 Base 64 encoding decoding routines
