@@ -1332,7 +1332,7 @@ def hip_loop():
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				mac_param = HIP.MAC2Parameter();
-				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer())));
+				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer()  + self.own_hi_param.get_byte_buffer())));
 
 				# Compute signature here
 				
