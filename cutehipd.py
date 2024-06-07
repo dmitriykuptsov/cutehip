@@ -2872,5 +2872,3 @@ while main_loop:
 			if sv.failed_timeout <= time.time():
 				logging.debug("Transitioning to UNASSOCIATED state...");
 				hip_state.unassociated();
-
-
