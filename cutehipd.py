@@ -1332,7 +1332,7 @@ def hip_loop():
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
 				mac_param = HIP.MAC2Parameter();
-				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer())));
+				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer()  + self.own_hi_param.get_byte_buffer())));
 
 				# Compute signature here
 				
@@ -1532,7 +1532,7 @@ def hip_loop():
 
 				hip_r2_packet.add_parameter(esp_info_param);
 
-				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()))) != list(hmac_param.get_hmac()):
+				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer())  + hi_param.get_byte_buffer())) != list(hmac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 				else:
@@ -2867,5 +2867,3 @@ while main_loop:
 			if sv.failed_timeout <= time.time():
 				logging.debug("Transitioning to UNASSOCIATED state...");
 				hip_state.unassociated();
-
-
