@@ -76,7 +76,7 @@ from databases import Firewall
 from utils.misc import Utils
 # Configure logging to console and file
 logging.basicConfig(
-	level=logging.CRITICAL,
+	level=logging.DEBUG,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 	handlers=[
 		logging.FileHandler("hip.log"),
@@ -120,6 +120,7 @@ privkey      = None;
 hi           = None;
 ipv6_address = None;
 own_hit      = None;
+responder_hi_param = None;
 if config.config["security"]["sig_alg"] == 0x5: # RSA
 	if config.config["security"]["hash_alg"] != 0x1: # SHA 256
 		raise Exception("Invalid hash algorithm. Must be 0x1")
@@ -647,6 +648,8 @@ def hip_loop():
 				packet_length = original_length * 8 + len(buf);
 				hip_r1_packet.set_length(int(packet_length / 8));
 				buf = bytearray(hip_r1_packet.get_buffer()) + bytearray(buf);
+
+				responder_hi_param = hi_param
 
 				#signature_alg = RSASHA256Signature(responders_public_key.get_key_info());
 				if isinstance(responders_public_key, RSAPublicKey):
@@ -1331,8 +1334,12 @@ def hip_loop():
 				(aes_key, hmac_key) = Utils.get_keys(keymat, hmac_alg, selected_cipher, ihit, rhit);
 				hmac = HMACFactory.get(hmac_alg, hmac_key);
 
+				own_hi_param = HIP.HostIdParameter();
+				own_hi_param.set_host_id(hi);
+				own_hi_param.set_domain_id(di);
+
 				mac_param = HIP.MAC2Parameter();
-				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer())));
+				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer() + own_hi_param.get_byte_buffer())));
 
 				# Compute signature here
 				
@@ -1532,7 +1539,7 @@ def hip_loop():
 
 				hip_r2_packet.add_parameter(esp_info_param);
 
-				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()))) != list(hmac_param.get_hmac()):
+				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()) + responder_hi_param.get_byte_buffer())) != list(hmac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 				else:
