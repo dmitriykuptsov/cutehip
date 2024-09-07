@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = "Dmitriy Kuptsov"
-__copyright__ = "Copyright 2020, stangebit"
+__copyright__ = "Copyright 2020, strangebit"
 __license__ = "GPL"
 __version__ = "0.0.1b"
 __maintainer__ = "Dmitriy Kuptsov"
@@ -1338,8 +1338,10 @@ def hip_loop():
 				own_hi_param.set_host_id(hi);
 				own_hi_param.set_domain_id(di);
 
+				hip_r2_packet.add_parameter(own_hi_param)
+
 				mac_param = HIP.MAC2Parameter();
-				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer() + own_hi_param.get_byte_buffer())));
+				mac_param.set_hmac(hmac.digest(bytearray(hip_r2_packet.get_buffer())));
 
 				# Compute signature here
 				
@@ -1538,8 +1540,9 @@ def hip_loop():
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				hip_r2_packet.add_parameter(esp_info_param);
+				hip_r2_packet.add_parameter(responder_hi_param);
 
-				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()) + responder_hi_param.get_byte_buffer())) != list(hmac_param.get_hmac()):
+				if list(hmac.digest(bytearray(hip_r2_packet.get_buffer()))) != list(hmac_param.get_hmac()):
 					logging.critical("Invalid HMAC. Dropping the packet");
 					continue;
 				else:
