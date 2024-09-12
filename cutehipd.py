@@ -1352,8 +1352,9 @@ def hip_loop():
 				hip_r2_packet.set_version(HIP.HIP_VERSION);
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
-				
-				buf = mac_param.get_byte_buffer();				
+				buf = esp_info_param.get_byte_buffer();
+
+				buf += mac_param.get_byte_buffer();				
 				original_length = hip_r2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
 				hip_r2_packet.set_length(int(packet_length / 8));
@@ -1557,7 +1558,9 @@ def hip_loop():
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				#hip_r2_packet.add_parameter(hmac_param);
-				buf = list(hmac_param.get_byte_buffer());
+				buf = list(esp_info_param.get_byte_buffer());
+
+				buf += list(hmac_param.get_byte_buffer());
 				original_length = hip_r2_packet.get_length();
 				packet_length = original_length * 8 + len(buf);
 				hip_r2_packet.set_length(int(packet_length / 8));
