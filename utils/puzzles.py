@@ -57,9 +57,9 @@ class PuzzleSolver():
 			expected_solution += bytearray([0]);
 		#return  == expected_solution
 		actual_output = bytearray(PuzzleSolver.ltrunc(rhash.digest(irandom + senders_hit + responers_hit + jrandom), difficulty))
-		logging.debug("Solved pussle")
+		logging.debug("Solved puzzle")
 		logging.debug(actual_output)
-		logging.debug("Exprected solution")
+		logging.debug("Expected solution")
 		logging.debug(expected_solution)
 		return expected_solution == actual_output
 
