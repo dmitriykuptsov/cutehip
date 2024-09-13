@@ -304,7 +304,7 @@ class DHParameter(HIPParameter):
 		self.buffer += public_value;
 		padding = (8 - len(self.buffer) % 8) % 8;
 		self.buffer += [0] * padding;
-		length = len(public_value) + HIP_GROUP_ID_LENGTH + HIP_PUBLIC_VALUE_LENGTH_LENGTH + padding;
+		length = len(public_value) + HIP_GROUP_ID_LENGTH + HIP_PUBLIC_VALUE_LENGTH_LENGTH;
 		self.set_length(length);
 		self.set_public_value_length(int(len(public_value) / 8));
 		
