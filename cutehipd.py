@@ -584,8 +584,9 @@ def hip_loop():
 						signature_param = parameter;
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
 						logging.debug("Echo request signed parameter");
-						echo_signed = EchoResponseSignedParameter();
-						echo_signed.add_opaque_data(parameter.get_opaque_data());
+						echo_signed = parameter;
+						echo_signed_resp = EchoResponseSignedParameter();
+						echo_signed_resp.add_opaque_data(parameter.get_opaque_data());
 					if isinstance(parameter, HIP.EchoRequestUnsignedParameter):
 						logging.debug("Echo request unsigned parameter");
 						echo_unsigned_param = EchoResponseUnsignedParameter();
@@ -914,8 +915,8 @@ def hip_loop():
 						cipher_param.get_byte_buffer() + \
 						hi_param.get_byte_buffer();
 
-				if echo_signed:
-					buf += echo_signed.get_byte_buffer();
+				if echo_signed_resp:
+					buf += echo_signed_resp.get_byte_buffer();
 
 				buf += transport_param.get_byte_buffer();
 				buf += esp_transform_param.get_byte_buffer() + \
@@ -966,8 +967,8 @@ def hip_loop():
 				hip_i2_packet.add_parameter(dh_param);
 				hip_i2_packet.add_parameter(cipher_param);
 				hip_i2_packet.add_parameter(hi_param);
-				if echo_signed:
-					hip_i2_packet.add_parameter(echo_signed);
+				if echo_signed_resp:
+					hip_i2_packet.add_parameter(echo_signed_resp);
 				hip_i2_packet.add_parameter(transport_param);
 				hip_i2_packet.add_parameter(esp_transform_param);
 				hip_i2_packet.add_parameter(mac_param);
