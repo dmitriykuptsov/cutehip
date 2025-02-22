@@ -491,6 +491,7 @@ def hip_loop():
 				signature_param    = None;
 				public_key         = None;
 				echo_unsigned      = [];
+				echo_signed_resp   = None
 				parameters         = hip_packet.get_parameters();
 				
 				st = time.time();
@@ -585,11 +586,11 @@ def hip_loop():
 					if isinstance(parameter, HIP.EchoRequestSignedParameter):
 						logging.debug("Echo request signed parameter");
 						echo_signed = parameter;
-						echo_signed_resp = EchoResponseSignedParameter();
+						echo_signed_resp = HIP.EchoResponseSignedParameter();
 						echo_signed_resp.add_opaque_data(parameter.get_opaque_data());
 					if isinstance(parameter, HIP.EchoRequestUnsignedParameter):
 						logging.debug("Echo request unsigned parameter");
-						echo_unsigned_param = EchoResponseUnsignedParameter();
+						echo_unsigned_param = HIP.EchoResponseUnsignedParameter();
 						echo_unsigned_param.add_opaque_data(parameter.get_opaque_data());
 						echo_unsigned.append(echo_unsigned_param);
 					if isinstance(parameter, HIP.CipherParameter):
