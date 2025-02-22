@@ -88,7 +88,7 @@ Remember to pad HIT with zeros if needed (ifconfig tool strips off unneeded zero
 
 Run the initiator
 ```
-$ sudo python3 cutehipd
+$ sudo python3 cutehipd.py
 ```
 
 We have added a simple firewall. So make sure you have added the rules to config/rules (the first
