@@ -24,13 +24,13 @@ class Routing():
 	Routing configuration
 	"""
 	@staticmethod
-	def add_hip_default_route(interface = "hip0", prefix="2001:0020::/28"):
+	def add_hip_default_route(interface = "hip0", prefix="2001:0010::/28"):
 		"""
 		Adds default route for IPv6 packets
 		"""
 		system("ip -6 route add %s dev %s" % (prefix, interface));
 	@staticmethod
-	def del_hip_default_route(interface = "hip0", prefix="2001:0020::/28"):
+	def del_hip_default_route(interface = "hip0", prefix="2001:0010::/28"):
 		"""
 		Removes default route for IPv6 packets
 		"""

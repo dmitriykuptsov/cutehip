@@ -103,7 +103,7 @@ class HIT():
 		Hash       :=  Hash_function( Hash Input )
 		ORCHID     :=  Prefix | OGA ID | Encode_96( Hash )
 		"""
-		HIP_HIT_PREFIX = bytearray(unhexlify("20010020"));
+		HIP_HIT_PREFIX = bytearray(unhexlify("20010010"));
 		HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] = HIP_HIT_PREFIX[len(HIP_HIT_PREFIX) - 1] | (oga_id & 0xF);
 		encoded_hit = HIT.encode_96(rhash.digest(HIP_HIT_CONTEX_ID + hi))
 		return HIP_HIT_PREFIX + encoded_hit;
