@@ -138,10 +138,10 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug(list(hi.to_byte_array()));
-	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
+	self.own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug("Responder's OGA ID %d" % (HIT.SHA384_OGA));
 	logging.debug(list(hi.to_byte_array()));
-	logging.debug(list(own_hit))
+	logging.debug(list(self.own_hit))
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3: # SHA 1
 		raise Exception("Invalid hash algorithm. Must be 0x3")
