@@ -138,10 +138,10 @@ elif config.config["security"]["sig_alg"] == 0x7: # ECDSA
 	hi = ECDSAHostID(pubkey.get_curve_id(), pubkey.get_x(), pubkey.get_y());
 	ipv6_address = HIT.get_hex_formated(hi.to_byte_array(), HIT.SHA384_OGA);
 	logging.debug(list(hi.to_byte_array()));
-	self.own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA);
+	own_hit = HIT.get(hi.to_byte_array(), HIT.SHA384_OGA)
 	logging.debug("Responder's OGA ID %d" % (HIT.SHA384_OGA));
 	logging.debug(list(hi.to_byte_array()));
-	logging.debug(list(self.own_hit))
+	logging.debug(list(own_hit))
 elif config.config["security"]["sig_alg"] == 0x9: # ECDSA LOW
 	if config.config["security"]["hash_alg"] != 0x3: # SHA 1
 		raise Exception("Invalid hash algorithm. Must be 0x3")
@@ -1563,7 +1563,6 @@ def hip_loop():
 						Utils.ipv6_bytes_to_hex_formatted(rhit));
 				
 				sv.ec_complete_timeout = time.time() + config.config["general"]["EC"];
-
 			elif hip_packet.get_packet_type() == HIP.HIP_R2_PACKET:
 				
 				if (hip_state.is_unassociated() 
