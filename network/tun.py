@@ -25,28 +25,32 @@ from time import sleep
 PSEUDO_HEADER_SIZE = 0x4;
 
 class Tun():
-	"""
-	Initializes the tun device
-	"""
+	
 	def __init__(self, address = "2001::1", mtu = 1500, name = "hip0"):
+		"""
+		Initializes the tun device
+		"""
 		self.name = name;
 		self.tun = TunTunnel(pattern = name);
 		self.tun.set_ipv6(address);
 		self.tun.set_mtu(mtu);
-	"""
-	Reads data from device
-	"""
+	
 	def read(self, nbytes = 1500):
+		"""
+		Reads data from device
+		"""
 		#return self.tun.recv(nbytes + PSEUDO_HEADER_SIZE);
 		return self.tun.recv(nbytes);
-	"""
-	Writes buffer to device
-	"""
+	
 	def write(self, buf):
+		"""
+		Writes buffer to device
+		"""
 		return self.tun.send(buf);
-	"""
-	Closes TUN interface
-	"""
+	
 	def close(self):
+		"""
+		Closes TUN interface
+		"""
 		self.tun.down();
 
