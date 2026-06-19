@@ -294,7 +294,7 @@ class DHParameter(HIPParameter):
 	def get_public_value_length(self):
 		return (self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET] << 8 | self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET + 1])
 	def set_public_value_length(self, public_value_length):
-		self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET] = ((public_value_length << 8) & 0xFF)
+		self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET] = ((public_value_length >> 8) & 0xFF)
 		self.buffer[HIP_PUBLIC_VALUE_LENGTH_OFFSET + 1] = (public_value_length & 0xFF)
 	def add_public_value(self, public_value):
 		dh_public_value_length = self.get_public_value_length();
@@ -307,6 +307,7 @@ class DHParameter(HIPParameter):
 		length = len(public_value) + HIP_GROUP_ID_LENGTH + HIP_PUBLIC_VALUE_LENGTH_LENGTH;
 		self.set_length(length);
 		self.set_public_value_length(int(len(public_value)));
+
 		
 	def get_public_value(self):
 		public_value_length = self.get_public_value_length();
