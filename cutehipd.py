@@ -528,6 +528,8 @@ def hip_loop():
 						logging.debug("DI type: %d " % parameter.get_di_type());
 						logging.debug("DI value: %s " % parameter.get_domain_id());
 						logging.debug("Host ID");
+
+						hi_param = parameter;
 						
 						logging.debug("Host ID buffer");
 						logging.debug(list(hi_param.get_byte_buffer()))
