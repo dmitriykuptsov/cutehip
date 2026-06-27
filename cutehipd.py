@@ -170,6 +170,7 @@ pubkey_storage    = HIPState.Storage();
 state_variables   = HIPState.Storage();
 key_info_storage  = HIPState.Storage();
 esp_transform_storage = HIPState.Storage();
+spi_storage       = HIPState.Storage();
 
 if config.config["general"]["rekey_after_packets"] > ((2<<32)-1):
 	config.config["general"]["rekey_after_packets"] = (2<<32)-1;
@@ -324,6 +325,7 @@ def hip_loop():
 
 				dh_param = HIP.DHParameter();
 				dh_param.set_group_id(selected_dh_group);
+				logging.debug("Raw DH key length %s", dh.encode_public_key())
 				logging.debug("DH public key: %d ", Math.bytes_to_int(dh.encode_public_key()));
 				dh_param.add_public_value(dh.encode_public_key());
 				logging.debug("DH public key value: %d ", Math.bytes_to_int(dh.encode_public_key()));
@@ -526,8 +528,6 @@ def hip_loop():
 						logging.debug("DI type: %d " % parameter.get_di_type());
 						logging.debug("DI value: %s " % parameter.get_domain_id());
 						logging.debug("Host ID");
-
-						hi_param = parameter;
 						
 						logging.debug("Host ID buffer");
 						logging.debug(list(hi_param.get_byte_buffer()))
@@ -832,7 +832,11 @@ def hip_loop():
 
 				esp_info_param = HIP.ESPInfoParameter();
 				esp_info_param.set_keymat_index(keymat_index);
-				esp_info_param.set_new_spi(Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH)));
+
+				initiators_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
+				spi_storage.save(Utils.ipv6_bytes_to_hex_formatted(rhit),
+					Utils.ipv6_bytes_to_hex_formatted(ihit), initiators_spi);
+				esp_info_param.set_new_spi(initiators_spi);
 
 				# Keying material generation
 				# https://tools.ietf.org/html/rfc7402#section-7
@@ -1417,7 +1421,13 @@ def hip_loop():
 				hip_r2_packet.set_length(HIP.HIP_DEFAULT_PACKET_LENGTH);
 
 				keymat_index = Utils.compute_hip_keymat_length(hmac_alg, selected_cipher);
-				responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
+
+				responders_spi = spi_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+					Utils.ipv6_bytes_to_hex_formatted(ihit));
+				if not responders_spi:
+					responders_spi = Math.bytes_to_int(Utils.generate_random(HIP.HIP_ESP_INFO_NEW_SPI_LENGTH));
+					spi_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+						Utils.ipv6_bytes_to_hex_formatted(ihit));
 
 				if initiators_keymat_index != keymat_index:
 					raise Exception("Keymat index should match....")
@@ -1539,7 +1549,7 @@ def hip_loop():
 					cipher.ALG_ID, 
 					ihit, rhit);
 				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, src, dst);
-				sa_record.set_spi(responders_spi);
+				sa_record.set_spi(initiators_spi);
 				ip_sec_sa.add_record(Utils.ipv6_bytes_to_hex_formatted(rhit), 
 					Utils.ipv6_bytes_to_hex_formatted(ihit), sa_record);
 
@@ -1552,7 +1562,7 @@ def hip_loop():
 				#(aes_key, hmac_key) = Utils.get_keys_esp(keymat, hmac_alg, selected_cipher, rhit, ihit);
 				#sa_record = SA.SecurityAssociationRecord(selected_cipher, hmac_alg, aes_key, hmac_key, rhit, ihit);
 				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, rhit, ihit);
-				sa_record.set_spi(initiators_spi);
+				sa_record.set_spi(responders_spi);
 				ip_sec_sa.add_record(dst_str, src_str, sa_record);
 				
 				if Utils.is_hit_smaller(rhit, ihit):
@@ -1605,7 +1615,8 @@ def hip_loop():
 				hmac_param      = None;
 				signature_param = None;
 
-				initiators_spi          = None;
+				initiators_spi          = spi_storage.get(Utils.ipv6_bytes_to_hex_formatted(rhit), 
+                    Utils.ipv6_bytes_to_hex_formatted(ihit));
 				responders_spi          = None;
 				keymat_index            = None;
 
@@ -1722,7 +1733,7 @@ def hip_loop():
 					rhit, ihit);
 				
 				sa_record = SA.SecurityAssociationRecord(cipher.ALG_ID, hmac.ALG_ID, cipher_key, hmac_key, rhit, ihit);
-				sa_record.set_spi(responders_spi);
+				sa_record.set_spi(initiators_spi);
 				ip_sec_sa.add_record(src_str, dst_str, sa_record);
 
 				# Transition to an Established state
